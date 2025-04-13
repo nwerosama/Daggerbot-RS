@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS prohibited_words (
+  word VARCHAR(255) PRIMARY KEY
+);

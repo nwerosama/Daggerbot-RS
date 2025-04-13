@@ -1,0 +1,11 @@
+{
+  "files.trimTrailingWhitespace": true,
+  "rust-analyzer.showUnlinkedFileNotification": false,
+  "rust-analyzer.linkedProjects": ["./Cargo.toml"],
+  "Lua.diagnostics.globals": [
+    "rs_msg",
+    "rs_regex",
+    "send_message",
+    "state"
+  ]
+}

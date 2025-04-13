@@ -1,0 +1,14 @@
+.vscode
+.github
+.env
+.gitignore
+.gitattributes
+schemas/.locked
+act
+Dockerfile
+compose.bot.yml
+run.sh
+build.sh
+deploy.sh
+target/debug
+target/release

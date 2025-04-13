@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS prohibited_urls (
+  url VARCHAR(255) PRIMARY KEY
+);
