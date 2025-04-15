@@ -12,7 +12,7 @@ impl TSClient {
     Self(TokenService::new(service))
   }
 
-  pub async fn get(&self) -> Result<TokenServiceApi, crate::Error> {
+  pub async fn get(&self) -> Result<TokenServiceApi, crate::BotError> {
     match self.0.connect().await {
       Ok(api) => Ok(api),
       Err(e) => Err(e)

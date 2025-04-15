@@ -1,6 +1,6 @@
 use crate::{
   BotData,
-  Error,
+  BotError,
   internals::{
     ansi::Color,
     config::BINARY_PROPERTIES,
@@ -63,7 +63,7 @@ async fn store_msg_cache(
   ctx: &Context,
   cached: CachedMessage,
   msg_id: MessageId
-) -> Result<CachedMessage, Error> {
+) -> Result<CachedMessage, BotError> {
   let redis = &ctx.data::<BotData>().redis;
   let rkey = REDIS_MSG_KEY.replace("{{ message_id }}", msg_id.to_string().as_str());
 
@@ -76,7 +76,7 @@ async fn store_msg_cache(
     },
     Err(e) => {
       eprintln!("Message[Cache:Error] {e}");
-      Err(Error::from(e))
+      Err(BotError::from(e))
     }
   }
 }
@@ -96,7 +96,7 @@ async fn reusable_log(
   title: &str,
   fields: Vec<(&str, String, bool)>,
   evt_msg: Option<&Message>
-) -> Result<(), Error> {
+) -> Result<(), BotError> {
   for (_, v, _) in &fields {
     if v.len() > 1024 {
       println!("MessageLog[reusable_log] Embed field's value exceeds 1024 characters, not sending it");
@@ -125,7 +125,7 @@ async fn reusable_log(
     Ok(_) => Ok(()),
     Err(e) => {
       eprintln!("MessageLog[Error] {e}");
-      Err(Error::from(e))
+      Err(BotError::from(e))
     }
   }
 }
@@ -152,7 +152,7 @@ pub async fn on_message_delete(
   ctx: &Context,
   channel_id: &GenericChannelId,
   deleted_message_id: &MessageId
-) -> Result<(), Error> {
+) -> Result<(), BotError> {
   if ignored_channels(ctx, &channel_id.get()).await? {
     return Ok(());
   }
@@ -218,7 +218,7 @@ pub async fn on_message_delete(
 pub async fn on_message_update(
   ctx: &Context,
   event: &MessageUpdateEvent
-) -> Result<(), Error> {
+) -> Result<(), BotError> {
   if event.message.author.bot() || ignored_channels(ctx, &event.message.channel_id.get()).await? {
     return Ok(());
   }
@@ -314,7 +314,7 @@ pub async fn on_message_update(
 pub async fn on_message(
   ctx: &Context,
   new_message: &Message
-) -> Result<(), Error> {
+) -> Result<(), BotError> {
   // We maintain our own cache for message events
   // since Serenity's cache gets sweeped once the
   // message is deleted/updated before we get a
@@ -356,7 +356,7 @@ pub async fn on_message(
 pub async fn on_message_lua(
   ctx: &Context,
   new_message: &Message
-) -> Result<(), Error> {
+) -> Result<(), BotError> {
   let bridge = ctx.data_ref::<BotData>().serenity_bridge.clone();
 
   for plugin in &["Message", "MsgResponse"] {
@@ -395,7 +395,7 @@ pub async fn on_message_lua(
 async fn on_message_dm(
   ctx: &Context,
   new_message: &Message
-) -> Result<(), Error> {
+) -> Result<(), BotError> {
   let (name, dname) = { (new_message.author.name.clone(), new_message.author.display_name()) };
   let content = new_message.content.clone();
 

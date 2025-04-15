@@ -35,7 +35,7 @@ const SCHEMA_DIR: &str = "schemas";
 /// - Directory does not exist in root-level
 /// - Improper SQL syntaxes
 ///   - Guides you to which file it failed on and the error returned from database
-pub async fn execute_schemas(pool: &sqlx::PgPool) -> Result<String, crate::Error> {
+pub async fn execute_schemas(pool: &sqlx::PgPool) -> Result<String, crate::BotError> {
   let paths = match fs::read_dir(SCHEMA_DIR) {
     Ok(p) => p,
     Err(e) => {

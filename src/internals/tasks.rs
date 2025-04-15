@@ -52,7 +52,7 @@ pub async fn run_task<F, T>(
   id: &str
 ) where
   F: Fn(Arc<Context>) -> T + Send + 'static,
-  T: Future<Output = Result<(), crate::Error>> + Send + 'static
+  T: Future<Output = Result<(), crate::BotError>> + Send + 'static
 {
   let task_id = id.to_string();
 

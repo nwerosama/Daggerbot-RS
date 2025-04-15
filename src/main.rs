@@ -36,7 +36,7 @@ use {
   }
 };
 
-type Error = Box<dyn std::error::Error + Send + Sync>;
+type BotError = Box<dyn std::error::Error + Send + Sync>;
 
 struct BotData {
   redis:           Arc<controllers::cache::RedisController>,
@@ -56,7 +56,7 @@ pub static GIT_COMMIT_HASH: &str = "devel";
 async fn init_serenity_bridge(
   lua: Arc<Lua>,
   serenity_http: Arc<Http>
-) -> Result<LuaSerenityBridge, Error> {
+) -> Result<LuaSerenityBridge, BotError> {
   let bridge = LuaSerenityBridge::new(lua, serenity_http);
   bridge.register_all()?;
   Ok(bridge)

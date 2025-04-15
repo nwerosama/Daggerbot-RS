@@ -1,4 +1,4 @@
-use crate::Error;
+use crate::BotError;
 
 use serde::Deserialize;
 
@@ -19,7 +19,7 @@ struct Summary {
 
 /// Check latency between bot and Discord API
 #[poise::command(slash_command)]
-pub async fn ping(ctx: super::PoiseContext<'_>) -> Result<(), Error> {
+pub async fn ping(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
   let statuspage = reqwest::get("https://discordstatus.com/metrics-display/5k2rt9f7pmny/day.json")
     .await
     .unwrap()

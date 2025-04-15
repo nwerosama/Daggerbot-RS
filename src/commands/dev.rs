@@ -1,5 +1,5 @@
 use crate::{
-  Error,
+  BotError,
   bridges::PLUGIN_DIR,
   controllers::sql::execute_schemas,
   events::ready::{
@@ -27,7 +27,7 @@ use poise::{
   subcommands("presence", "echo", "deploy", "schemas", "upload_plugin", "invite_data", "sql"),
   default_member_permissions = "MANAGE_GUILD"
 )]
-pub async fn dev(_: super::PoiseContext<'_>) -> Result<(), Error> { Ok(()) }
+pub async fn dev(_: super::PoiseContext<'_>) -> Result<(), BotError> { Ok(()) }
 
 /// Update bot's presence
 #[poise::command(slash_command)]
@@ -35,7 +35,7 @@ async fn presence(
   ctx: super::PoiseContext<'_>,
   #[description = "Activity message to set"] name: String,
   #[description = "YouTube video to set"] video: String
-) -> Result<(), Error> {
+) -> Result<(), BotError> {
   let mut presence_data = vec![];
 
   presence_data.push(format!("Name: **{name}**"));
@@ -79,7 +79,7 @@ async fn echo(
   #[description = "Channel to send this to"]
   #[channel_types("Text", "PublicThread", "PrivateThread")]
   channel: Option<GenericChannelId>
-) -> Result<(), Error> {
+) -> Result<(), BotError> {
   let channel = match channel {
     Some(c) => c,
     None => ctx.channel_id()
@@ -108,14 +108,14 @@ async fn echo(
 
 /// Deploy commands to current guild
 #[poise::command(prefix_command)]
-async fn deploy(ctx: super::PoiseContext<'_>) -> Result<(), Error> {
+async fn deploy(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
   poise::builtins::register_application_commands(ctx, false).await?;
   Ok(())
 }
 
 /// Load schemas into the database
 #[poise::command(prefix_command, slash_command)]
-async fn schemas(ctx: super::PoiseContext<'_>) -> Result<(), Error> {
+async fn schemas(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
   match execute_schemas(&ctx.data().postgres).await {
     Ok(s) => {
       ctx.reply(s).await?;
@@ -134,7 +134,7 @@ async fn schemas(ctx: super::PoiseContext<'_>) -> Result<(), Error> {
 async fn upload_plugin(
   ctx: super::PoiseContext<'_>,
   #[description = "Lua plugin file"] file: Attachment
-) -> Result<(), Error> {
+) -> Result<(), BotError> {
   ctx.defer().await?;
 
   match file.download().await {
@@ -156,7 +156,7 @@ async fn upload_plugin(
 
 /// Display the invite cache data (sent as paginated embed)
 #[poise::command(slash_command)]
-async fn invite_data(ctx: super::PoiseContext<'_>) -> Result<(), Error> {
+async fn invite_data(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
   let invite_data = ctx.framework().user_data().invite_data.clone();
 
   if invite_data.get_all().is_empty() {
@@ -195,7 +195,7 @@ async fn invite_data(ctx: super::PoiseContext<'_>) -> Result<(), Error> {
 async fn sql(
   ctx: super::PoiseContext<'_>,
   #[description = "PostgreSQL-compatible SQL query"] query: String
-) -> Result<(), Error> {
+) -> Result<(), BotError> {
   let postgres = ctx.data().postgres.clone();
   let mut buf = format!("**Query:**```sql\n{query}\n```");
 

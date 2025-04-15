@@ -1,13 +1,13 @@
 use {
   crate::{
     BotData,
-    Error,
+    BotError,
     internals::utils::mention_dev
   },
   poise::FrameworkError
 };
 
-pub async fn fw_errors(error: FrameworkError<'_, BotData, Error>) {
+pub async fn fw_errors(error: FrameworkError<'_, BotData, BotError>) {
   match error {
     FrameworkError::Command { error, ctx, .. } => {
       if (ctx

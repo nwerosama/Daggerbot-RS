@@ -1,5 +1,5 @@
 use crate::{
-  Error,
+  BotError,
   internals::config::BINARY_PROPERTIES
 };
 
@@ -21,7 +21,7 @@ pub async fn on_audit_log_entry_create(
   ctx: &Context,
   entry: &AuditLogEntry,
   guild_id: &GuildId
-) -> Result<(), Error> {
+) -> Result<(), BotError> {
   if *guild_id != GuildId::new(BINARY_PROPERTIES.guild_id) {
     return Ok(());
   }

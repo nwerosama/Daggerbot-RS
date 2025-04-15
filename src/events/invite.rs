@@ -1,6 +1,6 @@
 use crate::{
   BotData,
-  Error,
+  BotError,
   internals::{
     config::BINARY_PROPERTIES,
     invite_data::InviteData
@@ -16,7 +16,7 @@ use poise::serenity_prelude::{
 pub async fn on_invite_create(
   ctx: &Context,
   data: &InviteCreateEvent
-) -> Result<(), Error> {
+) -> Result<(), BotError> {
   if data.guild_id.is_none() || data.guild_id.unwrap().get() != BINARY_PROPERTIES.guild_id {
     return Ok(());
   }
@@ -49,7 +49,7 @@ pub async fn on_invite_create(
 pub async fn on_invite_delete(
   ctx: &Context,
   data: &InviteDeleteEvent
-) -> Result<(), Error> {
+) -> Result<(), BotError> {
   if data.guild_id.is_none() {
     return Ok(());
   }

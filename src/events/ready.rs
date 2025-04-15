@@ -1,5 +1,5 @@
 use crate::{
-  Error,
+  BotError,
   GIT_COMMIT_BRANCH,
   GIT_COMMIT_HASH,
   internals::{
@@ -72,7 +72,7 @@ fn read_config() -> TomlConfig {
 async fn ready_once(
   ctx: &Context,
   ready: &Ready
-) -> Result<(), Error> {
+) -> Result<(), BotError> {
   #[cfg(not(feature = "production"))]
   {
     println!("Event[Ready:Notice] Detected a development environment!");
@@ -99,7 +99,7 @@ async fn ready_once(
 pub async fn on_ready(
   ctx: &Context,
   ready: &Ready
-) -> Result<(), Error> {
+) -> Result<(), BotError> {
   if !READY_ONCE.swap(true, Ordering::Relaxed) {
     ready_once(ctx, ready).await.expect("Failed to call on_ready method");
   }

@@ -14,7 +14,7 @@ pub use {
   uptime::uptime
 };
 
-pub type PoiseContext<'a> = poise::Context<'a, crate::BotData, crate::Error>;
+pub type PoiseContext<'a> = poise::Context<'a, crate::BotData, crate::BotError>;
 
 macro_rules! collect {
   () => {

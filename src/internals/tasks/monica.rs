@@ -9,7 +9,7 @@ use {
   },
   crate::{
     BotData,
-    Error,
+    BotError,
     commands::PoiseContext,
     controllers::{
       cache::RedisController,
@@ -363,7 +363,7 @@ pub fn mod_page_url(
 async fn cache_servers(
   redis: &RedisController,
   servers: Vec<MpServers>
-) -> Result<(), Error> {
+) -> Result<(), BotError> {
   let serialized_servers = serde_json::to_string(&servers)?;
   redis.set(TASK_NAME, serialized_servers.as_str()).await?;
   redis.expire(TASK_NAME, 900).await?;
@@ -371,7 +371,7 @@ async fn cache_servers(
   Ok(())
 }
 
-pub async fn monica(ctx: Arc<Context>) -> Result<(), Error> {
+pub async fn monica(ctx: Arc<Context>) -> Result<(), BotError> {
   let mut interval = interval(Duration::from_secs(REFRESH_TIMER_SECS));
   let bot_data = ctx.data::<BotData>();
   let redis = bot_data.redis.clone();

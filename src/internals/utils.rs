@@ -31,7 +31,7 @@ pub async fn discord_token() -> Token { Token::from_str(&token_path().await.main
 
 pub fn format_timestamp(timestamp: i64) -> String { format!("<t:{timestamp}>\n<t:{timestamp}:R>") }
 
-pub fn mention_dev(ctx: poise::Context<'_, crate::BotData, crate::Error>) -> Option<String> {
+pub fn mention_dev(ctx: poise::Context<'_, crate::BotData, crate::BotError>) -> Option<String> {
   let devs = super::config::BINARY_PROPERTIES.developers.clone();
   let app_owners = ctx.framework().options().owners.clone();
 

@@ -1,5 +1,5 @@
 use crate::{
-  Error,
+  BotError,
   GIT_COMMIT_BRANCH,
   GIT_COMMIT_HASH,
   internals::utils::{
@@ -64,7 +64,7 @@ fn fmt_mem(bytes: u64) -> String {
 
 /// Retrieve host and bot uptimes
 #[poise::command(slash_command)]
-pub async fn uptime(ctx: super::PoiseContext<'_>) -> Result<(), Error> {
+pub async fn uptime(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
   let _bot = ctx.http().get_current_user().await.unwrap();
   let mut sys = System::new_all();
   sys.refresh_all();
