@@ -13,6 +13,8 @@ use {
   internals::{
     invite_data::InviteCache,
     nats::MonicaNatsClient,
+    scheduler::spawn,
+    seasonal::SeasonalTheme,
     utils::{
       discord_token,
       token_path
@@ -94,6 +96,16 @@ async fn main() {
       .expect("Error initializing LuaSerenityBridge")
   );
 
+  let bot_data = Arc::new(BotData {
+    redis: Arc::new(controllers::cache::RedisController::new().await.unwrap()),
+    postgres,
+    serenity_bridge,
+    invite_data: Arc::new(InviteCache::new()),
+    nats
+  });
+
+  spawn(SeasonalTheme, Arc::clone(&bot_data)).await;
+
   let prefix = if cfg!(feature = "production") {
     Some(Cow::Borrowed("!!_"))
   } else {
@@ -148,13 +160,7 @@ async fn main() {
   )
   .event_handler(events::DiscordEvents)
   .framework(framework)
-  .data(Arc::new(BotData {
-    redis: Arc::new(controllers::cache::RedisController::new().await.unwrap()),
-    postgres,
-    serenity_bridge,
-    invite_data: Arc::new(InviteCache::new()),
-    nats
-  }))
+  .data(bot_data)
   .await
   .expect("Error creating client");
 

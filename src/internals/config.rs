@@ -1,4 +1,7 @@
-use std::sync::LazyLock;
+use {
+  super::seasonal::get_embed_color,
+  std::sync::LazyLock
+};
 
 pub struct ConfigMeta {
   pub guild_id:        u64,
@@ -41,7 +44,7 @@ pub static BINARY_PROPERTIES: LazyLock<ConfigMeta> = LazyLock::new(|| {
   ConfigMeta::new()
     .guild_id(929807948748832798) // Daggerwin Dev Server
     .embed_colors(EmbedColorPalette {
-      primary: 0x559999,
+      primary: get_embed_color(),
       red:     0xE62C3B,
       green:   0x57F287,
       yellow:  0xFFEA00
@@ -68,9 +71,7 @@ impl ConfigMeta {
     Self {
       guild_id:        468835415093411861, // Daggerwin
       embed_colors:    EmbedColorPalette {
-        primary: 0x0052CF,
-        // primary: 0xFFFFFF, // Christmas!
-        // primary: 0xFF69B4, // Breast Cancer Awareness month
+        primary: get_embed_color(),
         red:     0xE62C3B,
         green:   0x57F287,
         yellow:  0xFFEA00
