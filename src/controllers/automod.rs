@@ -1,6 +1,6 @@
 use crate::{
   BotData,
-  Error,
+  BotError,
   commands::{
     ActionType,
     LogChannel,
@@ -220,7 +220,7 @@ impl Automoderator {
   pub async fn new(
     db: &PgPool,
     redis: Arc<RedisController>
-  ) -> Result<Self, Error> {
+  ) -> Result<Self, BotError> {
     Ok(Self {
       policies: Arc::new(RwLock::new(vec![
         AutomodPolicy::anti_spam(),
@@ -247,7 +247,7 @@ impl Automoderator {
     &self,
     ctx: &Context,
     msg: &Message
-  ) -> Result<(), Error> {
+  ) -> Result<(), BotError> {
     if let Some(violation) = self.check_violations(msg).await {
       match msg.member(ctx).await {
         Ok(m) => {
@@ -404,7 +404,7 @@ impl Automoderator {
     false
   }
 
-  async fn update_malicious_domains(&self) -> Result<(), Error> {
+  async fn update_malicious_domains(&self) -> Result<(), BotError> {
     let last_update = match self.redis.get(MD_KEY_LU).await? {
       Some(ts) => ts.parse::<i64>().unwrap_or(0),
       None => 0
@@ -489,7 +489,7 @@ impl Automoderator {
     msg: &Message,
     policy: &AutomodPolicy,
     case_id: i32
-  ) -> Result<(), Error> {
+  ) -> Result<(), BotError> {
     let log_channel = match policy.action {
       ActionType::Ban | ActionType::Kick => LogChannel::BansAndKicks,
       _ => LogChannel::BotLog
@@ -551,7 +551,7 @@ impl Automoderator {
     ctx: &Context,
     msg: &Message,
     policy: AutomodPolicy
-  ) -> Result<(), Error> {
+  ) -> Result<(), BotError> {
     let user_id = msg.author.id.get();
     let user_stats_key = format!("Discord:UserStats:{user_id}");
     let user_stats: UserMessageStats = match self.redis.get(&user_stats_key).await? {
@@ -660,7 +660,7 @@ impl Automoderator {
     reason: &str,
     duration: Option<i64>,
     case_id: i32
-  ) -> Result<(), Error> {
+  ) -> Result<(), BotError> {
     let timestamp = SystemTime::now()
       .duration_since(UNIX_EPOCH)
       .expect("System time is lagging behind or is in the future")
@@ -689,7 +689,7 @@ impl Automoderator {
     Ok(())
   }
 
-  async fn load_prohibited_words(db: &PgPool) -> Result<Vec<Regex>, Error> {
+  async fn load_prohibited_words(db: &PgPool) -> Result<Vec<Regex>, BotError> {
     let words = ProhibitedWords::get_words(db).await?;
 
     let regexes = words
@@ -704,7 +704,7 @@ impl Automoderator {
     Ok(regexes)
   }
 
-  async fn load_prohibited_urls(db: &PgPool) -> Result<Vec<String>, Error> {
+  async fn load_prohibited_urls(db: &PgPool) -> Result<Vec<String>, BotError> {
     let urls = ProhibitedUrls::get_urls(db).await?;
     let domains = urls.into_iter().map(|u| u.url.to_lowercase()).collect();
     Ok(domains)
@@ -720,7 +720,7 @@ async fn send_notification(
   reason: &str,
   case_id: i32,
   duration: Option<u64>
-) -> Result<bool, Error> {
+) -> Result<bool, BotError> {
   let user = match target {
     Target::User(user) => user,
     Target::Member(mem) => &mem.user
