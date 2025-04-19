@@ -113,6 +113,8 @@ pub async fn on_ready(
 
   ctx.set_activity(Some(ActivityData::streaming(activity.name.clone(), activity.url.clone()).unwrap()));
 
+  // I am very aware that this is deprecated but in order to migrate Monica to a
+  // new scheduler involves rewriting the majority of the main loop in that file
   tasks::run_task(Arc::new(ctx.clone()), tasks::monica, "Monica").await;
 
   Ok(())

@@ -17,12 +17,12 @@ use {
         MpServers,
         Webhooks
       }
-    },
-    internals::nats::MonicaNatsPayload
+    }
   }
 };
 
 use {
+  dag_grpc::FetchRequest,
   image::Rgba,
   lazy_static::lazy_static,
   num_format::{
@@ -53,10 +53,7 @@ use {
     Deserialize,
     Serialize
   },
-  serde_json::{
-    Value,
-    json
-  },
+  serde_json::Value,
   std::{
     collections::HashMap,
     sync::{
@@ -412,20 +409,21 @@ pub async fn monica(ctx: Arc<Context>) -> Result<(), BotError> {
       }
 
       let data = match bot_data
-        .nats
-        .publish(MonicaNatsPayload {
-          identifier: "autorefresh".to_string(),
-          data:       json!({
-            "name": server.name,
-            "ip": server.ip,
-            "code": server.code,
-            "is_active": server.is_active
-          })
+        .grpc
+        .clone()
+        .fetch_data(FetchRequest {
+          server_name: server.name.clone(),
+          server_ip:   server.ip.clone(),
+          server_code: server.code.clone(),
+          is_active:   server.is_active,
+          fetch_type:  "both".to_string()
         })
         .await
       {
         Ok(d) => {
-          if d.data.is_null() {
+          let response_data = d.into_inner().data;
+
+          if response_data.is_empty() {
             embeds.push(
               CreateEmbed::new()
                 .color(EmbedPalette::new().red)
@@ -436,14 +434,14 @@ pub async fn monica(ctx: Arc<Context>) -> Result<(), BotError> {
             continue;
           }
 
-          d.data
+          response_data
         },
         Err(e) => {
-          if e.to_string().contains("request timed out: deadline has elapsed") {
+          if e.message().contains("request timed out: deadline has elapsed") {
             continue;
           }
 
-          eprintln!("NATS[Error] Monica reported an error: {e}");
+          eprintln!("gRPC[Error] Monica reported an error: {e}");
           embeds.push(
             CreateEmbed::new()
               .color(EmbedPalette::new().red)
@@ -455,25 +453,25 @@ pub async fn monica(ctx: Arc<Context>) -> Result<(), BotError> {
         }
       };
 
-      let (dss, csg): (DssData, CsgData) = {
-        let dss_data = data.get("dss");
-        let csg_data = data.get("csg");
-
-        if !data.is_object() {
-          task_err(
-            TASK_NAME,
-            &format!("[monica:debug_dump] Monica sent improper JSON payload for \"{}\"", server.name)
-          );
+      let json_value: Value = match serde_json::from_str(&data) {
+        Ok(val) => val,
+        Err(e) => {
+          task_err(TASK_NAME, &format!("[monica:debug_dump] Invalid JSON structure: {e}"));
           embeds.push(
             CreateEmbed::new()
               .color(EmbedPalette::new().red)
               .title(server.name.to_string())
-              .description(":no_entry_sign: **Monica sent improper payload**")
+              .description(":no_entry_sign: **Monica sent invalid structure**")
               .timestamp(Timestamp::now())
           );
           continue;
         }
+      };
 
+      let dss_data = json_value.get("dss");
+      let csg_data = json_value.get("csg");
+
+      let (dss, csg): (DssData, CsgData) = {
         if dss_data.is_none() || csg_data.is_none() {
           task_err(
             TASK_NAME,
@@ -543,9 +541,9 @@ pub async fn monica(ctx: Arc<Context>) -> Result<(), BotError> {
       MpServers::update_player_data(&postgres, server.name.clone(), used_slots).await?;
 
       // Server-specific webhook in each channel
-      savegame_settings_webhook(server, ctx.clone(), &data).await;
+      savegame_settings_webhook(server, ctx.clone(), &json_value).await;
       // Time drift logger
-      time_drift_webhook(server, ctx.clone(), &data).await;
+      time_drift_webhook(server, ctx.clone(), &json_value).await;
 
       if !dss.server.clone().unwrap().name.is_empty() && !dss.is_valid() && !csg.is_valid() {
         task_err(

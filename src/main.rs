@@ -10,9 +10,9 @@ mod shutdown;
 
 use {
   bridges::LuaSerenityBridge,
+  dag_grpc::MonicaGRPCClient,
   internals::{
     invite_data::InviteCache,
-    nats::MonicaNatsClient,
     scheduler::spawn,
     seasonal::SeasonalTheme,
     utils::{
@@ -45,7 +45,7 @@ struct BotData {
   postgres:        sqlx::PgPool,
   serenity_bridge: Arc<LuaSerenityBridge>,
   invite_data:     Arc<InviteCache>,
-  nats:            MonicaNatsClient
+  grpc:            MonicaGRPCClient
 }
 
 #[cfg(feature = "production")]
@@ -86,7 +86,7 @@ async fn main() {
     }
   };
 
-  let nats = MonicaNatsClient::new().await.expect("NATS client creation fail");
+  let grpc = MonicaGRPCClient::default();
   let lua = Arc::new(Lua::new());
   let http = Arc::new(Http::new(discord_token().await));
 
@@ -101,7 +101,7 @@ async fn main() {
     postgres,
     serenity_bridge,
     invite_data: Arc::new(InviteCache::new()),
-    nats
+    grpc
   });
 
   spawn(SeasonalTheme, Arc::clone(&bot_data)).await;

@@ -5,7 +5,6 @@ use crate::{
     ansi::Color,
     canvas::Canvas,
     config::BINARY_PROPERTIES,
-    nats::MonicaNatsPayload,
     tasks::monica::{
       Collider,
       DssData,
@@ -23,6 +22,7 @@ use crate::{
 };
 
 use {
+  dag_grpc::FetchRequest,
   dashmap::DashMap,
   poise::{
     CreateReply,
@@ -40,7 +40,6 @@ use {
       RoleId
     }
   },
-  serde_json::json,
   std::borrow::Cow
 };
 
@@ -170,35 +169,48 @@ async fn data_warehouse(
 
   match ctx
     .data()
-    .nats
-    .publish(MonicaNatsPayload {
-      identifier: "dss_only".to_string(),
-      data:       json!({
-        "name": server.name,
-        "ip": server.ip,
-        "code": server.code,
-        "is_active": server.is_active
-      })
+    .grpc
+    .clone()
+    .fetch_data(FetchRequest {
+      server_name: server.name.to_string(),
+      server_ip:   server.ip.to_string(),
+      server_code: server.code.to_string(),
+      is_active:   server.is_active,
+      fetch_type:  "dss".to_string()
     })
     .await
   {
     Ok(d) => {
-      if d.data.is_null() || d.data["dss"].is_null() {
+      let response = d.into_inner().data;
+
+      if response.is_empty() {
         eprintln!("DataWarehouse[Error] 'dss' field is nullified for {}", server.name);
-        return Err("Monica didn't reply to the payload request in time, try again later!".to_string().into());
+        return Err("Monica didn't reply to the payload request in time, try again later!".to_string().into())
       }
 
-      Ok(match serde_json::from_value::<DssData>(d.data["dss"].clone()) {
-        Ok(dss) => dss,
-        Err(y) => {
-          eprintln!("DataWarehouse[Error] {y}");
-          return Err("Monica returned an unexpected error!".to_string().into())
-        }
-      })
+      serde_json::from_str::<serde_json::Value>(&response)
+        .map_err(|e| {
+          eprintln!("DataWarehouse[Error] {e}");
+          format!("**Parsing error:** {e}").into()
+        })
+        .and_then(|data| {
+          data
+            .get("dss")
+            .ok_or_else(|| {
+              eprintln!("DataWarehouse[Error] Response missing 'dss' field");
+              "Monica returned unexpected data error!".into()
+            })
+            .and_then(|dss| {
+              serde_json::from_value::<DssData>(dss.clone()).map_err(|e| {
+                eprintln!("DataWarehouse[Error] {e}");
+                format!("**Pipeline error:** {e}").into()
+              })
+            })
+        })
     },
     Err(y) => {
       eprintln!("DataWarehouse[Error] {y}");
-      Err(format!("Ran into {a_} {collider} while trying to retrieve server data, please try again later.").into())
+      Err(format!("Ran into {a_} {collider} while trying to retrieve server data, please try again later!").into())
     }
   }
 }

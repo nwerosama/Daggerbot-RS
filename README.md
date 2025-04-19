@@ -8,7 +8,7 @@ This includes a language rewrite and a more reliable features than previous revi
 
 Notable features;-
 - FSMP infrastructure with the HTTP backend being hosted separately
-- NATS messaging service support (for above)
+- gRPC service support (for above)
 - (Auto)moderation
 - Lua 5.4 environment for small parts of the bot
 - Autoresponders

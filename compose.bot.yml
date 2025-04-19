@@ -3,7 +3,7 @@ services:
     image: ghcr.io/nwerosama/daggerbot-rs:koi
     environment:
       DOCKER_HOSTNAME: '{{ .Node.Hostname }}'
-      MONICA_NATS_URI: 'nats://192.168.70.225:4222'
+      MONICA_GRPC_URI: '192.168.70.225:37090'
     deploy:
       replicas: 1
       restart_policy:
