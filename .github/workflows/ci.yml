@@ -17,6 +17,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+          token: '${{ secrets.NWERO_PAT }}'
 
       - name: Export commit hash
         run: export GIT_COMMIT_HASH=${{ github.sha }}
@@ -26,6 +29,9 @@ jobs:
         with:
           prefix-key: ${{ runner.os }}-cache-v1
           cache-on-failure: 'true'
+
+      - name: Install Protobuf compiler
+        run: sudo apt-get install -y protobuf-compiler
 
       - name: Run Clippy
         uses: actions-rs/clippy-check@v1
