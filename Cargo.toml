@@ -7,6 +7,7 @@ edition = "2024"
 members = ["grpc"]
 
 [workspace.dependencies]
+asahi = { git = "https://github.com/Niko-Devel/asahi", branch = "master" }
 ab_glyph = "0.2.29"
 bb8 = "0.9.0"
 bb8-redis = "0.21.0"
@@ -17,7 +18,6 @@ imageproc = "0.25.0"
 lazy_static = "1.5.0"
 mlua = { version = "0.10.3", features = ["lua54", "send", "vendored"] }
 num-format = "0.4.4"
-parse_duration = "2.1.1"
 poise = "0.6.1"
 prost = "0.13.5"
 rand = "0.9.1"
@@ -36,6 +36,7 @@ tonic = "0.13.0"
 uptime_lib = "0.3.1"
 
 [dependencies]
+asahi = { workspace = true }
 ab_glyph = { workspace = true }
 bb8 = { workspace = true }
 bb8-redis = { workspace = true }
@@ -47,7 +48,6 @@ imageproc = { workspace = true }
 lazy_static = { workspace = true }
 mlua = { workspace = true }
 num-format = { workspace = true }
-parse_duration = { workspace = true }
 poise = { workspace = true }
 rand = { workspace = true }
 regex = { workspace = true }

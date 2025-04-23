@@ -17,14 +17,15 @@ use crate::{
   },
   internals::{
     config::BINARY_PROPERTIES,
-    utils::{
-      format_duration,
-      token_path
-    }
+    utils::token_path
   }
 };
 
 use {
+  asahi::{
+    format_duration,
+    parse_duration
+  },
   dashmap::DashMap,
   lazy_static::lazy_static,
   poise::serenity_prelude::{
@@ -742,7 +743,7 @@ async fn send_notification(
   let mut fields = vec![("Case ID", case_id.to_string(), true)];
 
   if let Some(duration) = duration {
-    let d = parse_duration::parse(&duration.to_string()).unwrap();
+    let d = parse_duration(&duration.to_string()).unwrap();
     fields.insert(1, ("Duration", format_duration(d.as_secs()), true));
   }
 

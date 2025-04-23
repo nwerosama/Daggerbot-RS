@@ -13,7 +13,6 @@ use {
   dag_grpc::MonicaGRPCClient,
   internals::{
     invite_data::InviteCache,
-    scheduler::spawn,
     seasonal::SeasonalTheme,
     utils::{
       discord_token,
@@ -104,7 +103,7 @@ async fn main() {
     grpc
   });
 
-  spawn(SeasonalTheme, Arc::clone(&bot_data)).await;
+  asahi::spawn(SeasonalTheme, Arc::clone(&bot_data));
 
   let prefix = if cfg!(feature = "production") {
     Some(Cow::Borrowed("!!_"))

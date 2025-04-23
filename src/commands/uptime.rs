@@ -2,21 +2,19 @@ use crate::{
   BotError,
   GIT_COMMIT_BRANCH,
   GIT_COMMIT_HASH,
-  internals::utils::{
-    BOT_VERSION,
-    format_duration
-  }
+  internals::utils::BOT_VERSION
 };
 
 use {
+  asahi::{
+    format_duration,
+    os::{
+      format_bytes,
+      get_os_info
+    }
+  },
   std::{
     env::var,
-    fs::File,
-    io::{
-      BufRead,
-      BufReader
-    },
-    path::Path,
     time::{
       Duration,
       SystemTime,
@@ -26,41 +24,6 @@ use {
   sysinfo::System,
   uptime_lib::get
 };
-
-fn get_os_info() -> String {
-  let path = Path::new("/etc/os-release");
-  let mut name = "BoringOS".to_string();
-  let mut version = "v0.0".to_string();
-
-  if let Ok(file) = File::open(path) {
-    let reader = BufReader::new(file);
-    let set_value = |s: String| s.split('=').nth(1).unwrap_or_default().trim_matches('"').to_string();
-    reader.lines().map_while(Result::ok).for_each(|line| match line {
-      l if l.starts_with("NAME=") => name = set_value(l),
-      l if l.starts_with("VERSION=") => version = set_value(l),
-      l if l.starts_with("VERSION_ID=") => version = set_value(l),
-      _ => {}
-    });
-  }
-
-  format!("{} {}", name, version)
-}
-
-fn fmt_mem(bytes: u64) -> String {
-  let units = ["B", "KB", "MB", "GB"];
-  let mut bytes = bytes as f64;
-  let mut unit = units[0];
-
-  for &u in &units {
-    if bytes < 1024.0 {
-      unit = u;
-      break;
-    }
-    bytes /= 1024.0;
-  }
-
-  format!("{:.2} {}", bytes, unit)
-}
 
 /// Retrieve host and bot uptimes
 #[poise::command(slash_command)]
@@ -76,12 +39,12 @@ pub async fn uptime(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
   let cpu = sys.cpus();
 
   // Fetch system memory usage
-  let sram = fmt_mem(sys.used_memory());
-  let sram_total = fmt_mem(sys.total_memory());
+  let sram = format_bytes(sys.used_memory());
+  let sram_total = format_bytes(sys.total_memory());
 
   // Fetch process memory usage
   let pram = match sys.process(sysinfo::get_current_pid().unwrap()) {
-    Some(proc) => fmt_mem(proc.memory()),
+    Some(proc) => format_bytes(proc.memory()),
     None => String::from("Unavailable")
   };
 
@@ -104,9 +67,9 @@ pub async fn uptime(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
     format!("**{} {}** `{GIT_COMMIT_HASH}:{GIT_COMMIT_BRANCH}`", _bot.name, BOT_VERSION.as_str()),
     format!(">>> System: `{}`", format_duration(sys_uptime)),
     format!("Process: `{}`", format_duration(proc_uptime)),
-    format!("Node: `{}`", docker_node),
+    format!("Node: `{docker_node}`"),
     format!("CPU: `{}`", cpu[0].brand()),
-    format!("RAM: `{}` (`{}/{}`)", pram, sram, sram_total),
+    format!("RAM: `{pram}` (`{sram}/{sram_total}`)"),
     format!("OS: `{}`", get_os_info())
   ];
   ctx.reply(stat_msg.join("\n")).await?;

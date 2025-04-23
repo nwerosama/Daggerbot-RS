@@ -3,12 +3,12 @@ use crate::{
   BotError,
   internals::{
     config::BINARY_PROPERTIES,
-    invite_data::InviteData,
-    utils::format_timestamp
+    invite_data::InviteData
   }
 };
 
 use {
+  asahi::format_timestamp,
   poise::serenity_prelude::{
     Context,
     CreateEmbed,

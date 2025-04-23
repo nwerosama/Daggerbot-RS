@@ -1,14 +1,14 @@
 use crate::{
   BotData,
   BotError,
-  internals::{
-    ansi::Color,
-    config::BINARY_PROPERTIES,
-    utils::format_timestamp
-  }
+  internals::config::BINARY_PROPERTIES
 };
 
 use {
+  asahi::{
+    ansi,
+    format_timestamp
+  },
   lazy_static::lazy_static,
   poise::serenity_prelude::{
     Attachment,
@@ -276,12 +276,12 @@ pub async fn on_message_update(
       },
       ChangeTag::Insert => {
         for ch in diff.value().chars() {
-          content_new.push_str(&Color::Green.normal().paint(&ch.to_string()));
+          content_new.push_str(&ansi::Green::NORMAL.paint(&ch.to_string()));
         }
       },
       ChangeTag::Delete => {
         for ch in diff.value().chars() {
-          content_old.push_str(&Color::Red.normal().paint(&ch.to_string()));
+          content_old.push_str(&ansi::Red::NORMAL.paint(&ch.to_string()));
         }
       },
     }

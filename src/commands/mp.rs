@@ -2,7 +2,6 @@ use crate::{
   BotError,
   controllers::sql::MpServers,
   internals::{
-    ansi::Color,
     canvas::Canvas,
     config::BINARY_PROPERTIES,
     tasks::monica::{
@@ -22,6 +21,7 @@ use crate::{
 };
 
 use {
+  asahi::ansi,
   dag_grpc::FetchRequest,
   dashmap::DashMap,
   poise::{
@@ -415,7 +415,7 @@ async fn pallets(
       .map(|(k, v)| {
         let width = get_longest_name + 3;
         let padding = format!("{k:<width$}");
-        format!("{}{}", Color::Blue.bold().paint(&padding), Color::Yellow.bold().paint(&v.to_string()))
+        format!("{}{}", ansi::Blue::BOLD.paint(&padding), ansi::Yellow::BOLD.paint(&v.to_string()))
       })
       .collect::<Vec<String>>()
       .join("\n");

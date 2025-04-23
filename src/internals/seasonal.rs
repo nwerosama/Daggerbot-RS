@@ -1,8 +1,8 @@
 use {
-  super::scheduler::TaskScheduler,
-  crate::{
-    BotData,
-    BotError
+  crate::BotData,
+  asahi::{
+    AsahiCoordinator,
+    AsahiResult
   },
   poise::serenity_prelude::async_trait,
   std::{
@@ -146,15 +146,15 @@ fn update_embed_color() {
 pub struct SeasonalTheme;
 
 #[async_trait]
-impl TaskScheduler for SeasonalTheme {
+impl AsahiCoordinator<BotData> for SeasonalTheme {
   fn name(&self) -> &'static str { "Seasonal Theme" }
 
-  fn interval_secs(&self) -> u64 { 3600 }
+  fn interval(&self) -> u64 { 3600 }
 
   async fn main_loop(
     &self,
     _: Arc<BotData>
-  ) -> Result<(), BotError> {
+  ) -> AsahiResult<()> {
     update_embed_color();
     Ok(())
   }

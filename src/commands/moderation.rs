@@ -5,14 +5,14 @@ use crate::{
     ProhibitedWords,
     Sanctions
   },
-  internals::{
-    config::BINARY_PROPERTIES,
-    utils::format_duration
-  }
+  internals::config::BINARY_PROPERTIES
 };
 
 use {
-  parse_duration::parse,
+  asahi::{
+    format_duration,
+    parse_duration
+  },
   poise::{
     CreateReply,
     serenity_prelude::{
@@ -141,7 +141,7 @@ pub async fn send_notification(
   let mut fields = vec![("Case ID", case_id.to_string(), true)];
 
   if let Some(duration) = duration {
-    let d = parse_duration::parse(&duration.to_string()).unwrap();
+    let d = parse_duration(&duration.to_string()).unwrap();
     fields.insert(1, ("Duration", format_duration(d.as_secs()), true));
   }
 
@@ -224,7 +224,7 @@ async fn log_entry(
   ];
 
   if duration.is_some() {
-    let d = parse(&duration.unwrap().to_string()).unwrap();
+    let d = parse_duration(&duration.unwrap().to_string()).unwrap();
     fields.push(("Duration", format_duration(d.as_secs()), false));
   }
 
@@ -284,7 +284,7 @@ pub async fn ban(
         .send(
           CreateReply::new()
             .content(format!(
-              "{} now {action_verb}ned for `{reason}` ({})",
+              "**#{case_id}** {} now {action_verb}ned for `{reason}` ({})",
               member.user.name,
               formate_dm_status(notify_user)
             ))
@@ -341,7 +341,7 @@ pub async fn kick(
         .send(
           CreateReply::new()
             .content(format!(
-              "{} now kicked for `{reason}` ({})",
+              "**#{case_id}** {} now kicked for `{reason}` ({})",
               member.user.name,
               formate_dm_status(notify_user)
             ))
@@ -395,7 +395,7 @@ pub async fn unban(
     .await
   {
     Ok(_) => {
-      ctx.reply(format!("{} now unbanned for `{reason}`", user.name)).await?;
+      ctx.reply(format!("**#{case_id}** {} now unbanned for `{reason}`", user.name)).await?;
 
       if !log_entry(
         ctx,
@@ -453,7 +453,7 @@ pub async fn warn(
     Ok(_) => {
       ctx
         .reply(format!(
-          "{} now warned for `{reason}` ({})",
+          "**#{case_id}** {} now warned for `{reason}` ({})",
           member.user.name,
           formate_dm_status(notify_user)
         ))
@@ -483,7 +483,7 @@ pub async fn mute(
   #[description = "Timeout duration"] duration: String,
   #[description = "The reason for the timeout"] reason: String
 ) -> Result<(), BotError> {
-  let mut d = match parse(&duration) {
+  let mut d = match parse_duration(&duration) {
     Ok(d) => d,
     Err(e) => {
       eprintln!("Moderation[Timeout:Error] {e}");
@@ -527,7 +527,7 @@ pub async fn mute(
     Ok(_) => {
       ctx
         .reply(format!(
-          "{} now muted for `{reason}` ({})",
+          "**#{case_id}** {} now muted for `{reason}` ({})",
           member.user.name,
           formate_dm_status(notify_user)
         ))
@@ -571,13 +571,17 @@ pub async fn unmute(
   #[description = "The member to remove timeout from"] mut member: Member,
   #[description = "The reason for the timeout removal"] reason: String
 ) -> Result<(), BotError> {
+  let case_id = generate_id(&ctx.data().postgres).await?;
+
   match member.enable_communication(ctx.http()).await {
     Ok(_) => {
-      ctx.reply(format!("Revoked {}'s timeout for `{reason}`", member.user.name)).await?;
+      ctx
+        .reply(format!("**#{case_id}** Revoked {}'s timeout for `{reason}`", member.user.name))
+        .await?;
 
       if !log_entry(
         ctx,
-        generate_id(&ctx.data().postgres).await?,
+        case_id,
         ctx.author_member().await.unwrap_or_default().into_owned(),
         Target::Member(member.clone()),
         ActionType::Unmute,
@@ -635,7 +639,7 @@ async fn ac_cases<'a>(
       .into_iter()
       .take(25)
       .map(|c| AutocompleteChoice::new(format!("#{} - {} ({})", c.case_id, c.case_type, c.member_name), c.case_id.to_string()))
-      .collect::<Vec<AutocompleteChoice>>()
+      .collect::<Vec<AutocompleteChoice<'a>>>()
   )
 }
 
@@ -683,7 +687,7 @@ async fn view(
       ];
 
       if sanctions.duration.is_some() {
-        let d = parse(&sanctions.duration.unwrap().to_string()).unwrap();
+        let d = parse_duration(&sanctions.duration.unwrap().to_string()).unwrap();
         fields.push(("Duration", format_duration(d.as_secs()), false));
       }
 
@@ -890,7 +894,7 @@ async fn mpl(
           let mut temp_file = File::create(pw).await?;
           temp_file.write_all(content.as_bytes()).await?;
 
-          ctx.send(CreateReply::new().attachment(CreateAttachment::path(pw).await?)).await?;
+          ctx.send(CreateReply::new().attachment(CreateAttachment::path(pw.as_ref())?)).await?;
 
           tokio::fs::remove_file(pw).await?;
         },
@@ -909,7 +913,7 @@ async fn mpl(
           let mut temp_file = File::create(pu).await?;
           temp_file.write_all(content.as_bytes()).await?;
 
-          ctx.send(CreateReply::new().attachment(CreateAttachment::path(pu).await?)).await?;
+          ctx.send(CreateReply::new().attachment(CreateAttachment::path(pu.as_ref())?)).await?;
 
           tokio::fs::remove_file(pu).await?;
         }

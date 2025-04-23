@@ -46,7 +46,7 @@ fn get_backoff_duration(attempts: u32) -> Duration {
   Duration::from_secs(2u64.pow(attempts).min(300))
 }
 
-#[deprecated = "This will be dropped from the bot in future at some point, use spawn method instead (internals::scheduler::spawn)"]
+#[deprecated = "This will be dropped from the bot in future at some point, use spawn method instead (asahi::spawn)"]
 pub async fn run_task<F, T>(
   ctx: Arc<Context>,
   task: F,
