@@ -10,6 +10,7 @@ use {
     format_duration,
     os::{
       format_bytes,
+      get_kernel_info,
       get_os_info
     }
   },
@@ -70,7 +71,8 @@ pub async fn uptime(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
     format!("Node: `{docker_node}`"),
     format!("CPU: `{}`", cpu[0].brand()),
     format!("RAM: `{pram}` (`{sram}/{sram_total}`)"),
-    format!("OS: `{}`", get_os_info())
+    format!("OS: `{}`", get_os_info()),
+    format!("Kernel: `{}`", get_kernel_info())
   ];
   ctx.reply(stat_msg.join("\n")).await?;
 
