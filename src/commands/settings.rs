@@ -25,7 +25,7 @@ async fn list_ignored_channels(ctx: super::PoiseContext<'_>) -> Result<(), BotEr
   let mut response = String::from("List of channels that are ignored by the message logs:\n");
 
   for channel in settings {
-    response.push_str(&format!("<#{}>\n", channel));
+    response.push_str(&format!("<#{channel}>\n"));
   }
 
   ctx.say(response).await?;
