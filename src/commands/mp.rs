@@ -4,7 +4,7 @@ use crate::{
   internals::{
     canvas::Canvas,
     config::BINARY_PROPERTIES,
-    tasks::monica::{
+    monica::{
       Collider,
       DssData,
       EMPTY_PLAYER_LIST_TEXT,

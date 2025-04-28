@@ -83,7 +83,7 @@ impl DrawingBatch {
 impl Canvas {
   pub fn new() -> Self {
     let canvas = ImageBuffer::new(1500, 750);
-    let empal = super::tasks::monica::EmbedPalette::new();
+    let empal = super::monica::EmbedPalette::new();
     let line_thickness = 5;
     let dot_thickness = 4;
     // Line thickness of 5 and dot thickness of 4 is the sweet spot for some reason...

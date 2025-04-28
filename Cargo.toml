@@ -7,10 +7,10 @@ edition = "2024"
 members = ["grpc"]
 
 [workspace.dependencies]
-asahi = { git = "https://github.com/Niko-Devel/asahi", branch = "master" }
 ab_glyph = "0.2.29"
+asahi = { git = "https://github.com/Niko-Devel/asahi", branch = "master" }
 bb8 = "0.9.0"
-bb8-redis = "0.21.0"
+bb8-redis = "0.22.0"
 cargo_toml = "0.22.1"
 dashmap = "6.1.0"
 image = "0.25.6"
@@ -36,8 +36,8 @@ tonic = "0.13.0"
 uptime_lib = "0.3.1"
 
 [dependencies]
-asahi = { workspace = true }
 ab_glyph = { workspace = true }
+asahi = { workspace = true }
 bb8 = { workspace = true }
 bb8-redis = { workspace = true }
 cargo_toml = { workspace = true }

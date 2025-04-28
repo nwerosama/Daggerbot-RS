@@ -1,10 +1,11 @@
 use crate::{
+  BotData,
   BotError,
   GIT_COMMIT_BRANCH,
   GIT_COMMIT_HASH,
   internals::{
     config::BINARY_PROPERTIES,
-    tasks,
+    monica::Monica,
     utils::BOT_VERSION
   }
 };
@@ -33,8 +34,7 @@ use {
         AtomicBool,
         Ordering
       }
-    },
-    thread::current
+    }
   }
 };
 
@@ -104,18 +104,12 @@ pub async fn on_ready(
     ready_once(ctx, ready).await.expect("Failed to call on_ready method");
   }
 
-  let thread_id = format!("{:?}", current().id());
-  let thread_num: String = thread_id.chars().filter(|c| c.is_ascii_digit()).collect();
-  println!("Event[Ready] Task Scheduler launched on thread {thread_num}");
-
   let tconf = read_config();
   let activity = tconf.presence.activities.first().unwrap();
 
   ctx.set_activity(Some(ActivityData::streaming(activity.name.clone(), activity.url.clone()).unwrap()));
 
-  // I am very aware that this is deprecated but in order to migrate Monica to a
-  // new scheduler involves rewriting the majority of the main loop in that file
-  tasks::run_task(Arc::new(ctx.clone()), tasks::monica, "Monica").await;
+  asahi::spawn(Monica { ctx: Arc::new(ctx.clone()) }, Arc::clone(&ctx.data::<BotData>()));
 
   Ok(())
 }
