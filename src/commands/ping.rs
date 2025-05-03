@@ -28,8 +28,8 @@ pub async fn ping(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
     .unwrap();
 
   let mut latencies = String::new();
-  latencies.push_str(&format!("Discord: `{:.0?}ms`\n", statuspage.metrics[0].summary.mean));
-  latencies.push_str(&format!("WebSocket: `{:.0?}`", ctx.ping().await));
+  latencies.push_str(&format!("Discord: **{:.0?}ms**\n", statuspage.metrics[0].summary.mean));
+  latencies.push_str(&format!("WebSocket: **{:.0?}**", ctx.ping().await.unwrap_or_default()));
 
   ctx.reply(latencies).await?;
 
