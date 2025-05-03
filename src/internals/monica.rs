@@ -475,6 +475,7 @@ impl AsahiCoordinator<BotData> for Monica {
 
         let (dss, csg): (DssData, CsgData) = {
           if dss_data.is_none() || csg_data.is_none() {
+            println!("{TASK_NAME}[Error] Missing DSS/CSG fields for {server}: dss={dss_data:?} | csg={csg_data:?}");
             embeds.push(
               CreateEmbed::new()
                 .color(palette.red)
@@ -486,6 +487,7 @@ impl AsahiCoordinator<BotData> for Monica {
           }
 
           if dss_data.unwrap().is_null() || csg_data.unwrap().is_null() {
+            println!("{TASK_NAME}[Error] Unable to retrieve data for {server}");
             embeds.push(
               CreateEmbed::new()
                 .color(palette.yellow)
@@ -553,10 +555,7 @@ impl AsahiCoordinator<BotData> for Monica {
         if peak_reset_result || peak_update_result {
           const PEAK_PLRS_TXT: &str = "Peak players count for";
           if peak_reset_result {
-            println!(
-              "{TASK_NAME}[Info] {PEAK_PLRS_TXT} \"{}\" has passed 72 hours and now since reset",
-              server.name
-            );
+            println!("{TASK_NAME}[Info] {PEAK_PLRS_TXT} \"{server}\" has passed 72 hours and now since reset");
             cache_servers(&redis, servers.clone()).await?;
           } else {
             cache_servers(&redis, servers.clone()).await?;
@@ -612,7 +611,7 @@ impl AsahiCoordinator<BotData> for Monica {
         let main_embed = if dss.server.unwrap().name.is_empty() {
           CreateEmbed::new()
             .color(palette.red)
-            .title(format!("{} is offline", server.name))
+            .title(format!("{server} is offline"))
             .timestamp(Timestamp::now())
         } else {
           main_embed
@@ -750,7 +749,7 @@ async fn savegame_settings_webhook(
   let csg: CsgData = match serde_json::from_value(data["csg"].clone()) {
     Ok(c) => c,
     Err(e) => {
-      AsahiError::Parse(format!("[savegame_settings_webhook:{}] Failed to deserialize CSG data: {e}", server.name));
+      AsahiError::Parse(format!("[savegame_settings_webhook:{server}] Failed to deserialize CSG data: {e}"));
       return;
     }
   };
@@ -758,13 +757,13 @@ async fn savegame_settings_webhook(
   let csg_settings = match &csg.settings {
     Some(settings) => settings,
     None => {
-      AsahiError::Parse(format!("[savegame_settings_webhook] CSG settings not found for \"{}\"", server.name));
+      AsahiError::Parse(format!("[savegame_settings_webhook] CSG settings not found for \"{server}\""));
       return;
     }
   };
 
   let redis = &ctx.data::<BotData>().redis;
-  let cache_key = format!("{TASK_NAME}:savegame_settings:{}", server.name);
+  let cache_key = format!("{TASK_NAME}:savegame_settings:{server}");
   let csg_settings__ = csg.settings.is_some();
 
   let efields = if let Some(csg_settings) = &csg.settings {
@@ -846,7 +845,7 @@ async fn savegame_settings_webhook(
     let webhook_id = match hook.id.parse::<u64>() {
       Ok(id) => WebhookId::new(id),
       Err(e) => {
-        AsahiError::External(format!("[savegame_settings_webhook:{}] Invalid webhook ID: {e}", server.name));
+        AsahiError::External(format!("[savegame_settings_webhook:{server}] Invalid webhook ID: {e}"));
         return;
       }
     };
@@ -854,7 +853,7 @@ async fn savegame_settings_webhook(
     let message_id = match hook.message_id.parse::<u64>() {
       Ok(id) => MessageId::new(id),
       Err(e) => {
-        AsahiError::External(format!("[savegame_settings_webhook:{}] Invalid message ID: {e}", server.name));
+        AsahiError::External(format!("[savegame_settings_webhook:{server}] Invalid message ID: {e}"));
         return;
       }
     };
@@ -878,16 +877,16 @@ async fn savegame_settings_webhook(
         {
           Ok(_) => {
             if let Err(e) = redis.set(&cache_key, &serde_json::to_string(&current_fields).unwrap()).await {
-              AsahiError::External(format!("[savegame_settings_webhook:{}] Redis failed to set cache: {e}", server.name));
+              AsahiError::External(format!("[savegame_settings_webhook:{server}] Redis failed to set cache: {e}"));
             }
           },
           Err(e) => {
-            AsahiError::External(format!("[savegame_settings_webhook:{}] Webhook failed to edit message: {e}", server.name));
+            AsahiError::External(format!("[savegame_settings_webhook:{server}] Webhook failed to edit message: {e}"));
           }
         }
       },
       Err(e) => {
-        AsahiError::External(format!("[savegame_settings_webhook:{}] Webhook doesn't exist: {e}", server.name));
+        AsahiError::External(format!("[savegame_settings_webhook:{server}] Webhook doesn't exist: {e}"));
       }
     }
   }
@@ -905,7 +904,7 @@ async fn time_drift_webhook(
   let dss: DssData = match serde_json::from_value(data["dss"].clone()) {
     Ok(c) => c,
     Err(e) => {
-      AsahiError::Parse(format!("[time_drift_webhook:{}] Failed to deserialize DSS data: {e}", server.name));
+      AsahiError::Parse(format!("[time_drift_webhook:{server}] Failed to deserialize DSS data: {e}"));
       return;
     }
   };
@@ -913,7 +912,7 @@ async fn time_drift_webhook(
   let dss_slots = match dss.slots.clone() {
     Some(s) => s,
     None => {
-      AsahiError::External(format!("[time_drift_webhook:{}] DSS slots is empty", server.name));
+      AsahiError::External(format!("[time_drift_webhook:{server}] DSS slots is empty"));
       return;
     }
   };
@@ -941,7 +940,7 @@ async fn time_drift_webhook(
   const EVENING: i32 = 63333710;
 
   let redis = ctx.data::<crate::BotData>().redis.clone();
-  let redis_webhook_sent = format!("{TASK_NAME}:time_drift:{}:webhook_sent", server.name);
+  let redis_webhook_sent = format!("{TASK_NAME}:time_drift:{server}:webhook_sent");
 
   let current_time = dss.server.as_ref().map(|s| s.day_time).unwrap_or_default();
   let previous_time = PREVIOUS_DAY_TIME.load(Acquire);
@@ -959,7 +958,7 @@ async fn time_drift_webhook(
         // Reset the flag if the current time is approaching 17:35
         if current_time >= EVENING {
           if let Err(e) = redis.set(&redis_webhook_sent, "false").await {
-            AsahiError::External(format!("[time_drift_webhook:{}] Failed to reset webhook sent flag: {e}", server.name));
+            AsahiError::External(format!("[time_drift_webhook:{server}] Failed to reset webhook sent flag: {e}"));
           }
         }
         return;
@@ -967,10 +966,7 @@ async fn time_drift_webhook(
     },
     Ok(None) => {
       if let Err(e) = redis.set(&redis_webhook_sent, "false").await {
-        AsahiError::External(format!(
-          "[time_drift_webhook:{}] Failed to set initial webhook_sent flag: {e}",
-          server.name
-        ));
+        AsahiError::External(format!("[time_drift_webhook:{server}] Failed to set initial webhook_sent flag: {e}"));
         return;
       }
     },
@@ -997,7 +993,7 @@ async fn time_drift_webhook(
       let webhook = match Webhook::from_id_with_token(&bot_http, WebhookId::new(hook.id.parse().unwrap_or_default()), &hook.token).await {
         Ok(webhook) => webhook,
         Err(e) => {
-          AsahiError::External(format!("[time_drift_webhook:{}] Webhook doesn't exist: {e}", server.name));
+          AsahiError::External(format!("[time_drift_webhook:{server}] Webhook doesn't exist: {e}"));
           continue;
         }
       };
@@ -1035,12 +1031,11 @@ async fn time_drift_webhook(
         Err(e) => {
           if e.to_string().contains("Unknown Channel") {
             AsahiError::External(format!(
-              "[time_drift_webhook:{}] Webhook's parent channel is not where the thread is located",
-              server.name
+              "[time_drift_webhook:{server}] Webhook's parent channel is not where the thread is located"
             ));
             continue;
           }
-          AsahiError::External(format!("[time_drift_webhook:{}] Webhook failed to send: {e}", server.name));
+          AsahiError::External(format!("[time_drift_webhook:{server}] Webhook failed to send: {e}"));
         }
       }
     }
