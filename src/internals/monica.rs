@@ -487,7 +487,6 @@ impl AsahiCoordinator<BotData> for Monica {
           }
 
           if dss_data.unwrap().is_null() || csg_data.unwrap().is_null() {
-            println!("{TASK_NAME}[Error] Unable to retrieve data for {server}");
             embeds.push(
               CreateEmbed::new()
                 .color(palette.yellow)
