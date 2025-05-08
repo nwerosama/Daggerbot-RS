@@ -198,27 +198,24 @@ pub async fn on_guild_member_removal(
   };
   println!("GuildMemberRemoval[Debug] Gateway sent member data for {}", member_data.user.tag());
 
-  let roles = member_data.roles.iter().map(|r| format!("<@&{r}>")).collect::<Vec<String>>().join(" ");
-  let roles_count = member_data.roles.len();
+  let mut embed = CreateEmbed::new()
+    .color(BINARY_PROPERTIES.embed_colors.red)
+    .thumbnail(user.face())
+    .title(format!("{is_bot} Left: {}", user.tag()))
+    .footer(CreateEmbedFooter::new(format!("ID: {}", user.id)))
+    .timestamp(Timestamp::now());
 
-  log_channel
-    .send_message(
-      &ctx.http,
-      CreateMessage::new().embed(
-        CreateEmbed::new()
-          .color(BINARY_PROPERTIES.embed_colors.red)
-          .thumbnail(user.face())
-          .title(format!("{is_bot} Left: {}", user.tag()))
-          .fields(vec![
-            ("Account Creation Date:", format_timestamp(user.id.created_at().timestamp()), false),
-            ("Server Join Date:", format_timestamp(member_data.joined_at.unwrap().timestamp()), false),
-            (&format!("Roles: {roles_count}"), roles, false),
-          ])
-          .footer(CreateEmbedFooter::new(format!("ID: {}", user.id)))
-          .timestamp(Timestamp::now())
-      )
-    )
-    .await?;
+  embed = embed.fields(vec![
+    ("Account Creation Date:", format_timestamp(user.id.created_at().timestamp()), false),
+    ("Server Join Date:", format_timestamp(member_data.joined_at.unwrap().timestamp()), false),
+  ]);
+
+  if !member_data.roles.is_empty() {
+    let roles = member_data.roles.iter().map(|r| format!("<@&{r}>")).collect::<Vec<String>>().join(" ");
+    embed = embed.field(format!("Roles: {}", member_data.roles.len()), roles, false);
+  }
+
+  log_channel.send_message(&ctx.http, CreateMessage::new().embed(embed)).await?;
 
   Ok(())
 }
