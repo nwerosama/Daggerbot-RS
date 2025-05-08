@@ -96,6 +96,10 @@ lazy_static! {
         [("1", "Yes"), ("2", "No"), ("3", "Growth paused")].iter().cloned().collect()
       ),
       (
+        TxtMapKey::PlannedDaysPerPeriod,
+        [("1", "1 day"), ("2", "2 days"), ("3", "3 days")].iter().cloned().collect()
+      ),
+      (
         TxtMapKey::EconomicDifficulty,
         [("EASY", "Easy"), ("NORMAL", "Normal"), ("HARD", "Hard")].iter().cloned().collect()
       ),
@@ -211,6 +215,8 @@ struct CsgSettings {
   map_title:                  String,
   #[serde(rename = "growthMode")]
   growth_mode:                i8,
+  #[serde(rename = "plannedDaysPerPeriod")]
+  planned_days_per_period:    i8,
   #[serde(rename = "fruitDestruction")]
   fruit_destruction:          bool,
   #[serde(rename = "plowingRequiredEnabled")]
@@ -237,7 +243,9 @@ struct CsgSettings {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct CsgSlotSystem {
-  #[serde(rename = "slotUsage")]
+  // Caused by a breaking change in serde-xml-rs
+  // crate in the backend service
+  #[serde(rename = "@slotUsage")]
   slot_usage: String
 }
 
@@ -300,7 +308,8 @@ enum TxtMapKey {
   EconomicDifficulty,
   DisasterDestructionState,
   FuelUsage,
-  DirtInterval
+  DirtInterval,
+  PlannedDaysPerPeriod
 }
 
 pub async fn ac_serverlist<'a>(
@@ -516,6 +525,8 @@ impl AsahiCoordinator<BotData> for Monica {
               continue;
             },
             (..) => {
+              println!("Monica[Warn] Either the data mapping is incorrect or improperly set, otherwise no data received from gameserver!");
+
               embeds.push(
                 CreateEmbed::new()
                   .color(palette.yellow)
@@ -815,6 +826,11 @@ async fn savegame_settings_webhook(
       (
         "Dirt Interval",
         get_mapped_value(&TxtMapKey::DirtInterval, &csg_settings.dirt_interval.to_string()),
+        true
+      ),
+      (
+        "Days Per Period",
+        get_mapped_value(&TxtMapKey::PlannedDaysPerPeriod, &csg_settings.planned_days_per_period.to_string()),
         true
       ),
     ]
