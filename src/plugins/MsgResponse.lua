@@ -79,9 +79,11 @@ function Response.outgoingArrays(rs_msg, keyword)
       string.format('Here, have some pancakes for breakfast, %s! :pancakes:', PersonnyMcPerson),
       string.format('Rise and shine, sleepyhead %s! Ready to start your day?', PersonnyMcPerson),
       string.format('Oh good grief, is it Monday already?? Anyways, morning %s..', PersonnyMcPerson),
+      string.format('Morning has broken and so has %s\'s alarm clock! Rise and shine anyway!', PersonnyMcPerson),
+      string.format('The early bird gets the worm but %s gets a friendly morning greeting instead!', PersonnyMcPerson),
       string.format('*opens blinds wide enough to blast sunrays into the room*\nWakey wakey, %s. Time to get up!', PersonnyMcPerson),
       string.format('Wake up and smell the delicious pancakes, %s! It\'s a brand new day with many possibilities!', PersonnyMcPerson),
-      string.format('This time I can now shout! So here we go! 1..2..3\n*inhales*\n# MORNING %s!', PersonnyMcPerson.upper(PersonnyMcPerson))
+      string.format('This time I can now shout! So here we go! 1..2..3\n*inhales*\n# MORNING %s!', PersonnyMcPerson.upper(PersonnyMcPerson)),
     },
     afternoon = {
       '### Quite a wonderful weather today!',
@@ -102,6 +104,8 @@ function Response.outgoingArrays(rs_msg, keyword)
       string.format('Hi there, adventurer %s! What\'s on your agenda for rest of the day?', PersonnyMcPerson),
       string.format('Afternoon %s, back from your trip outside?', PersonnyMcPerson),
       string.format('How are you doing today, %s?', PersonnyMcPerson),
+      string.format('%s\'s afternoon agenda:\n1. Read this message\n2. ???\n3. Profit!', PersonnyMcPerson),
+      string.format('Afternoon %s! Fun fact; This is the perfect time to start procrastinating on your evening plans!', PersonnyMcPerson),
       string.format('Good afternoon %s, I hope you\'re having a more fanastic day than that poor particular penguin in Antarctica that slipped!', PersonnyMcPerson),
       string.format('Good afternoon %s! Hope your day is going better than a penguin in a snowstorm in Antarctica!', PersonnyMcPerson),
       string.format('Afternoon %s! What\'s the current progress on your todo list? Did you finish them?', PersonnyMcPerson),
@@ -109,6 +113,7 @@ function Response.outgoingArrays(rs_msg, keyword)
     },
     evening = {
       'May I suggest sleep?',
+      'What\'s for dinner? Wrong answers only!',
       'I can\'t believe the time flies so quickly!',
       'Today is almost over, you deserve some rest!',
       'You look tired, ready to go to sleep yet?',
@@ -140,6 +145,7 @@ function Response.outgoingArrays(rs_msg, keyword)
       string.format('Close your eyelids and sleep, %s', PersonnyMcPerson),
       string.format('Good night %s and hope your pillow is nice and cold!', PersonnyMcPerson),
       string.format('# Night %s!', PersonnyMcPerson),
+      string.format('Good night %s! Remember that sleep is just a timetravel to the breakfast!', PersonnyMcPerson),
       string.format('You should try maintaining your sleep schedule if you\'re really that tired, %s', PersonnyMcPerson),
       string.format('Goodnight %s, time to recharge your social batteries for tomorrow!', PersonnyMcPerson),
       string.format('Have a good night %s, don\'t let the bed bugs bite!', PersonnyMcPerson),
