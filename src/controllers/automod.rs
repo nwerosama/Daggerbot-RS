@@ -23,6 +23,9 @@ use crate::{
 
 use {
   asahi::{
+    AsahiCoordinator,
+    AsahiResult,
+    async_trait,
     format_duration,
     parse_duration
   },
@@ -86,6 +89,8 @@ lazy_static! {
   static ref MASKED_URL_REGEX: Regex = Regex::new(r"\[.*?\]\(<?(https?://[^>]+)>?\)").unwrap();
   static ref REQWEST_CLIENT: Client = Client::new();
 }
+
+pub struct MaliciousDomains;
 
 // Rule configuration
 #[derive(Debug, Clone)]
@@ -371,10 +376,6 @@ impl Automoderator {
     &self,
     content: &str
   ) -> bool {
-    if let Err(e) = self.update_malicious_domains().await {
-      eprintln!("failed to update malicious domains: {e}");
-    }
-
     let domains: Vec<String> = match self.redis.get(MD_KEY_MAIN).await.unwrap_or(None) {
       Some(json) => serde_json::from_str(&json).unwrap_or_default(),
       None => Vec::new()
@@ -403,85 +404,6 @@ impl Automoderator {
     }
 
     false
-  }
-
-  async fn update_malicious_domains(&self) -> Result<(), BotError> {
-    let last_update = match self.redis.get(MD_KEY_LU).await? {
-      Some(ts) => ts.parse::<i64>().unwrap_or(0),
-      None => 0
-    };
-
-    let current_time = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() as i64;
-
-    // run an update if hour+ old
-    if current_time - last_update <= 3600 {
-      return Ok(());
-    }
-
-    let initial_cap = match self.redis.get(MD_KEY_MAIN).await? {
-      Some(j) => {
-        let domains: Vec<String> = serde_json::from_str(&j).unwrap_or_default();
-        (domains.len() + (domains.len() / 10)).max(50000)
-      },
-      None => 80000 // fallback to 80k if Redis key doesn't exist!
-    };
-
-    let mut domains = Vec::with_capacity(initial_cap);
-    let mut success = 0;
-    let mut total = 0;
-
-    for url in MD_BLOCKLIST.iter() {
-      match REQWEST_CLIENT
-        .get(*url)
-        .header("User-Agent", "Daggerbot - MaliciousDomains Scanner")
-        .header("Authorization", format!("Token {}", token_path().await.octokit))
-        .timeout(Duration::from_secs(10))
-        .send()
-        .await
-      {
-        Ok(r) => {
-          if !r.status().is_success() {
-            eprintln!("MaliciousDomains[Debug] {url} returned status {}", r.status());
-            continue;
-          }
-
-          match r.text().await {
-            Ok(txt) => {
-              let entries = Self::process_response_text(txt).await;
-              let count = entries.len();
-              domains.extend(entries);
-              total += count;
-              success += 1;
-            },
-            Err(e) => eprintln!("MaliciousDomains[Err] {url} reported an error: {e}")
-          }
-        },
-        Err(e) => eprintln!("MaliciousDomains[Err] {url} didn't want to respond: {e}")
-      }
-    }
-
-    println!(
-      "MaliciousDomains[Info] Refreshed from {success} of {} sources, {total} domains total",
-      MD_BLOCKLIST.len()
-    );
-
-    if !domains.is_empty() {
-      let domains_json = serde_json::to_string(&domains)?;
-      self.redis.set(MD_KEY_MAIN, &domains_json).await?;
-      self.redis.set(MD_KEY_LU, &current_time.to_string()).await?;
-
-      println!("MaliciousDomains[Info] Cache refreshed | {} domains total", domains.len());
-    }
-
-    Ok(())
-  }
-
-  async fn process_response_text(text: String) -> Vec<String> {
-    text
-      .lines()
-      .map(|line| line.trim().to_lowercase())
-      .filter(|line| !line.is_empty())
-      .collect()
   }
 
   async fn log_violation(
@@ -762,5 +684,94 @@ async fn send_notification(
       eprintln!("[automod::send_notification] (#{case_id}:{}) Send DM failed with error: {e}", user.name);
       Ok(false)
     }
+  }
+}
+
+async fn process_response_text(text: String) -> Vec<String> {
+  text
+    .lines()
+    .map(|line| line.trim().to_lowercase())
+    .filter(|line| !line.is_empty())
+    .collect()
+}
+
+#[async_trait]
+impl AsahiCoordinator<BotData> for MaliciousDomains {
+  fn name(&self) -> &'static str { "Malicious Domains Updater" }
+
+  fn interval(&self) -> u64 { 3600 }
+
+  async fn main_loop(
+    &self,
+    bot_data: Arc<BotData>
+  ) -> AsahiResult<()> {
+    let last_update = match bot_data.redis.get(MD_KEY_LU).await? {
+      Some(ts) => ts.parse::<i64>().unwrap_or(0),
+      None => 0
+    };
+
+    let current_time = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() as i64;
+
+    // run an update if hour+ old
+    if current_time - last_update <= 3600 {
+      return Ok(());
+    }
+
+    let initial_cap = match bot_data.redis.get(MD_KEY_MAIN).await? {
+      Some(j) => {
+        let domains: Vec<String> = serde_json::from_str(&j).unwrap_or_default();
+        (domains.len() + (domains.len() / 10)).max(50000)
+      },
+      None => 80000 // fallback to 80k if Redis key doesn't exist!
+    };
+
+    let mut domains = Vec::with_capacity(initial_cap);
+    let mut success = 0;
+    let mut total = 0;
+
+    for url in MD_BLOCKLIST.iter() {
+      match REQWEST_CLIENT
+        .get(*url)
+        .header("User-Agent", "Daggerbot - MaliciousDomains Scanner")
+        .header("Authorization", format!("Token {}", token_path().await.octokit))
+        .timeout(Duration::from_secs(10))
+        .send()
+        .await
+      {
+        Ok(r) => {
+          if !r.status().is_success() {
+            eprintln!("MaliciousDomains[Debug] {url} returned status {}", r.status());
+            continue;
+          }
+
+          match r.text().await {
+            Ok(txt) => {
+              let entries = process_response_text(txt).await;
+              let count = entries.len();
+              domains.extend(entries);
+              total += count;
+              success += 1;
+            },
+            Err(e) => eprintln!("MaliciousDomains[Err] {url} reported an error: {e}")
+          }
+        },
+        Err(e) => eprintln!("MaliciousDomains[Err] {url} didn't want to respond: {e}")
+      }
+    }
+
+    println!(
+      "MaliciousDomains[Info] Refreshed from {success} of {} sources, {total} domains total",
+      MD_BLOCKLIST.len()
+    );
+
+    if !domains.is_empty() {
+      let domains_json = serde_json::to_string(&domains)?;
+      bot_data.redis.set(MD_KEY_MAIN, &domains_json).await?;
+      bot_data.redis.set(MD_KEY_LU, &current_time.to_string()).await?;
+
+      println!("MaliciousDomains[Info] Cache refreshed | {} domains total", domains.len());
+    }
+
+    Ok(())
   }
 }

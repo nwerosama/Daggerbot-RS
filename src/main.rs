@@ -105,6 +105,9 @@ async fn main() {
 
   asahi::spawn(SeasonalTheme, Arc::clone(&bot_data));
 
+  #[cfg(feature = "automod")]
+  asahi::spawn(controllers::automod::MaliciousDomains, Arc::clone(&bot_data));
+
   let prefix = if cfg!(feature = "production") {
     Some(Cow::Borrowed("!!_"))
   } else {

@@ -21,7 +21,8 @@ use {
   asahi::{
     AsahiCoordinator,
     AsahiError,
-    AsahiResult
+    AsahiResult,
+    async_trait
   },
   dag_grpc::FetchRequest,
   image::Rgba,
@@ -47,8 +48,7 @@ use {
     ThreadId,
     Timestamp,
     Webhook,
-    WebhookId,
-    async_trait
+    WebhookId
   },
   regex::Regex,
   serde::{

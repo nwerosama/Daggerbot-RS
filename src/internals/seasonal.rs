@@ -2,9 +2,9 @@ use {
   crate::BotData,
   asahi::{
     AsahiCoordinator,
-    AsahiResult
+    AsahiResult,
+    async_trait
   },
-  poise::serenity_prelude::async_trait,
   std::{
     sync::{
       Arc,

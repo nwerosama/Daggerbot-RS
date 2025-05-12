@@ -115,12 +115,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dde20b3d026af13f561bdd0f15edf01fc734f0dafcedbaf42bba506a9517f223"
 
 [[package]]
-name = "arc-swap"
-version = "1.7.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "69f7f8c3906b62b754cd5326047894316021dcfe5a194c8ea52bdd94934a3457"
-
-[[package]]
 name = "arg_enum_proc_macro"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -142,12 +136,11 @@ dependencies = [
 
 [[package]]
 name = "asahi"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e9a27ed7c0e902a4539a661332978c0decdadd0de55c4696a4e5076ce8efb1a"
+checksum = "45168bfa5eb5604839e8b9fd92f0ec25de62fd34179ed9b2d4365c1996d65b83"
 dependencies = [
  "asahi_coordinator",
- "asahi_http",
  "asahi_internal",
  "asahi_macros",
  "asahi_utils",
@@ -155,9 +148,9 @@ dependencies = [
 
 [[package]]
 name = "asahi_coordinator"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a2f300000e60f740ccfc8ea84b49d45100ac018dd2b56a3fdecca00462dd68a"
+checksum = "68a087983eacb641eaf5e65ffdfd9cd6df9f616ff922476381c0ed58e02d23f6"
 dependencies = [
  "asahi_internal",
  "async-trait",
@@ -165,24 +158,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "asahi_http"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "69c25cdb14bab5d06c0ddf30aa9320a679bca6626511e65a12942ab0417b7456"
-dependencies = [
- "asahi_internal",
- "http-body-util",
- "hyper",
- "pin-project-lite",
- "tokio",
-]
-
-[[package]]
 name = "asahi_internal"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00a21f7ab854a5c275d7394ee05a2eae064bf54db0534d677319c687e01a2d32"
+checksum = "e425eacff9382104e875cd620a7197b8364913d9be6c6a19e73fcf12930bc2e8"
 dependencies = [
+ "bb8-redis",
  "serde_json",
  "sqlx",
  "thiserror 2.0.12",
@@ -190,15 +171,15 @@ dependencies = [
 
 [[package]]
 name = "asahi_macros"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b163b9cf4a871feee38fc2bf5d0730fc214d424998973b02d31a7cd288c0487a"
+checksum = "0324bec69165fd89858d2b80fa71538dabda03f20d9e115fb765f3fecbd180de"
 
 [[package]]
 name = "asahi_utils"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "056f1e5ad425ca160e00e74890f9f36929f9903cfa3070c1e2b1c40acdafbe4c"
+checksum = "20dc9f6f898c6b9818a859232ff4ae99428d5ca2537fd75d951b0ba98910c607"
 dependencies = [
  "asahi_internal",
  "lazy_static",
@@ -347,9 +328,9 @@ dependencies = [
 
 [[package]]
 name = "bb8-redis"
-version = "0.22.0"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f435a7d764ccf6319163f74533073775a1472b341c64662522980d1939ffd87"
+checksum = "b7eea5c48080df5cd6c10bc7fec5a160a7d18dc5cf073ab42b49375aa4c748a6"
 dependencies = [
  "bb8",
  "redis",
@@ -1740,9 +1721,9 @@ checksum = "47e1ffaa40ddd1f3ed91f717a33c8c0ee23fff369e3aa8772b9605cc1d22f4c3"
 
 [[package]]
 name = "matrixmultiply"
-version = "0.3.9"
+version = "0.3.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9380b911e3e96d10c1f415da0876389aaf1b56759054eeb0de7df940c456ba1a"
+checksum = "a06de3016e9fae57a36fd14dba131fccf49f74b40b7fbdb472f96e361ec71a08"
 dependencies = [
  "autocfg",
  "rawpointer",
@@ -1846,9 +1827,9 @@ dependencies = [
 
 [[package]]
 name = "multimap"
-version = "0.10.0"
+version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "defc4c55412d89136f966bbb339008b474350e5e6e78d2714439c386b3137a03"
+checksum = "1d87ecb2933e8aeadb3e3a02b828fed80a7528047e68b4f424523a0981a3a084"
 
 [[package]]
 name = "nalgebra"
@@ -2644,11 +2625,10 @@ dependencies = [
 
 [[package]]
 name = "redis"
-version = "0.30.0"
+version = "0.31.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "438a4e5f8e9aa246d6f3666d6978441bf1b37d5f417b50c4dd220be09f5fcc17"
+checksum = "0bc1ea653e0b2e097db3ebb5b7f678be339620b8041f66b30a308c1d45d36a7f"
 dependencies = [
- "arc-swap",
  "bytes",
  "cfg-if",
  "combine",
@@ -3477,9 +3457,9 @@ dependencies = [
 
 [[package]]
 name = "sysinfo"
-version = "0.35.0"
+version = "0.35.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b897c8ea620e181c7955369a31be5f48d9a9121cb59fd33ecef9ff2a34323422"
+checksum = "79251336d17c72d9762b8b54be4befe38d2db56fbbc0241396d70f173c39d47a"
 dependencies = [
  "libc",
  "memchr",
@@ -3531,9 +3511,9 @@ checksum = "61c41af27dd6d1e27b1b16b489db798443478cef1f06a660c96db617ba5de3b1"
 
 [[package]]
 name = "tempfile"
-version = "3.19.1"
+version = "3.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7437ac7763b9b123ccf33c338a5cc1bac6f69b45a136c19bdd8a65e3916435bf"
+checksum = "e8a64e3985349f2441a1a9ef0b853f869006c3855f2cda6862a94d26ebb9d6a1"
 dependencies = [
  "fastrand",
  "getrandom 0.3.3",
