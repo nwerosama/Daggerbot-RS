@@ -1,18 +1,12 @@
 use crate::{
   BotError,
   bridges::PLUGIN_DIR,
-  controllers::sql::execute_schemas,
-  events::ready::{
-    Activity,
-    TOML_FILE,
-    TomlConfig
-  }
+  controllers::sql::execute_schemas
 };
 
 use poise::{
   CreateReply,
   serenity_prelude::{
-    ActivityData,
     Attachment,
     CreateAllowedMentions,
     GenericChannelId,
@@ -24,52 +18,10 @@ use poise::{
 #[poise::command(
   slash_command,
   owners_only,
-  subcommands("presence", "echo", "deploy", "schemas", "upload_plugin", "invite_data", "sql"),
+  subcommands("echo", "deploy", "schemas", "upload_plugin"),
   default_member_permissions = "MANAGE_GUILD"
 )]
 pub async fn dev(_: super::PoiseContext<'_>) -> Result<(), BotError> { Ok(()) }
-
-/// Update bot's presence
-#[poise::command(slash_command)]
-async fn presence(
-  ctx: super::PoiseContext<'_>,
-  #[description = "Activity message to set"] name: String,
-  #[description = "YouTube video to set"] video: String
-) -> Result<(), BotError> {
-  let mut presence_data = vec![];
-
-  presence_data.push(format!("Name: **{name}**"));
-  presence_data.push(format!("URL: `{video}`"));
-
-  let toml_content = match std::fs::read_to_string(TOML_FILE) {
-    Ok(c) => c,
-    Err(y) => {
-      ctx.reply(format!("{y}")).await?;
-      return Ok(());
-    }
-  };
-
-  let mut conf: TomlConfig = match toml::from_str(&toml_content) {
-    Ok(c) => c,
-    Err(y) => {
-      ctx.reply(format!("{y}")).await?;
-      return Ok(());
-    }
-  };
-
-  conf.presence.activities = vec![Activity {
-    name: name.clone(),
-    url:  video.clone()
-  }];
-
-  let updated_toml = toml::to_string(&conf).expect("[TomlConfig] Failed to serialize TOML data");
-  std::fs::write(TOML_FILE, updated_toml).expect("[TomlConfig] Failed to write to TOML file");
-
-  ctx.reply(format!("Presence updated:\n{}", presence_data.join("\n"))).await?;
-  ctx.serenity_context().set_activity(Some(ActivityData::streaming(name, video).unwrap()));
-
-  Ok(())
-}
 
 /// Turn your message into a bot message
 #[poise::command(slash_command)]
@@ -150,64 +102,6 @@ async fn upload_plugin(
       return Ok(());
     }
   };
-
-  Ok(())
-}
-
-/// Display the invite cache data (sent as paginated embed)
-#[poise::command(slash_command)]
-async fn invite_data(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
-  let invite_data = ctx.framework().user_data().invite_data.clone();
-
-  if invite_data.get_all().is_empty() {
-    ctx
-      .reply(
-        [
-          "InviteData{} is currently empty!",
-          "Check for incoming data from `InviteCreate`, `InviteDelete` and `GuildMemberAddition` events!"
-        ]
-        .join("\n")
-      )
-      .await?;
-    return Ok(())
-  }
-
-  let pages: Vec<String> = invite_data
-    .get_all()
-    .iter()
-    .map(|data| {
-      format!(
-        "Uses: **{}**\nCode: `{}`\nCreator: **{}**\nChannel: **#{}**",
-        data.uses, data.code, data.creator.name, data.channel
-      )
-    })
-    .collect();
-
-  let page_refs: Vec<&str> = pages.iter().map(|s| s.as_str()).collect();
-
-  poise::builtins::paginate(ctx, &page_refs).await?;
-
-  Ok(())
-}
-
-/// Perform a SQL query against the database
-#[poise::command(slash_command)]
-async fn sql(
-  ctx: super::PoiseContext<'_>,
-  #[description = "PostgreSQL-compatible SQL query"] query: String
-) -> Result<(), BotError> {
-  let postgres = ctx.data().postgres.clone();
-  let mut buf = format!("**Query:**```sql\n{query}\n```");
-
-  match sqlx::query(&query).execute(&postgres).await {
-    Ok(r) => {
-      let affected = r.rows_affected();
-      buf.push_str(&format!("**Result:**```\n{affected}\n```"))
-    },
-    Err(e) => buf.push_str(&format!("**Error:**```\n{e}\n```"))
-  }
-
-  ctx.reply(buf).await?;
 
   Ok(())
 }

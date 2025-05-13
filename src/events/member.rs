@@ -86,19 +86,16 @@ pub async fn on_guild_member_addition(
     let log_channel = GenericChannelId::new(BINARY_PROPERTIES.bot_log);
 
     const NO_INVITE_DATA: &str = "Invite data not populated!";
-    let invite_data = ctx.data::<BotData>().invite_data.clone();
+    let invite_data = &ctx.data::<BotData>().invite_data;
     let new_invites = new_member.guild_id.invites(&ctx.http).await?;
-    let used_invite = new_invites.iter().find(|i| match invite_data.get(&i.code) {
-      Some(inv) => inv.uses < i.uses,
-      None => false
-    });
+    let used_invite = new_invites.iter().find(|i| invite_data.compare_uses(&i.code, i.uses));
 
     // Proceed even if the invite data is not populated yet
     let invite_data_string = match used_invite {
       Some(i) => match invite_data.get(&i.code) {
         Some(inv) => [
           format!("Invite: `{}`", i.code),
-          format!("Created by: **{}**", inv.creator.name),
+          format!("Created by: **{}**", inv.creator),
           format!("Channel: **#{}**", inv.channel)
         ]
         .join("\n"),
@@ -110,14 +107,13 @@ pub async fn on_guild_member_addition(
     // Populate the invite cache with new invite entries if available
     for i in new_invites.iter() {
       let creator = match i.inviter.as_ref() {
-        Some(u) => u.clone(),
+        Some(u) => u.name.clone(),
         None => continue
       };
       invite_data.insert(
         i.code.clone(),
         InviteData {
           uses: i.uses,
-          code: i.code.clone(),
           creator,
           channel: i.channel.name.clone()
         }

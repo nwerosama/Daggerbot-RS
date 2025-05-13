@@ -35,9 +35,8 @@ pub async fn on_invite_create(
     ctx.data::<BotData>().invite_data.insert(
       invite.code.clone(),
       InviteData {
-        code:    invite.code.clone(),
         uses:    invite.uses,
-        creator: creator.clone(),
+        creator: creator.name.clone(),
         channel: invite.channel.name.clone()
       }
     )

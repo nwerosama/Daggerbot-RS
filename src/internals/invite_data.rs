@@ -1,17 +1,15 @@
 use {
-  dashmap::DashMap,
-  poise::serenity_prelude::{
-    User,
-    small_fixed_array::FixedString
+  dashmap::{
+    DashMap,
+    mapref::one::Ref
   },
+  poise::serenity_prelude::small_fixed_array::FixedString,
   std::sync::Arc
 };
 
-#[derive(Clone)]
 pub struct InviteData {
   pub uses:    u64,
-  pub code:    FixedString,
-  pub creator: User,
+  pub creator: FixedString<u8>,
   pub channel: FixedString
 }
 
@@ -31,11 +29,9 @@ impl InviteCache {
   pub fn get(
     &self,
     code: &str
-  ) -> Option<InviteData> {
-    self.0.get(code).map(|data| data.value().clone())
+  ) -> Option<Ref<'_, FixedString<u32>, InviteData>> {
+    self.0.get(code)
   }
-
-  pub fn get_all(&self) -> Vec<InviteData> { self.0.iter().map(|data| data.value().clone()).collect() }
 
   pub fn remove(
     &self,
@@ -45,5 +41,13 @@ impl InviteCache {
       Some(data) => Some(data.1),
       None => None
     }
+  }
+
+  pub fn compare_uses(
+    &self,
+    code: &str,
+    uses: u64
+  ) -> bool {
+    self.get(code).is_some_and(|i| i.uses < uses)
   }
 }
