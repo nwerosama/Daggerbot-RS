@@ -252,6 +252,7 @@ async fn players(
 
   // Graph visibly displays the last 53 minutes worth of data,
   // each dot represents the data within 45 seconds apart
+  // For calculation, see update_player_data function in controllers/sql/mpservers.rs
   let mut canvas = Canvas::new();
   canvas.render(pd.iter().map(|x| *x as f64).collect());
   let file = "Monica.jpg";

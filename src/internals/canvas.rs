@@ -25,7 +25,7 @@ use {
 
 const CANVAS_WIDTH: u32 = 1500;
 const CANVAS_HEIGHT: u32 = 750;
-const INTERPOLATION_STEPS: usize = 100;
+const INTERPOLATION_STEPS: usize = 30;
 
 #[repr(align(16))]
 pub struct Canvas {
@@ -54,9 +54,9 @@ struct DrawingBatch {
 impl DrawingBatch {
   fn new(data_len: usize) -> Self {
     Self {
-      lines:   Vec::with_capacity(data_len * INTERPOLATION_STEPS),
+      lines:   Vec::with_capacity(data_len * (INTERPOLATION_STEPS / 5)),
       circles: Vec::with_capacity(data_len),
-      rects:   Vec::with_capacity(data_len + 10) // +10 for horizontal lines
+      rects:   Vec::with_capacity(data_len + 20) // +20 for horizontal lines
     }
   }
 
@@ -106,12 +106,30 @@ impl Canvas {
   }
 
   fn calculate_score(interval: f64) -> f64 {
-    let interval_str = interval.to_string();
-    let zero_count = interval_str.matches('0').count() as f64;
-    zero_count / interval_str.len() as f64
+    let mut count = 0;
+    let mut total = 0;
+    let mut num = interval;
+
+    if num.fract() == 0.0 {
+      while num >= 1.0 {
+        total += 1;
+        if num % 10.0 == 0.0 {
+          count += 1;
+        }
+        num /= 10.0;
+      }
+      count as f64 / total as f64
+    } else {
+      0.0
+    }
   }
 
-  fn calculate_multiplier(digit: char) -> f64 { if "124568".contains(digit) { 1.5 } else { 0.67 } }
+  fn calculate_multiplier(digit: char) -> f64 {
+    match digit {
+      '1' | '2' | '4' | '5' | '6' | '8' => 1.5,
+      _ => 0.67
+    }
+  }
 
   fn calculate_weighted_score(interval: f64) -> f64 {
     let digit = interval.to_string().chars().next().unwrap();
@@ -163,8 +181,9 @@ impl Canvas {
 
     let top = 16.0;
     let text_size = 40.0;
+    let text_width = 80; // The lower the value is, the more extended the canvas width is.
     let origin = (15, 65);
-    let size = (1300, 630);
+    let size = (CANVAS_WIDTH as i32 - origin.0 - text_width, 630);
     let csize = (CANVAS_WIDTH, CANVAS_HEIGHT);
     let node_width = size.0 as f64 / (data_len - 1) as f64;
 

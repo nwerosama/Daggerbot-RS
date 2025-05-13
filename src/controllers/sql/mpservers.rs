@@ -209,7 +209,9 @@ impl MpServers {
 
         let mut player_data = player_data;
         if player_data.len() > 70 {
-          player_data = Vec::new(); // Selfnote: 3150/45 = 220, where 3150 is the max PD size and 45 is Monica's update interval
+          player_data = Vec::new();
+          // Selfnote: 3150/45 = 220, where 3150 is the max PD size and 45 is Monica's update interval
+          //           70 points * 45 seconds = 3150 seconds = 52.5 minutes
         }
         player_data.push(current_players);
 
