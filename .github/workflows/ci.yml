@@ -21,9 +21,6 @@ jobs:
           submodules: 'true'
           token: '${{ secrets.NWERO_PAT }}'
 
-      - name: Export commit hash
-        run: export GIT_COMMIT_HASH=${{ github.sha }}
-
       - name: Cache
         uses: Swatinem/rust-cache@v2
         with:
