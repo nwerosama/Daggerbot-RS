@@ -2,26 +2,35 @@ use crate::{
   BotError,
   controllers::sql::MpServers,
   internals::{
-    canvas::Canvas,
     config::BINARY_PROPERTIES,
     monica::{
       Collider,
       DssData,
-      EMPTY_PLAYER_LIST_TEXT,
       EmbedPalette,
       SERVER_SEARCH_FILTERS,
       TASK_NAME,
       ac_serverlist,
       extract_ip_and_code,
       format_daytime,
-      mod_page_url,
-      playerlist_constructor
+      format_player_uptime,
+      mod_page_url
     }
   }
 };
 
 use {
-  asahi::ansi,
+  asahi::{
+    canvas::{
+      ImageFormat,
+      templates::playerlist::{
+        PlayerEntry,
+        Style,
+        playerlist
+      },
+      to_rgba
+    },
+    utils::ansi
+  },
   dag_grpc::FetchRequest,
   dashmap::DashMap,
   poise::{
@@ -250,18 +259,6 @@ async fn players(
   let pd = MpServers::get_player_data(&postgres, server_clone.clone()).await?;
   let peak = MpServers::get_peak_players(&postgres, server_clone).await?;
 
-  // Graph visibly displays the last 53 minutes worth of data,
-  // each dot represents the data within 45 seconds apart
-  // For calculation, see update_player_data function in controllers/sql/mpservers.rs
-  let mut canvas = Canvas::new();
-  canvas.render(pd.iter().map(|x| *x as f64).collect());
-  let file = "Monica.jpg";
-
-  let players = match api_slots.used {
-    0 => EMPTY_PLAYER_LIST_TEXT.to_string(),
-    _ => playerlist_constructor(api_slots.players)
-  };
-
   let palette = EmbedPalette::new();
   let color = if api_slots.capacity == 0 && api_server.day_time == 0 {
     palette.red
@@ -274,6 +271,37 @@ async fn players(
     }
   };
 
+  // Graph visibly displays the last 53 minutes worth of data,
+  // each dot represents the data within 45 seconds apart
+  // For calculation, see update_player_data function in controllers/sql/mpservers.rs
+  let player_entries: Vec<PlayerEntry> = {
+    let mut entries = Vec::with_capacity(16);
+
+    for player in &api_slots.players {
+      if let Some(name) = &player.name {
+        entries.push(PlayerEntry {
+          name:     name.to_string(),
+          uptime:   format_player_uptime(player.uptime.unwrap_or(0)),
+          is_admin: player.is_admin.unwrap_or(false),
+          emoji:    String::new()
+        })
+      }
+    }
+
+    entries
+  };
+  let canvas = playerlist(
+    &player_entries,
+    &pd,
+    true,
+    Some(Style {
+      graph_color: to_rgba(color),
+      ..Default::default()
+    })
+  )
+  .to_bytes(Some(ImageFormat::Jpeg { quality: 100 }))?;
+  let file = "Monica.jpg";
+
   let srv_name = match api_server.name.is_empty() {
     true => "Offline".to_string(),
     false => api_server.name
@@ -283,16 +311,11 @@ async fn players(
     .color(color)
     .author(CreateEmbedAuthor::new(format!("{}/{} ({peak})", api_slots.used, api_slots.capacity)))
     .title(srv_name)
-    .description(players)
     .image(format!("attachment://{file}"))
     .footer(CreateEmbedFooter::new(format!("Current time: {}", format_daytime(api_server.day_time))));
 
   ctx
-    .send(
-      CreateReply::default()
-        .embed(embed)
-        .attachment(CreateAttachment::bytes(canvas.export(), file))
-    )
+    .send(CreateReply::default().embed(embed).attachment(CreateAttachment::bytes(canvas, file)))
     .await?;
 
   Ok(())

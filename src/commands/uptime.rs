@@ -6,7 +6,7 @@ use crate::{
 };
 
 use {
-  asahi::{
+  asahi::utils::{
     format_duration,
     os::{
       format_bytes,

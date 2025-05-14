@@ -25,7 +25,6 @@ use {
     async_trait
   },
   dag_grpc::FetchRequest,
-  image::Rgba,
   lazy_static::lazy_static,
   num_format::{
     Locale,
@@ -138,17 +137,6 @@ impl EmbedPalette {
       yellow: BINARY_PROPERTIES.embed_colors.yellow,
       red:    BINARY_PROPERTIES.embed_colors.red
     }
-  }
-
-  pub fn rgba(
-    &self,
-    color: u32
-  ) -> Rgba<u8> {
-    let r = ((color >> 16) & 0xFF) as u8;
-    let g = ((color >> 8) & 0xFF) as u8;
-    let b = (color & 0xFF) as u8;
-
-    Rgba([r, g, b, 255])
   }
 }
 
@@ -671,7 +659,7 @@ pub fn format_daytime(day_time: i32) -> String {
   format!("{hours:02}:{mins:02}")
 }
 
-fn format_player_uptime(uptime: i32) -> String {
+pub fn format_player_uptime(uptime: i32) -> String {
   let mins: i32;
   let mut hrs: i32 = 0;
 

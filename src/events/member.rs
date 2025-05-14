@@ -8,7 +8,7 @@ use crate::{
 };
 
 use {
-  asahi::format_timestamp,
+  asahi::utils::format_timestamp,
   poise::serenity_prelude::{
     Context,
     CreateEmbed,

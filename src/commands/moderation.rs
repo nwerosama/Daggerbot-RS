@@ -9,7 +9,7 @@ use crate::{
 };
 
 use {
-  asahi::{
+  asahi::utils::{
     format_duration,
     parse_duration
   },

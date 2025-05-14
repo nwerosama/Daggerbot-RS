@@ -136,10 +136,10 @@ dependencies = [
 
 [[package]]
 name = "asahi"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "45168bfa5eb5604839e8b9fd92f0ec25de62fd34179ed9b2d4365c1996d65b83"
+version = "0.1.4"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#e4b4f3fdeaba5f763071bf6762dd729bf863f421"
 dependencies = [
+ "asahi_canvas",
  "asahi_coordinator",
  "asahi_internal",
  "asahi_macros",
@@ -147,10 +147,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "asahi_canvas"
+version = "0.1.4"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#e4b4f3fdeaba5f763071bf6762dd729bf863f421"
+dependencies = [
+ "ab_glyph",
+ "image",
+ "imageproc",
+]
+
+[[package]]
 name = "asahi_coordinator"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68a087983eacb641eaf5e65ffdfd9cd6df9f616ff922476381c0ed58e02d23f6"
+version = "0.1.4"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#e4b4f3fdeaba5f763071bf6762dd729bf863f421"
 dependencies = [
  "asahi_internal",
  "async-trait",
@@ -159,9 +168,8 @@ dependencies = [
 
 [[package]]
 name = "asahi_internal"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e425eacff9382104e875cd620a7197b8364913d9be6c6a19e73fcf12930bc2e8"
+version = "0.1.4"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#e4b4f3fdeaba5f763071bf6762dd729bf863f421"
 dependencies = [
  "bb8-redis",
  "serde_json",
@@ -171,15 +179,13 @@ dependencies = [
 
 [[package]]
 name = "asahi_macros"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0324bec69165fd89858d2b80fa71538dabda03f20d9e115fb765f3fecbd180de"
+version = "0.1.4"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#e4b4f3fdeaba5f763071bf6762dd729bf863f421"
 
 [[package]]
 name = "asahi_utils"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20dc9f6f898c6b9818a859232ff4ae99428d5ca2537fd75d951b0ba98910c607"
+version = "0.1.4"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#e4b4f3fdeaba5f763071bf6762dd729bf863f421"
 dependencies = [
  "asahi_internal",
  "lazy_static",

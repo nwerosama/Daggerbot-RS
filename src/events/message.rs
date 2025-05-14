@@ -5,7 +5,7 @@ use crate::{
 };
 
 use {
-  asahi::{
+  asahi::utils::{
     ansi,
     format_timestamp
   },

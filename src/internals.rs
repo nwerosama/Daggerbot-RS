@@ -1,4 +1,3 @@
-pub mod canvas;
 pub mod config;
 pub mod invite_data;
 pub mod monica;
