@@ -223,8 +223,8 @@ async fn log_entry(
     ("Reason", reason.to_string(), true),
   ];
 
-  if duration.is_some() {
-    let d = parse_duration(&duration.unwrap().to_string()).unwrap();
+  if let Some(d) = duration {
+    let d = parse_duration(&d.to_string()).unwrap();
     fields.push(("Duration", format_duration(d.as_secs()), false));
   }
 
@@ -272,12 +272,10 @@ pub async fn ban(
 
   match guild_id.ban(ctx.http(), user_id, 86400, Some(&format!("{reason} | #{case_id}"))).await {
     Ok(_) => {
-      if is_soft {
-        if let Err(e) = guild_id.unban(ctx.http(), user_id, Some(&format!("{reason} | #{case_id}"))).await {
-          eprintln!("Error unbanning user after softban: {e}");
-          ctx.reply(format!("Softbanned but failed to unban:\n`{e}`")).await?;
-          return Ok(());
-        }
+      if is_soft && let Err(e) = guild_id.unban(ctx.http(), user_id, Some(&format!("{reason} | #{case_id}"))).await {
+        eprintln!("Error unbanning user after softban: {e}");
+        ctx.reply(format!("Softbanned but failed to unban:\n`{e}`")).await?;
+        return Ok(());
       }
 
       ctx
@@ -752,28 +750,28 @@ async fn update(
     let log_channels = [LogChannel::BansAndKicks.to_discord(), LogChannel::BotLog.to_discord()];
 
     for channel_id in log_channels {
-      if let Ok(channel) = ctx.http().get_channel(channel_id).await {
-        if let Some(channel) = channel.guild() {
-          let messages = channel.id.widen().messages(ctx.http(), GetMessages::default().limit(10)).await?;
+      if let Ok(channel) = ctx.http().get_channel(channel_id).await
+        && let Some(channel) = channel.guild()
+      {
+        let messages = channel.id.widen().messages(ctx.http(), GetMessages::default().limit(10)).await?;
 
-          for mut message in messages {
-            if let Some((Some(title), fields)) = message.embeds.first().map(|e| (e.title.clone(), e.fields.clone())) {
-              if title.contains(&format!("Case #{case_id}")) {
-                let original = message.embeds.first().unwrap();
-                let mut new_embed = CreateEmbed::new().title(title).color(original.colour.unwrap());
+        for mut message in messages {
+          if let Some((Some(title), fields)) = message.embeds.first().map(|e| (e.title.clone(), e.fields.clone()))
+            && title.contains(&format!("Case #{case_id}"))
+          {
+            let original = message.embeds.first().unwrap();
+            let mut new_embed = CreateEmbed::new().title(title).color(original.colour.unwrap());
 
-                for field in fields {
-                  let field_value = if field.name == "Reason" {
-                    reason.clone()
-                  } else {
-                    field.value.to_string()
-                  };
-                  new_embed = new_embed.field(field.name, field_value, field.inline);
-                }
-
-                message.edit(ctx.http(), EditMessage::new().embed(new_embed)).await?;
-              }
+            for field in fields {
+              let field_value = if field.name == "Reason" {
+                reason.clone()
+              } else {
+                field.value.to_string()
+              };
+              new_embed = new_embed.field(field.name, field_value, field.inline);
             }
+
+            message.edit(ctx.http(), EditMessage::new().embed(new_embed)).await?;
           }
         }
       }

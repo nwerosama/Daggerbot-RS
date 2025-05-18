@@ -73,21 +73,21 @@ pub async fn execute_schemas(pool: &sqlx::PgPool) -> Result<String, crate::BotEr
         // Only split queries on semicolons if not inside a dollar-quoted block
         if !in_dollar_block && line.trim().ends_with(";") {
           let query = query_buff.trim();
-          if !query.is_empty() {
-            if let Err(e) = sqlx::query(query).execute(pool).await {
-              eprintln!("{DAG_SQL}[Database:Schemas:Error] Failed to execute {fmt_path}\n{e}");
-              process::exit(1);
-            }
+          if !query.is_empty()
+            && let Err(e) = sqlx::query(query).execute(pool).await
+          {
+            eprintln!("{DAG_SQL}[Database:Schemas:Error] Failed to execute {fmt_path}\n{e}");
+            process::exit(1);
           }
           query_buff.clear(); // Clean the buffer for the next query to be read
         }
       }
 
-      if !query_buff.trim().is_empty() {
-        if let Err(e) = sqlx::query(query_buff.trim()).execute(pool).await {
-          eprintln!("{DAG_SQL}[Database:Schemas:Error] Failed to execute {fmt_path}\n{e}");
-          process::exit(1);
-        }
+      if !query_buff.trim().is_empty()
+        && let Err(e) = sqlx::query(query_buff.trim()).execute(pool).await
+      {
+        eprintln!("{DAG_SQL}[Database:Schemas:Error] Failed to execute {fmt_path}\n{e}");
+        process::exit(1);
       }
 
       executed_schemas.push(fmt_path.clone());

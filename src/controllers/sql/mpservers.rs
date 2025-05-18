@@ -137,17 +137,17 @@ impl MpServers {
           let update_sys_time: SystemTime = SystemTime::from(update_time);
           let current_time = SystemTime::now();
 
-          if let Ok(durat_since_last) = current_time.duration_since(update_sys_time) {
-            if durat_since_last >= Duration::from_secs(259200) {
-              sqlx::query(
-                "UPDATE mpservers SET peak_players = 0, last_peak_update = NOW()
+          if let Ok(durat_since_last) = current_time.duration_since(update_sys_time)
+            && durat_since_last >= Duration::from_secs(259200)
+          {
+            sqlx::query(
+              "UPDATE mpservers SET peak_players = 0, last_peak_update = NOW()
                 WHERE name = $1"
-              )
-              .bind(name)
-              .execute(pool)
-              .await?;
-              return Ok(true);
-            }
+            )
+            .bind(name)
+            .execute(pool)
+            .await?;
+            return Ok(true);
           }
         }
         Ok(false)

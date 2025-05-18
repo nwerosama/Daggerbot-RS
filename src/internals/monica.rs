@@ -250,12 +250,11 @@ impl DssData {
 
 impl CsgData {
   fn is_valid(&self) -> bool {
-    if let Some(slot_system) = &self.slot_system {
-      if !slot_system.slot_usage.is_empty() {
-        if let Some(settings) = &self.settings {
-          return !settings.map_title.is_empty() && !settings.time_scale.is_normal();
-        }
-      }
+    if let Some(slot_system) = &self.slot_system
+      && !slot_system.slot_usage.is_empty()
+      && let Some(settings) = &self.settings
+    {
+      return !settings.map_title.is_empty() && !settings.time_scale.is_normal();
     }
     false
   }
@@ -959,10 +958,10 @@ async fn time_drift_webhook(
     Ok(Some(webhook_sent)) => {
       if webhook_sent == "true" {
         // Reset the flag if the current time is approaching 17:35
-        if current_time >= EVENING {
-          if let Err(e) = redis.set(&redis_webhook_sent, "false").await {
-            AsahiError::External(format!("[time_drift_webhook:{server}] Failed to reset webhook sent flag: {e}"));
-          }
+        if current_time >= EVENING
+          && let Err(e) = redis.set(&redis_webhook_sent, "false").await
+        {
+          AsahiError::External(format!("[time_drift_webhook:{server}] Failed to reset webhook sent flag: {e}"));
         }
         return;
       }

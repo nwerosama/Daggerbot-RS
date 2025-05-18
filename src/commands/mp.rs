@@ -126,10 +126,10 @@ async fn is_channel_allowed(ctx: super::PoiseContext<'_>) -> bool {
     return true
   }
 
-  if let Some(member) = ctx.author_member().await {
-    if member.roles.iter().any(|r| whitelisted_roles.contains(&r.get())) {
-      return true
-    }
+  if let Some(member) = ctx.author_member().await
+    && member.roles.iter().any(|r| whitelisted_roles.contains(&r.get()))
+  {
+    return true
   }
 
   if !whitelisted_channels.contains(&channel_id) {

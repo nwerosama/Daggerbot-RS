@@ -113,12 +113,12 @@ async fn reusable_log(
       .timestamp(Timestamp::now())
   );
 
-  if title.contains("edited") {
-    if let Some(msg) = evt_msg {
-      message = message.components(vec![CreateActionRow::Buttons(Cow::Owned(vec![
-        CreateButton::new_link(msg.link()).label("Jump!"),
-      ]))]);
-    }
+  if title.contains("edited")
+    && let Some(msg) = evt_msg
+  {
+    message = message.components(vec![CreateActionRow::Buttons(Cow::Owned(vec![
+      CreateButton::new_link(msg.link()).label("Jump!"),
+    ]))]);
   }
 
   match GenericChannelId::new(BINARY_PROPERTIES.bot_log).send_message(&ctx.http, message).await {
