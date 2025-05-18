@@ -36,7 +36,7 @@ pub struct MpServers {
 
 impl MpServers {
   pub async fn get_servers(pool: &PgPool) -> Result<Vec<Self>> {
-    let q = sqlx::query("SELECT * FROM mpservers").fetch_all(pool).await;
+    let q = sqlx::query("SELECT * FROM mpservers ORDER BY name").fetch_all(pool).await;
 
     let mut servers = Vec::new();
 
