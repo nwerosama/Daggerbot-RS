@@ -152,10 +152,10 @@ impl UserMessageStats {
     current_ts: i64,
     reset_interval: i64
   ) {
-    if let Some(entry) = self.policy_warnings.get(policy_type) {
-      if current_ts - entry.1 >= reset_interval {
-        self.reset_warnings(policy_type);
-      }
+    if let Some(entry) = self.policy_warnings.get(policy_type)
+      && current_ts - entry.1 >= reset_interval
+    {
+      self.reset_warnings(policy_type);
     }
   }
 }
@@ -299,17 +299,15 @@ impl Automoderator {
     ];
 
     for (policy_type, violated) in checks {
-      if violated {
-        if let Some(policy) = policies.iter().find(|p| p.enabled && p.policy_type == policy_type) {
-          let user_stats_key = format!("Discord:UserStats:{}", msg.author.id.get());
-          if let Ok(Some(d)) = self.redis.get(&user_stats_key).await {
-            let stats: UserMessageStats = serde_json::from_str(&d).unwrap_or_default();
-            stats.check_and_reset_warns(&policy_type, current_ts, 300); // 5m
-            let data = serde_json::to_string(&stats).unwrap();
-            self.redis.set(&user_stats_key, &data).await.unwrap();
-          }
-          return Some(policy.clone());
+      if violated && let Some(policy) = policies.iter().find(|p| p.enabled && p.policy_type == policy_type) {
+        let user_stats_key = format!("Discord:UserStats:{}", msg.author.id.get());
+        if let Ok(Some(d)) = self.redis.get(&user_stats_key).await {
+          let stats: UserMessageStats = serde_json::from_str(&d).unwrap_or_default();
+          stats.check_and_reset_warns(&policy_type, current_ts, 300); // 5m
+          let data = serde_json::to_string(&stats).unwrap();
+          self.redis.set(&user_stats_key, &data).await.unwrap();
         }
+        return Some(policy.clone());
       }
     }
 
@@ -385,23 +383,21 @@ impl Automoderator {
 
     // Check regular URLs
     for cap in URL_REGEX.captures_iter(content) {
-      if let Some(domain) = cap.get(1) {
-        if domains.iter().any(|d| &domain.as_str().to_lowercase() == d) {
-          return true;
-        }
+      if let Some(domain) = cap.get(1)
+        && domains.iter().any(|d| &domain.as_str().to_lowercase() == d)
+      {
+        return true;
       }
     }
 
     // Check masked URLs
     for cap in MASKED_URL_REGEX.captures_iter(content) {
-      if let Some(url) = cap.get(1) {
-        if let Ok(parsed) = Url::parse(url.as_str()) {
-          if let Some(domain) = parsed.host_str() {
-            if domains.iter().any(|d| &domain.to_lowercase() == d) {
-              return true;
-            }
-          }
-        }
+      if let Some(url) = cap.get(1)
+        && let Ok(parsed) = Url::parse(url.as_str())
+        && let Some(domain) = parsed.host_str()
+        && domains.iter().any(|d| &domain.to_lowercase() == d)
+      {
+        return true;
       }
     }
 
