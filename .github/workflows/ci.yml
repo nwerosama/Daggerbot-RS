@@ -21,20 +21,21 @@ jobs:
           submodules: 'true'
           token: '${{ secrets.NWERO_PAT }}'
 
+      - name: Install Protobuf compiler
+        run: sudo apt-get install -y protobuf-compiler
+
       - name: Cache
         uses: Swatinem/rust-cache@v2
         with:
           prefix-key: ${{ runner.os }}-cache-v1
           cache-on-failure: 'true'
+          cache-all-crates: 'true'
 
-      - name: Install Protobuf compiler
-        run: sudo apt-get install -y protobuf-compiler
-
-      - name: Run Clippy
-        uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --locked --all-features
+      - name: Install Rust components
+        run: rustup component add rustfmt clippy
 
       - name: Check formatting
         run: cargo fmt --check
+
+      - name: Clippy
+        run: cargo clippy --locked --all-features
