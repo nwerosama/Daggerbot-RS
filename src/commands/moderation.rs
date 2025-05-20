@@ -258,7 +258,7 @@ pub async fn ban(
   #[description = "Should the ban be soft? (ban and unban immediately)"] soft: Option<bool>
 ) -> Result<(), BotError> {
   let is_soft = soft.unwrap_or(false);
-  let guild_id = ctx.guild_id().unwrap();
+  let guild_id = ctx.guild_id().expect("expected guild id to be present");
   let user_id = member.user.id;
   let case_id = generate_id(&ctx.data().postgres).await?;
 
@@ -267,6 +267,8 @@ pub async fn ban(
   } else {
     (ActionType::Ban, "ban")
   };
+
+  ctx.defer().await?;
 
   let notify_user = send_notification(&ctx, &Target::Member(member.clone()), &action_type, &reason, case_id, None).await?;
 
@@ -330,6 +332,8 @@ pub async fn kick(
   #[description = "The reason for the kick"] reason: String
 ) -> Result<(), BotError> {
   let case_id = generate_id(&ctx.data().postgres).await?;
+
+  ctx.defer().await?;
 
   let notify_user = send_notification(&ctx, &Target::Member(member.clone()), &ActionType::Kick, &reason, case_id, None).await?;
 
@@ -434,6 +438,8 @@ pub async fn warn(
   #[description = "The reason for the warning"] reason: String
 ) -> Result<(), BotError> {
   let case_id = generate_id(&ctx.data().postgres).await?;
+  ctx.defer().await?;
+
   let notify_user = send_notification(&ctx, &Target::Member(member.clone()), &ActionType::Warn, &reason, case_id, None).await?;
 
   match log_entry(
