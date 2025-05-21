@@ -137,7 +137,7 @@ dependencies = [
 [[package]]
 name = "asahi"
 version = "0.1.4"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#8c5d17d1ea82c7026e0443892dc43489e95eb590"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#9531463ea49a0a735195fd6552a43b73adcbe774"
 dependencies = [
  "asahi_canvas",
  "asahi_coordinator",
@@ -149,7 +149,7 @@ dependencies = [
 [[package]]
 name = "asahi_canvas"
 version = "0.1.4"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#8c5d17d1ea82c7026e0443892dc43489e95eb590"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#9531463ea49a0a735195fd6552a43b73adcbe774"
 dependencies = [
  "ab_glyph",
  "image",
@@ -159,7 +159,7 @@ dependencies = [
 [[package]]
 name = "asahi_coordinator"
 version = "0.1.4"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#8c5d17d1ea82c7026e0443892dc43489e95eb590"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#9531463ea49a0a735195fd6552a43b73adcbe774"
 dependencies = [
  "asahi_internal",
  "async-trait",
@@ -169,7 +169,7 @@ dependencies = [
 [[package]]
 name = "asahi_internal"
 version = "0.1.4"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#8c5d17d1ea82c7026e0443892dc43489e95eb590"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#9531463ea49a0a735195fd6552a43b73adcbe774"
 dependencies = [
  "bb8-redis",
  "serde_json",
@@ -180,12 +180,12 @@ dependencies = [
 [[package]]
 name = "asahi_macros"
 version = "0.1.4"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#8c5d17d1ea82c7026e0443892dc43489e95eb590"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#9531463ea49a0a735195fd6552a43b73adcbe774"
 
 [[package]]
 name = "asahi_utils"
 version = "0.1.4"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#8c5d17d1ea82c7026e0443892dc43489e95eb590"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#9531463ea49a0a735195fd6552a43b73adcbe774"
 dependencies = [
  "asahi_internal",
  "lazy_static",
@@ -228,9 +228,9 @@ checksum = "ace50bade8e6234aa140d9a2f552bbee1db4d353f69b8217bc503490fc1a9f26"
 
 [[package]]
 name = "av1-grain"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6678909d8c5d46a42abcf571271e15fdbc0a225e3646cf23762cd415046c78bf"
+checksum = "4f3efb2ca85bc610acfa917b5aaa36f3fcbebed5b3182d7f877b02531c4b80c8"
 dependencies = [
  "anyhow",
  "arrayvec",
@@ -1321,9 +1321,9 @@ dependencies = [
 
 [[package]]
 name = "hyper-util"
-version = "0.1.11"
+version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "497bbc33a26fdd4af9ed9c70d63f61cf56a938375fbb32df34db9b1cd6d643f2"
+checksum = "cf9f1e950e0d9d1d3c47184416723cf29c0d1f93bd8cccf37e4beb6b44f31710"
 dependencies = [
  "bytes",
  "futures-channel",
@@ -3002,7 +3002,7 @@ dependencies = [
 [[package]]
 name = "serenity"
 version = "0.12.4"
-source = "git+https://github.com/serenity-rs/serenity?branch=next#956f5f130af486721ca44d4ac3394677d0d5e9b5"
+source = "git+https://github.com/serenity-rs/serenity?branch=next#c0fb264b2f3bfa8d7b6cdf829a9bbbf3b481a055"
 dependencies = [
  "aformat",
  "arrayvec",
@@ -3177,9 +3177,9 @@ dependencies = [
 
 [[package]]
 name = "sqlx"
-version = "0.8.5"
+version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3c3a85280daca669cfd3bcb68a337882a8bc57ec882f72c5d13a430613a738e"
+checksum = "1fefb893899429669dcdd979aff487bd78f4064e5e7907e4269081e0ef7d97dc"
 dependencies = [
  "sqlx-core",
  "sqlx-macros",
@@ -3190,9 +3190,9 @@ dependencies = [
 
 [[package]]
 name = "sqlx-core"
-version = "0.8.5"
+version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f743f2a3cea30a58cd479013f75550e879009e3a02f616f18ca699335aa248c3"
+checksum = "ee6798b1838b6a0f69c007c133b8df5866302197e404e8b6ee8ed3e3a5e68dc6"
 dependencies = [
  "base64",
  "bytes",
@@ -3225,9 +3225,9 @@ dependencies = [
 
 [[package]]
 name = "sqlx-macros"
-version = "0.8.5"
+version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f4200e0fde19834956d4252347c12a083bdcb237d7a1a1446bffd8768417dce"
+checksum = "a2d452988ccaacfbf5e0bdbc348fb91d7c8af5bee192173ac3636b5fb6e6715d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3238,9 +3238,9 @@ dependencies = [
 
 [[package]]
 name = "sqlx-macros-core"
-version = "0.8.5"
+version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "882ceaa29cade31beca7129b6beeb05737f44f82dbe2a9806ecea5a7093d00b7"
+checksum = "19a9c1841124ac5a61741f96e1d9e2ec77424bf323962dd894bdb93f37d5219b"
 dependencies = [
  "dotenvy",
  "either",
@@ -3257,16 +3257,15 @@ dependencies = [
  "sqlx-postgres",
  "sqlx-sqlite",
  "syn 2.0.101",
- "tempfile",
  "tokio",
  "url",
 ]
 
 [[package]]
 name = "sqlx-mysql"
-version = "0.8.5"
+version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0afdd3aa7a629683c2d750c2df343025545087081ab5942593a5288855b1b7a7"
+checksum = "aa003f0038df784eb8fecbbac13affe3da23b45194bd57dba231c8f48199c526"
 dependencies = [
  "atoi",
  "base64",
@@ -3307,9 +3306,9 @@ dependencies = [
 
 [[package]]
 name = "sqlx-postgres"
-version = "0.8.5"
+version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0bedbe1bbb5e2615ef347a5e9d8cd7680fb63e77d9dafc0f29be15e53f1ebe6"
+checksum = "db58fcd5a53cf07c184b154801ff91347e4c30d17a3562a635ff028ad5deda46"
 dependencies = [
  "atoi",
  "base64",
@@ -3345,9 +3344,9 @@ dependencies = [
 
 [[package]]
 name = "sqlx-sqlite"
-version = "0.8.5"
+version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c26083e9a520e8eb87a06b12347679b142dc2ea29e6e409f805644a7a979a5bc"
+checksum = "c2d12fe70b2c1b4401038055f90f151b78208de1f9f89a7dbfd41587a10c3eea"
 dependencies = [
  "atoi",
  "chrono",
@@ -3648,9 +3647,9 @@ dependencies = [
 
 [[package]]
 name = "tokenservice-client"
-version = "0.4.4"
+version = "0.4.5"
 source = "sparse+https://git.toast-server.net/api/packages/nwerosama/cargo/"
-checksum = "500adf2b79e473cbd42dbb67224f77595a9857812783c0e41e302373956ec6f6"
+checksum = "98e122fe17ed65659f8a86f0f3bfe03065cff13d26414bb87c5fb622d155d293"
 dependencies = [
  "reqwest",
  "serde",
