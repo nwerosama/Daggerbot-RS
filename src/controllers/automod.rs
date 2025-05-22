@@ -474,6 +474,10 @@ impl Automoderator {
     policy: AutomodPolicy
   ) -> Result<(), BotError> {
     let user_id = msg.author.id.get();
+    if !Sanctions::acquire_lock(user_id.to_string().as_str()) {
+      return Ok(())
+    }
+
     let user_stats_key = format!("Discord:UserStats:{user_id}");
     let user_stats: UserMessageStats = match self.redis.get(&user_stats_key).await? {
       Some(d) => serde_json::from_str(&d)?,

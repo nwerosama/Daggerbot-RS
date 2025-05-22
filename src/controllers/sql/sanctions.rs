@@ -3,12 +3,22 @@ use super::{
   QUERY_FAILED
 };
 
-use sqlx::{
-  FromRow,
-  PgPool,
-  Result,
-  Row
+use {
+  dashmap::DashMap,
+  lazy_static::lazy_static,
+  sqlx::{
+    FromRow,
+    PgPool,
+    Result,
+    Row
+  },
+  tokio::time::Instant
 };
+
+const LOCK_SECONDS: u64 = 3;
+lazy_static! {
+  static ref LOCKS: DashMap<String, Instant> = DashMap::new();
+}
 
 #[derive(Clone, FromRow)]
 pub struct Sanctions {
@@ -59,10 +69,26 @@ impl Sanctions {
     }
   }
 
+  pub fn acquire_lock(user_id: &str) -> bool {
+    LOCKS.retain(|_, t| t.elapsed().as_secs() < LOCK_SECONDS);
+    if let Some(lt) = LOCKS.get(user_id)
+      && lt.elapsed().as_secs() < LOCK_SECONDS
+    {
+      return false // It's locked if false
+    }
+    LOCKS.insert(user_id.to_string(), Instant::now());
+    true // True if lock acquired
+  }
+
   pub async fn create(
     &self,
     pool: &PgPool
   ) -> Result<Self> {
+    if !Self::acquire_lock(&self.member_id) {
+      println!("{DAG_SQL}[Database:Sanctions:create] {} is already being moderated!", self.member_name);
+      return Ok(self.clone())
+    }
+
     let q = sqlx::query(
       "INSERT INTO sanctions (
         case_id, case_type,
