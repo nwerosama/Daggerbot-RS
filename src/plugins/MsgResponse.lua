@@ -8,7 +8,7 @@ local popular_suffixes = {
   'all', 'everyone', 'lads',
   'guys', 'everybody', 'yall',
   'y\'all', 'my neighbors', 'my neighbours',
-  'daggerbot', 'daggerbots', 'homies'
+  'daggerbot', 'homies', 'chat'
 }
 
 Response.incomingArrays = {
