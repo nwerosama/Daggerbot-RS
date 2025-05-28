@@ -615,7 +615,7 @@ impl Automoderator {
   }
 
   async fn load_prohibited_words(db: &PgPool) -> Result<Vec<Regex>, BotError> {
-    let words = ProhibitedWords::get_words(db).await?;
+    let words = ProhibitedWords::get_words(db).await.expect("failed to get words from db");
 
     let regexes = words
       .into_iter()
@@ -630,7 +630,7 @@ impl Automoderator {
   }
 
   async fn load_prohibited_urls(db: &PgPool) -> Result<Vec<String>, BotError> {
-    let urls = ProhibitedUrls::get_urls(db).await?;
+    let urls = ProhibitedUrls::get_urls(db).await.expect("failed to get urls from db");
     let domains = urls.into_iter().map(|u| u.url.to_lowercase()).collect();
     Ok(domains)
   }

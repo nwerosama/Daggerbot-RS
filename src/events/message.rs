@@ -89,6 +89,19 @@ fn truncate_content(s: FixedString<u16>) -> FixedString<u16> {
   }
 }
 
+#[cfg(feature = "automod")]
+async fn use_automod(
+  ctx: &Context,
+  msg: &Message
+) -> Result<(), BotError> {
+  use crate::controllers::automod::Automoderator;
+  let automod = Automoderator::new(&ctx.data::<BotData>().postgres, ctx.data::<BotData>().redis.clone())
+    .await
+    .expect("failed to initialize automod");
+  automod.process_message(ctx, msg).await.expect("automod's process_message failed");
+  Ok(())
+}
+
 async fn reusable_log(
   ctx: &Context,
   color: u32,
@@ -262,6 +275,9 @@ pub async fn on_message_update(
     return Ok(());
   }
 
+  #[cfg(feature = "automod")]
+  use_automod(ctx, &event.message).await?;
+
   let event_content = event.message.content.clone().to_string();
   let diffs = TextDiff::from_chars(get_cached_msg.content.as_str(), event_content.as_str());
 
@@ -333,11 +349,7 @@ pub async fn on_message(
   }
 
   #[cfg(feature = "automod")]
-  {
-    use crate::controllers::automod::Automoderator;
-    let automod = Automoderator::new(&ctx.data::<BotData>().postgres, ctx.data::<BotData>().redis.clone()).await?;
-    automod.process_message(ctx, new_message).await?;
-  }
+  use_automod(ctx, new_message).await?;
 
   let cached_message = CachedMessage {
     content:     new_message.content.clone(),
