@@ -39,6 +39,12 @@ struct Theme {
 
 static SEASONAL_THEMES: &[Theme] = &[
   Theme {
+    name:  "Pride Month",
+    start: Date { day: 1, month: 6 },
+    end:   Date { day: 30, month: 6 },
+    color: 0xFE218B
+  },
+  Theme {
     name:  "Breast Cancer Awareness",
     start: Date { day: 1, month: 10 },
     end:   Date { day: 31, month: 10 },
@@ -123,7 +129,7 @@ fn calculate_embed_color() -> u32 {
 
   for theme in SEASONAL_THEMES {
     if is_date_in_range(&current_date, &theme.start, &theme.end) {
-      println!("SeasonalTheme[Info] Matching theme '{}' active", theme.name);
+      println!("SeasonalTheme[Info] Matching theme '{}' now applied", theme.name);
       return theme.color;
     }
   }
