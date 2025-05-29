@@ -504,10 +504,11 @@ async fn start(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
     }
   };
 
-  if let Some(live_poll) = mpa_msgs
-    .iter()
-    .find(|m| m.poll.as_ref().is_some_and(|p| !p.results.as_ref().is_some_and(|r| r.is_finalized)))
-  {
+  if let Some(live_poll) = mpa_msgs.iter().find(|m| {
+    m.poll.as_ref().is_some_and(|p| {
+      !p.results.as_ref().is_some_and(|r| r.is_finalized) && p.question.text.clone().is_some_and(|t| t.contains("Vote for the next map!"))
+    })
+  }) {
     ctx
       .reply(format!(
         "There's already a [map vote currently in progress](<{}>), finish that first!",
