@@ -38,7 +38,7 @@ impl Webhooks {
         }
       },
       Err(e) => {
-        eprintln!("{DAG_SQL}[Database:Webhooks:get_hooks:Error] {QUERY_FAILED}\n{e}");
+        asahi::error!("{DAG_SQL}[Database:Webhooks:get_hooks:Error] {QUERY_FAILED}\n{e}");
         return Err(e);
       }
     }

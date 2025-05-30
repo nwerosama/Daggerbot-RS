@@ -3,10 +3,13 @@ use super::{
   QUERY_FAILED
 };
 
-use sqlx::{
-  FromRow,
-  PgPool,
-  Result
+use {
+  asahi::error,
+  sqlx::{
+    FromRow,
+    PgPool,
+    Result
+  }
 };
 
 #[derive(Clone, FromRow, PartialEq)]
@@ -22,7 +25,7 @@ impl ProhibitedUrls {
     {
       Ok(r) => r,
       Err(e) => {
-        eprintln!("{DAG_SQL}[Database:ProhibitedUrls:get_urls:Error] {QUERY_FAILED}\n{e}");
+        error!("{DAG_SQL}[Database:ProhibitedUrls:get_urls:Error] {QUERY_FAILED}\n{e}");
         return Err(e)
       }
     };
@@ -41,7 +44,7 @@ impl ProhibitedUrls {
     {
       Ok(_) => (),
       Err(e) => {
-        eprintln!("{DAG_SQL}[Database:ProhibitedUrls:add_url:Error] {QUERY_FAILED}\n{e}");
+        error!("{DAG_SQL}[Database:ProhibitedUrls:add_url:Error] {QUERY_FAILED}\n{e}");
         return Err(e)
       }
     };
@@ -56,7 +59,7 @@ impl ProhibitedUrls {
     match sqlx::query("DELETE FROM prohibited_urls WHERE url = $1").bind(url).execute(pool).await {
       Ok(_) => (),
       Err(e) => {
-        eprintln!("{DAG_SQL}[Database:ProhibitedUrls:remove_url:Error] {QUERY_FAILED}\n{e}");
+        error!("{DAG_SQL}[Database:ProhibitedUrls:remove_url:Error] {QUERY_FAILED}\n{e}");
         return Err(e)
       }
     };

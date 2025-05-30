@@ -1,5 +1,9 @@
 use {
   crate::internals::utils::token_path,
+  asahi::{
+    error,
+    info
+  },
   bb8_redis::{
     RedisConnectionManager,
     bb8::Pool,
@@ -50,14 +54,14 @@ impl RedisController {
             let ping: RedisResult<String> = cmd("PING").query_async(&mut *conn).await;
             match ping {
               Ok(_) => {
-                println!("Redis[Info] Successfully connected");
+                info!("Redis successfully connected");
                 return pool.clone();
               },
               Err(e) => Self::backoff_from_error("", &e, &mut backoff).await
             }
           },
           Err(e) => {
-            eprintln!("Redis[ConnError] {e}, retrying in {backoff} seconds");
+            error!("Redis connection error: {e}, retrying in {backoff} seconds");
             Self::apply_backoff(&mut backoff).await;
           }
         },
@@ -71,7 +75,7 @@ impl RedisController {
     error: &RedisError,
     backoff: &mut u64
   ) {
-    eprintln!("Redis[{s}Error] {error}, retrying in {backoff} seconds");
+    error!("(Redis:{s}) {error}, retrying in {backoff} seconds");
     Self::apply_backoff(backoff).await;
   }
 

@@ -5,6 +5,7 @@ use super::pluginloader::{
 };
 
 use {
+  asahi::error,
   mlua::{
     Function,
     Lua,
@@ -99,7 +100,7 @@ impl LuaSerenityBridge {
 
       tokio::spawn(async move {
         if let Err(y) = channel_id.say(&http, content).await {
-          eprintln!("SerenityBridge[Error] {y:?}");
+          error!("SerenityBridge[Error] {y:?}");
         }
       });
 
@@ -139,7 +140,7 @@ impl LuaSerenityBridge {
 
       tokio::spawn(async move {
         if let Err(y) = http.get_user(UserId::new(user_id)).await {
-          eprintln!("SerenityBridge[Error] {y:?}");
+          error!("SerenityBridge[Error] {y:?}");
         }
       });
 

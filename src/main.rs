@@ -22,6 +22,10 @@ use {
 };
 
 use {
+  asahi::{
+    error,
+    info
+  },
   mlua::Lua,
   poise::serenity_prelude::{
     ClientBuilder,
@@ -65,8 +69,10 @@ async fn init_serenity_bridge(
 
 #[tokio::main]
 async fn main() {
+  asahi::log_init();
+
   let postgres = {
-    println!("Database[Info] Preparing to connect to database...");
+    info!("Preparing to connect to database...");
     match sqlx::postgres::PgPoolOptions::new()
       .max_connections(28)
       .max_lifetime(Some(Duration::from_secs(600))) // 10 minutes
@@ -75,11 +81,11 @@ async fn main() {
       .await
     {
       Ok(p) => {
-        println!("Database[Info] Database connection established");
+        info!("Database connection established");
         p
       },
       Err(e) => {
-        eprintln!("Database[Error] Database connection error: {e}");
+        error!("Database connection error: {e}");
         std::process::exit(1);
       }
     }
@@ -129,7 +135,7 @@ async fn main() {
             None => "/"
           };
 
-          println!("Discord[{guild_name}] {} ran {prefix}{}", ctx.author().name, ctx.command().qualified_name);
+          info!("Discord[{guild_name}] {} ran {prefix}{}", ctx.author().name, ctx.command().qualified_name);
         })
       },
       prefix_options: poise::PrefixFrameworkOptions {
@@ -171,7 +177,7 @@ async fn main() {
   tokio::select! {
     client_result = client.start() => {
       if let Err(why) = client_result {
-        println!("Client error: {why:?}");
+        error!("Client error: {why:?}");
       }
     },
     shutdown = exit_signal => {

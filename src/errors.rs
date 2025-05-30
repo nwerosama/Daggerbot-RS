@@ -4,6 +4,7 @@ use {
     BotError,
     internals::utils::mention_dev
   },
+  asahi::error,
   poise::FrameworkError
 };
 
@@ -18,10 +19,10 @@ pub async fn fw_errors(error: FrameworkError<'_, BotData, BotError>) {
         .await)
         .is_err()
       {
-        eprintln!("PoiseCommandError({}): {error}", ctx.command().qualified_name);
+        error!("PoiseCommandError({}): {error}", ctx.command().qualified_name);
       }
 
-      eprintln!("CommandErrorDebug: {error:?}");
+      error!("CommandErrorDebug: {error:?}");
     },
     FrameworkError::CommandPanic { payload, ctx, .. } => {
       if (ctx
@@ -32,34 +33,8 @@ pub async fn fw_errors(error: FrameworkError<'_, BotData, BotError>) {
         .await)
         .is_err()
       {
-        eprintln!("PoiseCommandPanic({}): {payload:#?}", ctx.command().qualified_name);
+        error!("PoiseCommandPanic({}): {payload:#?}", ctx.command().qualified_name);
       }
-    },
-    FrameworkError::MissingBotPermissions {
-      missing_permissions, ctx, ..
-    } => {
-      println!("PoiseMissingBotPermissions({}): {missing_permissions:#?}", ctx.command().qualified_name);
-    },
-    FrameworkError::MissingUserPermissions {
-      missing_permissions, ctx, ..
-    } => {
-      println!(
-        "PoiseMissingUserPermissions({}): {:#?}",
-        ctx.command().qualified_name,
-        missing_permissions
-      );
-    },
-    FrameworkError::ArgumentParse { error, ctx, input, .. } => {
-      let input = input.unwrap_or_default();
-      println!("PoiseArgumentParse({}): {error} (input: {input})", ctx.command().qualified_name);
-      ctx
-        .send(
-          poise::CreateReply::default()
-            .content(format!("Error parsing your input: {error}"))
-            .ephemeral(true)
-        )
-        .await
-        .expect("Error sending message");
     },
     FrameworkError::CommandCheckFailed { error, ctx, .. } => {
       let error = match error {
@@ -67,7 +42,7 @@ pub async fn fw_errors(error: FrameworkError<'_, BotData, BotError>) {
         None => format!("{} does not fulfill the check's requirements", ctx.author().display_name())
       };
 
-      println!("PoiseCommandCheckFailed({}): {error}", ctx.command().qualified_name);
+      error!("PoiseCommandCheckFailed({}): {error}", ctx.command().qualified_name);
       ctx
         .send(
           poise::CreateReply::default()
@@ -78,7 +53,7 @@ pub async fn fw_errors(error: FrameworkError<'_, BotData, BotError>) {
         .expect("Error sending message");
     },
     FrameworkError::NotAnOwner { ctx, .. } => {
-      println!(
+      error!(
         "PoiseNotAnOwner: {} tried to execute a developer-level command ({})",
         ctx.author().name,
         ctx.command().qualified_name
@@ -89,11 +64,11 @@ pub async fn fw_errors(error: FrameworkError<'_, BotData, BotError>) {
         .expect("Error sending message");
     },
     FrameworkError::UnknownInteraction { interaction, .. } => {
-      println!(
+      error!(
         "PoiseUnknownInteraction: {} tried to execute an unknown interaction ({})",
         interaction.user.name, interaction.data.name
       );
     },
-    other => println!("PoiseOtherError: {other}")
+    other => error!("PoiseOtherError: {other}")
   }
 }

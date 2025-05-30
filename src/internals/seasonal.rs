@@ -3,7 +3,9 @@ use {
   asahi::{
     AsahiCoordinator,
     AsahiResult,
-    async_trait
+    async_trait,
+    debug,
+    info
   },
   std::{
     sync::{
@@ -71,7 +73,9 @@ fn get_current_date() -> Date {
   let now = SystemTime::now().duration_since(UNIX_EPOCH).expect("Incorrect system time");
   let seconds = now.as_secs();
 
-  let days_since_epoch = seconds / 86400;
+  let local_secs = seconds + 36000;
+
+  let days_since_epoch = local_secs / 86400;
   let mut year = 1970;
   let mut remaining_days = days_since_epoch;
 
@@ -103,7 +107,7 @@ fn get_current_date() -> Date {
     remaining_days -= days as u64;
   }
 
-  println!("SeasonalTheme[Debug] Current date: {day}/{month}");
+  debug!("Current date: {day}/{month}");
 
   Date {
     day,
@@ -129,7 +133,7 @@ fn calculate_embed_color() -> u32 {
 
   for theme in SEASONAL_THEMES {
     if is_date_in_range(&current_date, &theme.start, &theme.end) {
-      println!("SeasonalTheme[Info] Matching theme '{}' now applied", theme.name);
+      info!("Matching theme '{}' now applied", theme.name);
       return theme.color;
     }
   }
@@ -145,7 +149,7 @@ fn update_embed_color() {
 
   if new_color != current {
     CURRENT_EMBED_COLOR.store(new_color, Ordering::Relaxed);
-    println!("SeasonalTheme[Info] Updated embed color to use {new_color:06X}")
+    info!("Updated embed color to use {new_color:06X}")
   }
 }
 

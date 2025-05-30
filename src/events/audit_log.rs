@@ -68,7 +68,7 @@ pub async fn on_audit_log_entry_create(
         )
         .await?;
     },
-    Err(y) => eprintln!("AuditLogEntry[Err] Failed to fetch user: {y}")
+    Err(y) => asahi::error!("AuditLogEntry[Err] Failed to fetch user: {y}")
   }
 
   Ok(())

@@ -30,10 +30,13 @@ pub struct MpChannels {
 }
 
 pub struct EmbedColorPalette {
-  pub primary: u32,
-  pub red:     u32,
-  pub green:   u32,
-  pub yellow:  u32
+  pub red:    u32,
+  pub green:  u32,
+  pub yellow: u32
+}
+
+impl EmbedColorPalette {
+  pub fn primary(&self) -> u32 { get_embed_color() }
 }
 
 #[cfg(feature = "production")]
@@ -44,10 +47,9 @@ pub static BINARY_PROPERTIES: LazyLock<ConfigMeta> = LazyLock::new(|| {
   ConfigMeta::new()
     .guild_id(929807948748832798) // Daggerwin Dev Server
     .embed_colors(EmbedColorPalette {
-      primary: get_embed_color(),
-      red:     0xE62C3B,
-      green:   0x57F287,
-      yellow:  0xFFEA00
+      red:    0xE62C3B,
+      green:  0x57F287,
+      yellow: 0xFFEA00
     })
     .ready_notify(1091300529696673792) // #i-talk-to-myself-alot
     .mp_info(1091300529696673792) // #i-talk-to-myself-alot
@@ -71,10 +73,9 @@ impl ConfigMeta {
     Self {
       guild_id:        468835415093411861, // Daggerwin
       embed_colors:    EmbedColorPalette {
-        primary: get_embed_color(),
-        red:     0xE62C3B,
-        green:   0x57F287,
-        yellow:  0xFFEA00
+        red:    0xE62C3B,
+        green:  0x57F287,
+        yellow: 0xFFEA00
       },
       ready_notify:    548032776830582794,  // #bot-log
       mp_mod_role:     572151330710487041,  // MP Moderator

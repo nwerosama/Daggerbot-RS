@@ -17,6 +17,10 @@ mod prohibited_urls;
 pub use prohibited_urls::ProhibitedUrls;
 
 use {
+  asahi::{
+    error,
+    info
+  },
   regex::Regex,
   std::{
     fs,
@@ -39,7 +43,7 @@ pub async fn execute_schemas(pool: &sqlx::PgPool) -> Result<String, crate::BotEr
   let paths = match fs::read_dir(SCHEMA_DIR) {
     Ok(p) => p,
     Err(e) => {
-      eprintln!("{DAG_SQL}[Database:Schemas:Error] {e}");
+      error!("{DAG_SQL}[Database:Schemas:Error] {e}");
       process::exit(1);
     }
   };
@@ -76,7 +80,7 @@ pub async fn execute_schemas(pool: &sqlx::PgPool) -> Result<String, crate::BotEr
           if !query.is_empty()
             && let Err(e) = sqlx::query(query).execute(pool).await
           {
-            eprintln!("{DAG_SQL}[Database:Schemas:Error] Failed to execute {fmt_path}\n{e}");
+            error!("{DAG_SQL}[Database:Schemas:Error] Failed to execute {fmt_path}\n{e}");
             process::exit(1);
           }
           query_buff.clear(); // Clean the buffer for the next query to be read
@@ -86,7 +90,7 @@ pub async fn execute_schemas(pool: &sqlx::PgPool) -> Result<String, crate::BotEr
       if !query_buff.trim().is_empty()
         && let Err(e) = sqlx::query(query_buff.trim()).execute(pool).await
       {
-        eprintln!("{DAG_SQL}[Database:Schemas:Error] Failed to execute {fmt_path}\n{e}");
+        error!("{DAG_SQL}[Database:Schemas:Error] Failed to execute {fmt_path}\n{e}");
         process::exit(1);
       }
 
@@ -96,7 +100,7 @@ pub async fn execute_schemas(pool: &sqlx::PgPool) -> Result<String, crate::BotEr
 
   let mut execution_success = String::new();
   if !executed_schemas.is_empty() {
-    println!("{DAG_SQL}[Database:Schemas:Info] Successfully executed: {}", executed_schemas.join(", "));
+    info!("{DAG_SQL}[Database:Schemas:Info] Successfully executed: {}", executed_schemas.join(", "));
 
     let linted = executed_schemas.iter().map(|s| format!("`{s}`")).collect::<Vec<String>>().join(", ");
     execution_success.push_str(&format!("Successfully executed: {linted}"));

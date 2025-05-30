@@ -8,7 +8,11 @@ use crate::{
 };
 
 use {
-  asahi::utils::format_timestamp,
+  asahi::{
+    debug,
+    error,
+    utils::format_timestamp
+  },
   poise::serenity_prelude::{
     Context,
     CreateEmbed,
@@ -59,8 +63,10 @@ pub async fn on_guild_member_addition(
       new_member.add_role(&ctx.http, dagstaff_role, Some("Staff member in main guild")).await?;
     }
   } else if new_member.guild_id == GuildId::new(BINARY_PROPERTIES.guild_id) {
-    println!("GuildMemberAddition[Debug] WS event received, preparing to fire welcome message");
-    println!("GuildMemberAddition[Debug] Gateway sent member data for {}", new_member.user.tag());
+    debug!(
+      "WS event received, preparing to fire welcome message\nGateway sent member data for {}",
+      new_member.user.tag()
+    );
 
     let cached_guild = match new_member.guild_id.to_guild_cached(&ctx.cache) {
       Some(g) => g.clone(),
@@ -125,7 +131,7 @@ pub async fn on_guild_member_addition(
         &ctx.http,
         CreateMessage::new().embed(
           CreateEmbed::new()
-            .color(BINARY_PROPERTIES.embed_colors.primary)
+            .color(BINARY_PROPERTIES.embed_colors.primary())
             .thumbnail(new_member.user.face())
             .title(format!("Welcome to {}, {}!", cached_guild.name, new_member.user.tag()))
             .footer(CreateEmbedFooter::new(format!("{}{ordinal_suffix} member", cached_guild.member_count)))
@@ -159,7 +165,7 @@ pub async fn on_guild_member_addition(
           )
           .await?;
       },
-      Err(e) => eprintln!("Error sending welcome message: {e:?}")
+      Err(e) => error!("Error sending welcome message: {e:?}")
     }
   }
 
@@ -176,7 +182,7 @@ pub async fn on_guild_member_removal(
     .is_none_or(|data| data.guild_id != GuildId::new(BINARY_PROPERTIES.guild_id))
   {
     #[cfg(not(feature = "production"))]
-    println!("GuildMemberRemoval[Debug] Member data unavailable, not emitting log");
+    debug!("Member data unavailable, not emitting log");
     return Ok(());
   }
 
@@ -187,12 +193,12 @@ pub async fn on_guild_member_removal(
     is_bot = "Member";
   }
 
-  println!("GuildMemberRemoval[Debug] WS event received, preparing to fire leave message");
+  debug!("WS event received, preparing to fire leave message");
   let member_data = match member_data_if_available {
     Some(m) => m.clone(),
     None => return Ok(())
   };
-  println!("GuildMemberRemoval[Debug] Gateway sent member data for {}", member_data.user.tag());
+  debug!("Gateway sent member data for {}", member_data.user.tag());
 
   let mut embed = CreateEmbed::new()
     .color(BINARY_PROPERTIES.embed_colors.red)

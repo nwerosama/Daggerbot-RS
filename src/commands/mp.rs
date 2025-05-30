@@ -29,6 +29,7 @@ use {
       },
       to_rgba
     },
+    error,
     utils::ansi
   },
   dag_grpc::FetchRequest,
@@ -193,32 +194,32 @@ async fn data_warehouse(
       let response = d.into_inner().data;
 
       if response.is_empty() {
-        eprintln!("DataWarehouse[Error] 'dss' field is nullified for {}", server.name);
+        error!("(DataWarehouse) 'dss' field is nullified for {}", server.name);
         return Err("Monica didn't reply to the payload request in time, try again later!".to_string().into())
       }
 
       serde_json::from_str::<serde_json::Value>(&response)
         .map_err(|e| {
-          eprintln!("DataWarehouse[Error] {e}");
+          error!("(DataWarehouse) Parsing error: {e}");
           format!("**Parsing error:** {e}").into()
         })
         .and_then(|data| {
           data
             .get("dss")
             .ok_or_else(|| {
-              eprintln!("DataWarehouse[Error] Response missing 'dss' field");
+              error!("(DataWarehouse) Response missing 'dss' field");
               "Monica returned unexpected data error!".into()
             })
             .and_then(|dss| {
               serde_json::from_value::<DssData>(dss.clone()).map_err(|e| {
-                eprintln!("DataWarehouse[Error] {e}");
+                error!("(DataWarehouse) Pipeline error: {e}");
                 format!("**Pipeline error:** {e}").into()
               })
             })
         })
     },
     Err(y) => {
-      eprintln!("DataWarehouse[Error] {y}");
+      error!("(DataWarehouse) {y}");
       Err(format!("Ran into {a_} {collider} while trying to retrieve server data, please try again later!").into())
     }
   }
@@ -375,7 +376,7 @@ async fn details(
     .send(
       CreateReply::default().embed(
         CreateEmbed::new()
-          .color(BINARY_PROPERTIES.embed_colors.primary)
+          .color(BINARY_PROPERTIES.embed_colors.primary())
           .author(CreateEmbedAuthor::new("Crossplay"))
           .description(srv_details.join("\n"))
       )

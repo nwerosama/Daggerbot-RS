@@ -19,6 +19,6 @@ pub async fn gracefully_shutdown() -> bool {
     v = s3.recv() => v.unwrap()
   );
 
-  println!("\nGoodbye! 👋");
+  asahi::info!("Goodbye! 👋");
   true
 }

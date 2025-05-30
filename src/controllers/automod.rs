@@ -26,6 +26,9 @@ use {
     AsahiCoordinator,
     AsahiResult,
     async_trait,
+    debug,
+    error,
+    info,
     utils::{
       format_duration,
       parse_duration
@@ -260,18 +263,18 @@ impl Automoderator {
       match msg.member(ctx).await {
         Ok(m) => {
           if self.staff_check(&m) {
-            println!("[automod::process_message] {} has a staff role, ignoring", msg.author.name);
+            info!("{} has a staff role, ignoring", msg.author.name);
             return Ok(());
           }
         },
         Err(_) => {
-          eprintln!("[automod::process_message] Got hit by an error, couldn't check anyway!");
+          error!("Got hit by an error, couldn't check anyway!");
           return Ok(());
         }
       }
 
       if violation.policy_type == AutomodPolicyType::MaliciousLinks {
-        println!("[automod::process_message] ({}) Malicious URL: {}", msg.author.name, msg.content);
+        info!("({}) Malicious URL: {}", msg.author.name, msg.content);
       }
 
       self.handle_violation(ctx, msg, violation).await?;
@@ -439,7 +442,7 @@ impl Automoderator {
     }
 
     let embed = CreateEmbed::default()
-      .color(BINARY_PROPERTIES.embed_colors.primary)
+      .color(BINARY_PROPERTIES.embed_colors.primary())
       .title(format!("{} | Case #{case_id}", policy.action))
       .timestamp(msg.timestamp)
       .fields(fields);
@@ -488,8 +491,8 @@ impl Automoderator {
     let case_id = generate_id(postgres).await?;
 
     if (Sanctions::load_data(postgres, case_id).await?).is_some() {
-      eprintln!(
-        "[automod::handle_violation] attempted to create case entry but database already has it: #{case_id} - {}",
+      error!(
+        "Attempted to create case entry but database already has it: #{case_id} - {}",
         msg.author.name
       );
       return Ok(())
@@ -517,15 +520,15 @@ impl Automoderator {
         tokio::spawn(async move {
           sleep(Duration::from_secs(10)).await;
           if let Err(e) = channel_id.delete_message(&http, reply_id, None).await {
-            eprintln!("[automod::delete_reply_message] Failed to delete the bot's reply message: {e}");
+            error!("Failed to delete the bot's reply message: {e}");
           }
         });
       } else {
-        eprintln!("[automod::reply_message] Failed to reply to user's message");
+        error!("Failed to reply to user's message");
       }
 
       if let Err(e) = msg.delete(&ctx.http, Some("Message violated the automod's policy!")).await {
-        eprintln!("[automod::delete_message] Failed to delete the message: {e}");
+        error!("Failed to delete the message: {e}");
       }
     }
 
@@ -570,7 +573,7 @@ impl Automoderator {
           guild_id.unban(&ctx.http, msg.author.id, None).await?;
           self.create_sanction(ctx, msg.author.id, "Softban", &policy.reason, None, case_id).await?;
         },
-        _ => println!("[automod::should_action] Unknown ActionType ended up here!")
+        _ => error!("Unknown ActionType ended up here!")
       }
     }
 
@@ -621,7 +624,7 @@ impl Automoderator {
       .into_iter()
       .filter_map(|w| {
         Regex::new(&format!(r"(?i)\b{}(?:ing|ed|s|[0-9]*)?\b", regex::escape(&w.word)))
-          .map_err(|e| eprintln!("Invalid word pattern ({}): {e}", w.word))
+          .map_err(|e| error!("Invalid word pattern ({}): {e}", w.word))
           .ok()
       })
       .collect();
@@ -672,18 +675,18 @@ async fn send_notification(
   }
 
   let embed = CreateEmbed::new()
-    .color(BINARY_PROPERTIES.embed_colors.primary)
+    .color(BINARY_PROPERTIES.embed_colors.primary())
     .title("Notice from automoderator")
     .fields(fields)
     .description(description);
 
   match user.id.direct_message(&ctx.http, CreateMessage::new().embed(embed)).await {
     Ok(_) => {
-      println!("[automod::send_notification] (#{case_id}:{}) Sent DM with reason \"{reason}\"", user.name);
+      info!("(#{case_id}:{}) Sent DM with reason \"{reason}\"", user.name);
       Ok(true)
     },
     Err(e) => {
-      eprintln!("[automod::send_notification] (#{case_id}:{}) Send DM failed with error: {e}", user.name);
+      error!("(#{case_id}:{}) Send DM failed with error: {e}", user.name);
       Ok(false)
     }
   }
@@ -742,7 +745,7 @@ impl AsahiCoordinator<BotData> for MaliciousDomains {
       {
         Ok(r) => {
           if !r.status().is_success() {
-            eprintln!("MaliciousDomains[Debug] {url} returned status {}", r.status());
+            debug!("(MaliciousDomains) {url} returned status {}", r.status());
             continue;
           }
 
@@ -754,15 +757,15 @@ impl AsahiCoordinator<BotData> for MaliciousDomains {
               total += count;
               success += 1;
             },
-            Err(e) => eprintln!("MaliciousDomains[Err] {url} reported an error: {e}")
+            Err(e) => error!("(MaliciousDomains) {url} reported an error: {e}")
           }
         },
-        Err(e) => eprintln!("MaliciousDomains[Err] {url} didn't want to respond: {e}")
+        Err(e) => error!("(MaliciousDomains) {url} didn't want to respond: {e}")
       }
     }
 
-    println!(
-      "MaliciousDomains[Info] Refreshed from {success} of {} sources, {total} domains total",
+    info!(
+      "(MaliciousDomains) Refreshed from {success} of {} sources, {total} domains total",
       MD_BLOCKLIST.len()
     );
 
@@ -771,7 +774,7 @@ impl AsahiCoordinator<BotData> for MaliciousDomains {
       bot_data.redis.set(MD_KEY_MAIN, &domains_json).await?;
       bot_data.redis.set(MD_KEY_LU, &current_time.to_string()).await?;
 
-      println!("MaliciousDomains[Info] Cache refreshed | {} domains total", domains.len());
+      info!("(MaliciousDomains) Cache refreshed | {} domains total", domains.len());
     }
 
     Ok(())

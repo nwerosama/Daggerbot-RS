@@ -4,6 +4,10 @@ use super::{
 };
 
 use {
+  asahi::{
+    error,
+    info
+  },
   dashmap::DashMap,
   lazy_static::lazy_static,
   sqlx::{
@@ -85,7 +89,7 @@ impl Sanctions {
     pool: &PgPool
   ) -> Result<Self> {
     if !Self::acquire_lock(&self.member_id) {
-      println!("{DAG_SQL}[Database:Sanctions:create] {} is already being moderated!", self.member_name);
+      info!("{DAG_SQL}[Database:Sanctions:create] {} is already being moderated!", self.member_name);
       return Ok(self.clone())
     }
 
@@ -121,7 +125,7 @@ impl Sanctions {
         ..self.clone()
       }),
       Err(e) => {
-        eprintln!("{DAG_SQL}[Database:Sanctions:create:Error] {QUERY_FAILED}\n{e}");
+        error!("{DAG_SQL}[Database:Sanctions:create:Error] {QUERY_FAILED}\n{e}");
         Err(e)
       }
     }
@@ -147,7 +151,7 @@ impl Sanctions {
         Ok(cases)
       },
       Err(e) => {
-        eprintln!("{DAG_SQL}[Database:Sanctions:get_cases:Error] {QUERY_FAILED}\n{e}");
+        error!("{DAG_SQL}[Database:Sanctions:get_cases:Error] {QUERY_FAILED}\n{e}");
         Err(e)
       }
     }

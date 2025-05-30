@@ -11,6 +11,7 @@ use crate::{
 };
 
 use {
+  asahi::info,
   poise::serenity_prelude::{
     Context,
     GenericChannelId,
@@ -75,17 +76,17 @@ async fn ready_once(
 ) -> Result<(), BotError> {
   #[cfg(not(feature = "production"))]
   {
-    println!("Event[Ready:Notice] Detected a development environment!");
+    info!("Detected a development environment!");
     let gateway = ctx.http.get_bot_gateway().await?;
     let session = gateway.session_start_limit;
-    println!("Event[Ready:Notice] Session limit: {}/{}", session.remaining, session.total);
+    info!("Gateway session limit: {}/{}", session.remaining, session.total);
   }
 
-  println!("Event[Ready] Build version: {} ({GIT_COMMIT_HASH}:{GIT_COMMIT_BRANCH})", *BOT_VERSION);
-  println!("Event[Ready] Connected to API as {}", ready.user.name);
+  info!("Build version: {} ({GIT_COMMIT_HASH}:{GIT_COMMIT_BRANCH})", *BOT_VERSION);
+  info!("Connected to API as {}", ready.user.name);
 
   let ready_embed = CreateEmbed::new()
-    .color(BINARY_PROPERTIES.embed_colors.primary)
+    .color(BINARY_PROPERTIES.embed_colors.primary())
     .thumbnail(ready.user.avatar_url().unwrap_or_default())
     .author(CreateEmbedAuthor::new(format!("{} is ready!", ready.user.name)).clone());
 

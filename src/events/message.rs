@@ -5,9 +5,12 @@ use crate::{
 };
 
 use {
-  asahi::utils::{
-    ansi,
-    format_timestamp
+  asahi::{
+    error,
+    utils::{
+      ansi,
+      format_timestamp
+    }
   },
   lazy_static::lazy_static,
   poise::serenity_prelude::{
@@ -70,12 +73,12 @@ async fn store_msg_cache(
   match redis.set(&rkey, &serde_json::to_string(&cached)?).await {
     Ok(_) => {
       #[cfg(not(feature = "production"))]
-      println!("Message[Cache] Message cached successfully!");
-      redis.expire(&rkey, 43200).await?; // 12 hours, extended from 4 hours due to Automod purposes
+      asahi::debug!("Message cached successfully!");
+      redis.expire(&rkey, 43200).await?; // 12 hours
       Ok(cached)
     },
     Err(e) => {
-      eprintln!("Message[Cache:Error] {e}");
+      error!("Message failed to cache: {e}");
       Err(BotError::from(e))
     }
   }
@@ -112,7 +115,7 @@ async fn reusable_log(
 ) -> Result<(), BotError> {
   for (_, v, _) in &fields {
     if v.len() > 1024 {
-      println!("MessageLog[reusable_log] Embed field's value exceeds 1024 characters, not sending it");
+      error!("Embed field's value exceeds 1024 characters, not sending it");
       return Ok(())
     }
   }
@@ -137,7 +140,7 @@ async fn reusable_log(
   match GenericChannelId::new(BINARY_PROPERTIES.bot_log).send_message(&ctx.http, message).await {
     Ok(_) => Ok(()),
     Err(e) => {
-      eprintln!("MessageLog[Error] {e}");
+      error!("Log failed to send due to error: {e}");
       Err(BotError::from(e))
     }
   }
@@ -155,7 +158,7 @@ async fn ignored_channels(
   match q {
     Ok(r) => Ok(r.rows_affected() > 0),
     Err(e) => {
-      eprintln!("IgnoredChannels[Error] {e}");
+      error!("Ignored channels error: {e}");
       Err(e)
     }
   }
@@ -177,22 +180,18 @@ pub async fn on_message_delete(
     Ok(m) => {
       let msg = match m {
         Some(msg) => msg,
-        None => {
-          #[cfg(not(feature = "production"))]
-          eprintln!("MessageDelete[Error] Message not found in cache");
-          return Ok(());
-        }
+        None => return Ok(())
       };
       match serde_json::from_str(&msg) {
         Ok(c) => c,
         Err(e) => {
-          eprintln!("MessageDelete[Deserialization:Error] {e}");
+          error!("MessageDelete deserialization error: {e}");
           return Ok(());
         }
       }
     },
     Err(e) => {
-      eprintln!("MessageDelete[Error] {e}");
+      error!("(MessageDelete) Unknown error: {e}");
       return Ok(());
     }
   };
@@ -243,22 +242,18 @@ pub async fn on_message_update(
     Ok(m) => {
       let msg = match m {
         Some(msg) => msg,
-        None => {
-          #[cfg(not(feature = "production"))]
-          eprintln!("MessageUpdate[Error] Message not found in cache");
-          return Ok(());
-        }
+        None => return Ok(())
       };
       match serde_json::from_str(&msg) {
         Ok(c) => c,
         Err(e) => {
-          eprintln!("MessageUpdate[Deserialization:Error] {e}");
+          error!("MessageUpdate deserialization error: {e}");
           return Ok(());
         }
       }
     },
     Err(e) => {
-      eprintln!("MessageUpdate[Error] {e}");
+      error!("(MessageUpdate) Unknown error: {e}");
       return Ok(());
     }
   };
@@ -308,7 +303,7 @@ pub async fn on_message_update(
 
   reusable_log(
     ctx,
-    BINARY_PROPERTIES.embed_colors.primary,
+    BINARY_PROPERTIES.embed_colors.primary(),
     &get_cached_msg.author,
     "Message edited",
     vec![

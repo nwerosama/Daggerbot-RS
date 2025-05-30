@@ -9,9 +9,12 @@ use crate::{
 };
 
 use {
-  asahi::utils::{
-    format_duration,
-    parse_duration
+  asahi::{
+    error,
+    utils::{
+      format_duration,
+      parse_duration
+    }
   },
   poise::{
     CreateReply,
@@ -146,7 +149,7 @@ pub async fn send_notification(
   }
 
   let embed = CreateEmbed::new()
-    .color(BINARY_PROPERTIES.embed_colors.primary)
+    .color(BINARY_PROPERTIES.embed_colors.primary())
     .title("Notice from moderation team")
     .fields(fields)
     .description(description);
@@ -154,7 +157,7 @@ pub async fn send_notification(
   match user.id.direct_message(ctx.http(), CreateMessage::new().embed(embed)).await {
     Ok(_) => Ok(true),
     Err(e) => {
-      eprintln!("[moderation::send_notification] Send DM failed with error: {e}");
+      error!("Send DM failed with error: {e}");
       Ok(false)
     }
   }
@@ -182,8 +185,8 @@ async fn log_entry(
   let existing_sanctions = Sanctions::load_data(&db, case_id).await?;
 
   if existing_sanctions.is_some() {
-    eprintln!(
-      "Moderation[Error] {} tried to create a case entry but Postgres already has it, dropping this one!",
+    error!(
+      "{} tried to create a case entry but Postgres already has it, dropping this one!",
       moderator.user.name
     );
     return Ok(false)
@@ -229,7 +232,7 @@ async fn log_entry(
   }
 
   let embed = CreateEmbed::default()
-    .color(BINARY_PROPERTIES.embed_colors.primary)
+    .color(BINARY_PROPERTIES.embed_colors.primary())
     .title(format!("{action} | Case #{case_id}"))
     .timestamp(Timestamp::from_unix_timestamp(sanctions.timestamp).unwrap())
     .fields(fields);
@@ -243,7 +246,7 @@ async fn log_entry(
       Ok(true)
     },
     Err(e) => {
-      eprintln!("Moderation[Error] err sending message: {e}");
+      error!("Error sending message: {e}");
       Ok(false)
     }
   }
@@ -275,7 +278,7 @@ pub async fn ban(
   match guild_id.ban(ctx.http(), user_id, 86400, Some(&format!("{reason} | #{case_id}"))).await {
     Ok(_) => {
       if is_soft && let Err(e) = guild_id.unban(ctx.http(), user_id, Some(&format!("{reason} | #{case_id}"))).await {
-        eprintln!("Error unbanning user after softban: {e}");
+        error!("Error unbanning user after softban: {e}");
         ctx.reply(format!("Softbanned but failed to unban:\n`{e}`")).await?;
         return Ok(());
       }
@@ -315,7 +318,7 @@ pub async fn ban(
       }
     },
     Err(e) => {
-      eprintln!("Error {action_verb}ning user: {e}");
+      error!("Error {action_verb}ning user: {e}");
       ctx.reply(format!("Could not {action_verb} the user:\n`{e}`")).await?;
       return Ok(());
     }
@@ -374,7 +377,7 @@ pub async fn kick(
       }
     },
     Err(e) => {
-      eprintln!("Error kicking user: {e}");
+      error!("Error kicking user: {e}");
       ctx.reply(format!("Could not kick the user:\n`{e}`")).await?;
     }
   }
@@ -422,7 +425,7 @@ pub async fn unban(
       }
     },
     Err(e) => {
-      eprintln!("Error revoking the ban: {e}");
+      error!("Error revoking the ban: {e}");
       ctx.reply(format!("Could not unban the user:\n`{e}`")).await?;
     }
   }
@@ -464,7 +467,7 @@ pub async fn warn(
         .await?;
     },
     Err(e) => {
-      eprintln!("Error warning user: {e}");
+      error!("Error warning user: {e}");
       ctx
         .send(
           CreateReply::new()
@@ -490,7 +493,7 @@ pub async fn mute(
   let mut d = match parse_duration(&duration) {
     Ok(d) => d,
     Err(e) => {
-      eprintln!("Moderation[Timeout:Error] {e}");
+      error!("Timeout duration error: {e}");
       ctx.reply("Could not parse the duration, try again").await?;
       return Ok(());
     }
@@ -507,7 +510,7 @@ pub async fn mute(
   let dur = match Timestamp::from_unix_timestamp(d.as_secs() as i64 + SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as i64) {
     Ok(d) => d,
     Err(e) => {
-      eprintln!("Moderation[Timeout:Error] {e}");
+      error!("Timeout timestamp error: {e}");
       ctx
         .reply(format!("Timestamp didn't parse correctly and Discord sent an error back.\n`{e}`"))
         .await?;
@@ -559,7 +562,7 @@ pub async fn mute(
       }
     },
     Err(e) => {
-      eprintln!("Error timing out user: {e}");
+      error!("Error timing out user: {e}");
       ctx.reply(format!("Could not timeout the user:\n`{e}`")).await?;
       return Ok(());
     }
@@ -606,7 +609,7 @@ pub async fn unmute(
       }
     },
     Err(e) => {
-      eprintln!("Error removing the timeout from user: {e}");
+      error!("Error removing the timeout from user: {e}");
       ctx.reply(format!("Could not unmute the user:\n`{e}`")).await?;
       return Ok(());
     }
@@ -696,7 +699,7 @@ async fn view(
       }
 
       let embed = CreateEmbed::default()
-        .color(BINARY_PROPERTIES.embed_colors.primary)
+        .color(BINARY_PROPERTIES.embed_colors.primary())
         .title(format!("{} | Case #{case_id}", sanctions.case_type))
         .timestamp(Timestamp::from_unix_timestamp(sanctions.timestamp).unwrap())
         .fields(fields);

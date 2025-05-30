@@ -22,7 +22,11 @@ use {
     AsahiCoordinator,
     AsahiError,
     AsahiResult,
-    async_trait
+    async_trait,
+    debug,
+    error,
+    info,
+    warn
   },
   dag_grpc::FetchRequest,
   lazy_static::lazy_static,
@@ -441,7 +445,7 @@ impl AsahiCoordinator<BotData> for Monica {
               continue;
             }
 
-            eprintln!("gRPC[Error] Monica reported an error: {e}");
+            error!("(gRPC) Monica reported an error: {e}");
             embeds.push(
               CreateEmbed::new()
                 .color(palette.red)
@@ -471,7 +475,7 @@ impl AsahiCoordinator<BotData> for Monica {
 
         let (dss, csg): (DssData, CsgData) = {
           if dss_data.is_none() || csg_data.is_none() {
-            println!("{TASK_NAME}[Error] Missing DSS/CSG fields for {server}: dss={dss_data:?} | csg={csg_data:?}");
+            error!("Missing DSS/CSG fields for {server}: dss={dss_data:?} | csg={csg_data:?}");
             embeds.push(
               CreateEmbed::new()
                 .color(palette.red)
@@ -512,7 +516,7 @@ impl AsahiCoordinator<BotData> for Monica {
               continue;
             },
             (..) => {
-              println!("Monica[Warn] Either the data mapping is incorrect or improperly set, otherwise no data received from gameserver!");
+              warn!("Either the data mapping is incorrect or improperly set, otherwise no data received from gameserver!");
 
               embeds.push(
                 CreateEmbed::new()
@@ -537,7 +541,7 @@ impl AsahiCoordinator<BotData> for Monica {
         }
 
         if !dss.server.clone().unwrap().name.is_empty() && !dss.is_valid() && !csg.is_valid() {
-          println!("[monica:invalid_data_received_embed] {dss:?}"); // Debug trace, this section occurs when server gets rebooted.
+          debug!("{dss:?}"); // Debug trace, this section occurs when server gets rebooted.
           embeds.push(
             CreateEmbed::new()
               .color(palette.red)
@@ -552,7 +556,7 @@ impl AsahiCoordinator<BotData> for Monica {
         if peak_reset_result || peak_update_result {
           const PEAK_PLRS_TXT: &str = "Peak players count for";
           if peak_reset_result {
-            println!("{TASK_NAME}[Info] {PEAK_PLRS_TXT} \"{server}\" has passed 72 hours and now since reset");
+            info!("{PEAK_PLRS_TXT} \"{server}\" has passed 72 hours and now since reset");
             cache_servers(&redis, servers.clone()).await?;
           } else {
             cache_servers(&redis, servers.clone()).await?;
@@ -581,7 +585,7 @@ impl AsahiCoordinator<BotData> for Monica {
         let timescale = csg.settings.clone().map_or_else(|| 0.0, |settings| settings.time_scale);
 
         let main_embed = CreateEmbed::new()
-          .color(BINARY_PROPERTIES.embed_colors.primary)
+          .color(BINARY_PROPERTIES.embed_colors.primary())
           .title(dss.server.clone().unwrap().name)
           .description(players)
           .fields(vec![
@@ -626,7 +630,7 @@ impl AsahiCoordinator<BotData> for Monica {
           )
           .await
         {
-          eprintln!("{TASK_NAME} | Error editing message: {y}");
+          error!("{TASK_NAME} | Error editing message: {y}");
         }
         no_servers = true;
         continue;
@@ -644,7 +648,7 @@ impl AsahiCoordinator<BotData> for Monica {
         )
         .await
       {
-        eprintln!("{TASK_NAME} | Error editing message: {y}");
+        error!("{TASK_NAME} | Error editing message: {y}");
         continue;
       }
     }
@@ -864,7 +868,7 @@ async fn savegame_settings_webhook(
       Ok(webhook) => {
         let embed = CreateEmbed::default()
           .color(if csg_settings__ {
-            BINARY_PROPERTIES.embed_colors.primary
+            BINARY_PROPERTIES.embed_colors.primary()
           } else {
             BINARY_PROPERTIES.embed_colors.yellow
           })
@@ -1014,7 +1018,7 @@ async fn time_drift_webhook(
             .in_thread(ThreadId::new(hook.thread_id.parse::<u64>().unwrap_or_default()))
             .embed(
               CreateEmbed::new()
-                .color(BINARY_PROPERTIES.embed_colors.primary)
+                .color(BINARY_PROPERTIES.embed_colors.primary())
                 .title(format!("Time difference - {server_name}"))
                 .description(format!(
                   "It is the new day, previously it was **{}** and it's now **{}**.\nList of players that were on:\n**{players}**",

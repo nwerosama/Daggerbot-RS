@@ -3,10 +3,13 @@ use super::{
   QUERY_FAILED
 };
 
-use sqlx::{
-  FromRow,
-  PgPool,
-  Result
+use {
+  asahi::error,
+  sqlx::{
+    FromRow,
+    PgPool,
+    Result
+  }
 };
 
 #[derive(Clone, FromRow, PartialEq)]
@@ -22,7 +25,7 @@ impl ProhibitedWords {
     {
       Ok(r) => r,
       Err(e) => {
-        eprintln!("{DAG_SQL}[Database:ProhibitedWords:get_words:Error] {QUERY_FAILED}\n{e}");
+        error!("{DAG_SQL}[Database:ProhibitedWords:get_words:Error] {QUERY_FAILED}\n{e}");
         return Err(e)
       }
     };
@@ -41,7 +44,7 @@ impl ProhibitedWords {
     {
       Ok(_) => (),
       Err(e) => {
-        eprintln!("{DAG_SQL}[Database:ProhibitedWords:add_word:Error] {QUERY_FAILED}\n{e}");
+        error!("{DAG_SQL}[Database:ProhibitedWords:add_word:Error] {QUERY_FAILED}\n{e}");
         return Err(e)
       }
     };
@@ -56,7 +59,7 @@ impl ProhibitedWords {
     match sqlx::query("DELETE FROM prohibited_words WHERE word = $1").bind(word).execute(pool).await {
       Ok(_) => (),
       Err(e) => {
-        eprintln!("{DAG_SQL}[Database:ProhibitedWords:remove_word:Error] {QUERY_FAILED}\n{e}");
+        error!("{DAG_SQL}[Database:ProhibitedWords:remove_word:Error] {QUERY_FAILED}\n{e}");
         return Err(e)
       }
     };

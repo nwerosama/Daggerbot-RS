@@ -4,6 +4,7 @@ use super::{
 };
 
 use {
+  asahi::error,
   serde::{
     Deserialize,
     Serialize
@@ -54,7 +55,7 @@ impl MpServers {
         }
       },
       Err(e) => {
-        eprintln!("{DAG_SQL}[Database:MpServers:get_servers:Error] {QUERY_FAILED}\n{e}");
+        error!("{DAG_SQL}[Database:MpServers:get_servers:Error] {QUERY_FAILED}\n{e}");
         return Err(e);
       }
     }
@@ -78,7 +79,7 @@ impl MpServers {
         peak_players:  row.get("peak_players")
       })),
       Err(e) => {
-        eprintln!("{DAG_SQL}[Database:MpServers:get_server:Error] {QUERY_FAILED}\n{e}");
+        error!("{DAG_SQL}[Database:MpServers:get_server:Error] {QUERY_FAILED}\n{e}");
         Ok(None)
       }
     }
@@ -96,7 +97,7 @@ impl MpServers {
     match q {
       Ok(r) => Ok(r.get("peak_players")),
       Err(e) => {
-        eprintln!("{DAG_SQL}[Database:MpServers:get_peak_players:Error] {QUERY_FAILED}\n{e}");
+        error!("{DAG_SQL}[Database:MpServers:get_peak_players:Error] {QUERY_FAILED}\n{e}");
         Err(e)
       }
     }
@@ -114,7 +115,7 @@ impl MpServers {
     match q {
       Ok(r) => Ok(r.get("player_data")),
       Err(e) => {
-        eprintln!("{DAG_SQL}[Database:MpServers:get_player_data:Error] {QUERY_FAILED}\n{e}");
+        error!("{DAG_SQL}[Database:MpServers:get_player_data:Error] {QUERY_FAILED}\n{e}");
         Err(e)
       }
     }
@@ -153,7 +154,7 @@ impl MpServers {
         Ok(false)
       },
       Err(e) => {
-        eprintln!("{DAG_SQL}[Database:MpServers:reset_peak_players:Error] {QUERY_FAILED}\n{e}");
+        error!("{DAG_SQL}[Database:MpServers:reset_peak_players:Error] {QUERY_FAILED}\n{e}");
         Err(e)
       }
     }
@@ -187,7 +188,7 @@ impl MpServers {
         Ok(false)
       },
       Err(e) => {
-        eprintln!("{DAG_SQL}[Database:MpServers:update_peak_players:Error] {QUERY_FAILED}\n{e}");
+        error!("{DAG_SQL}[Database:MpServers:update_peak_players:Error] {QUERY_FAILED}\n{e}");
         Err(e)
       }
     }
@@ -226,7 +227,7 @@ impl MpServers {
         Ok(())
       },
       Err(e) => {
-        eprintln!("{DAG_SQL}[Database:MpServers:update_player_data:Error] {QUERY_FAILED}\n{e}");
+        error!("{DAG_SQL}[Database:MpServers:update_player_data:Error] {QUERY_FAILED}\n{e}");
         Err(e)
       }
     }
@@ -255,7 +256,7 @@ impl MpServers {
     match q {
       Ok(r) => Ok(r.rows_affected() > 0),
       Err(e) => {
-        eprintln!("{DAG_SQL}[Database:MpServers:create_server:Error] {QUERY_FAILED}\n{e}");
+        error!("{DAG_SQL}[Database:MpServers:create_server:Error] {QUERY_FAILED}\n{e}");
         Err(e)
       }
     }
@@ -270,7 +271,7 @@ impl MpServers {
     match q {
       Ok(r) => Ok(r.rows_affected() > 0),
       Err(e) => {
-        eprintln!("{DAG_SQL}[Database:MpServers:delete_server:Error] {QUERY_FAILED}\n{e}");
+        error!("{DAG_SQL}[Database:MpServers:delete_server:Error] {QUERY_FAILED}\n{e}");
         Err(e)
       }
     }
@@ -299,7 +300,7 @@ impl MpServers {
     match q {
       Ok(r) => Ok(r.rows_affected() > 0),
       Err(e) => {
-        eprintln!("{DAG_SQL}[Database:MpServers:update_server:Error] {QUERY_FAILED}\n{e}");
+        error!("{DAG_SQL}[Database:MpServers:update_server:Error] {QUERY_FAILED}\n{e}");
         Err(e)
       }
     }

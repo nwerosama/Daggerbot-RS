@@ -3,11 +3,14 @@ use super::{
   QUERY_FAILED
 };
 
-use sqlx::{
-  FromRow,
-  PgPool,
-  Result,
-  Row
+use {
+  asahi::error,
+  sqlx::{
+    FromRow,
+    PgPool,
+    Result,
+    Row
+  }
 };
 
 #[derive(Debug, Clone, FromRow)]
@@ -33,7 +36,7 @@ impl Settings {
       .await;
 
     if let Err(e) = q {
-      eprintln!("{DAG_SQL}[Database:Settings:get_logs_ignored_channels:Error] {QUERY_FAILED}\n{e}");
+      error!("{DAG_SQL}[Database:Settings:get_logs_ignored_channels:Error] {QUERY_FAILED}\n{e}");
       return Err(e);
     };
 
@@ -50,7 +53,7 @@ impl Settings {
       .await;
 
     if let Err(e) = q {
-      eprintln!("{DAG_SQL}[Database:Settings:update_logs_ignored_channels:Error] {QUERY_FAILED}\n{e}");
+      error!("{DAG_SQL}[Database:Settings:update_logs_ignored_channels:Error] {QUERY_FAILED}\n{e}");
       return Err(e);
     };
 
