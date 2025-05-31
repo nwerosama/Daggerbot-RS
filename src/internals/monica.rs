@@ -604,7 +604,7 @@ impl AsahiCoordinator<BotData> for Monica {
           )))
           .footer(CreateEmbedFooter::new(format!(
             "Autosave: {} mins ∙ Version: {}",
-            csg.settings.unwrap().auto_save_interval,
+            csg.settings.expect("no csg data").auto_save_interval,
             dss.server.clone().unwrap().version
           )))
           .timestamp(Timestamp::now());
