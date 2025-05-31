@@ -5,8 +5,8 @@ function MFPassword(rs_msg)
 
   local passwordText = "Farm password is"
   local pwMapping = {
-    [''] = '',
-    [''] = ''
+    ['1266224299174396045'] = 'roughlane',
+    ['1266224585007824986'] = 'foxglove'
   }
 
   local farm_password = pwMapping[rs_msg.channel_id]
