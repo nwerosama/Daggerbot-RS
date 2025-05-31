@@ -130,12 +130,20 @@ async fn main() {
             Some(guild) => Cow::Owned(guild.name.clone().into()),
             None => Cow::Borrowed("Unknown Guild")
           };
+          let guild_channel_name = match ctx.channel().await {
+            Some(channel) => format!("in #{}", channel.guild().unwrap_or_default().base.name),
+            None => String::from("")
+          };
           let prefix = match ctx.command().prefix_action {
             Some(_) => ctx.framework().options.prefix_options.prefix.as_ref().unwrap(),
             None => "/"
           };
 
-          info!("Discord[{guild_name}] {} ran {prefix}{}", ctx.author().name, ctx.command().qualified_name);
+          info!(
+            "Discord[{guild_name}] {} ran {prefix}{} {guild_channel_name}",
+            ctx.author().name,
+            ctx.command().qualified_name
+          );
         })
       },
       prefix_options: poise::PrefixFrameworkOptions {

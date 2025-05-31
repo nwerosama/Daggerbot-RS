@@ -7,14 +7,11 @@ edition = "2024"
 members = ["grpc"]
 
 [workspace.dependencies]
-ab_glyph = "0.2.29"
 asahi = { version = "0.1.4", features = ["canvas", "coordinator"] }
 bb8 = "0.9.0"
 bb8-redis = "0.23.0"
 cargo_toml = "0.22.1"
 dashmap = "6.1.0"
-image = "0.25.6"
-imageproc = "0.25.0"
 lazy_static = "1.5.0"
 mlua = { version = "0.10.5", features = ["lua54", "send", "vendored"] }
 num-format = "0.4.4"
@@ -36,15 +33,12 @@ tonic = "0.13.1"
 uptime_lib = "0.3.1"
 
 [dependencies]
-ab_glyph = { workspace = true }
 asahi = { workspace = true }
 bb8 = { workspace = true }
 bb8-redis = { workspace = true }
 cargo_toml = { workspace = true }
 dag_grpc = { path = "grpc" }
 dashmap = { workspace = true }
-image = { workspace = true }
-imageproc = { workspace = true }
 lazy_static = { workspace = true }
 mlua = { workspace = true }
 num-format = { workspace = true }
