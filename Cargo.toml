@@ -19,13 +19,13 @@ poise = "0.6.1"
 prost = "0.13.5"
 rand = "0.9.1"
 regex = "1.11.1"
-reqwest = { version = "0.12.18", features = ["json", "native-tls-vendored"] }
+reqwest = { version = "0.12.19", features = ["json", "native-tls-vendored"] }
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
 similar = "2.7.0"
 smallvec = "1.15.0"
 sqlx = { version = "0.8.6", features = ["runtime-tokio", "postgres", "chrono"] }
-sysinfo = "0.35.1"
+sysinfo = "0.35.2"
 tokenservice-client = { version = "0.4.5", registry = "gitea" }
 tokio = { version = "1.45.1", features = ["rt-multi-thread", "macros", "signal"] }
 toml = "0.8.22"
