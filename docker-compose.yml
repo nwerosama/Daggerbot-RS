@@ -1,0 +1,16 @@
+services:
+  cache:
+    container_name: daggerbot-redis
+    image: redis/redis-stack-server:7.4.0-v5
+    restart: unless-stopped
+    ports:
+      - 6500:6379/tcp
+  db:
+    container_name: daggerbot-postgres
+    image: postgres:17.5-alpine3.22
+    restart: unless-stopped
+    ports:
+      - 6600:5432/tcp
+    volumes:
+      - /var/lib/docker/volumes/daggerbot-db:/var/lib/postgresql/data:rw
+    env_file: .env.pg
