@@ -7,6 +7,7 @@ pub struct ConfigMeta {
   pub guild_id:        u64,
   pub embed_colors:    EmbedColorPalette,
   pub ready_notify:    u64,
+  pub help_forum:      u64,
   pub mp_channels:     MpChannels,
   pub mp_mod_role:     u64,
   pub mp_manager_role: u64,
@@ -52,6 +53,7 @@ pub static BINARY_PROPERTIES: LazyLock<ConfigMeta> = LazyLock::new(|| {
       yellow: 0xFFEA00
     })
     .ready_notify(1091300529696673792) // #i-talk-to-myself-alot
+    .help_forum(1208933213649772595) // #forum-test
     .mp_info(1091300529696673792) // #i-talk-to-myself-alot
     .mp_info_msg(1259386817355190302)
     .mp_mod_chat(1072397807031418920) // #webhook-testing
@@ -78,6 +80,7 @@ impl ConfigMeta {
         yellow: 0xFFEA00
       },
       ready_notify:    548032776830582794,  // #bot-log
+      help_forum:      1022236553562558464, // #help-with-anything
       mp_mod_role:     572151330710487041,  // MP Moderator
       mp_manager_role: 1028735939813585029, // MP Manager
       mp_players_role: 798285830669598762,  // MP Players
@@ -126,6 +129,15 @@ impl ConfigMeta {
     channel_id: u64
   ) -> Self {
     self.ready_notify = channel_id;
+    self
+  }
+
+  #[cfg(not(feature = "production"))]
+  fn help_forum(
+    mut self,
+    channel_id: u64
+  ) -> Self {
+    self.help_forum = channel_id;
     self
   }
 

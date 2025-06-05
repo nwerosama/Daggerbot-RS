@@ -6,12 +6,16 @@ use crate::{
   internals::{
     config::BINARY_PROPERTIES,
     monica::Monica,
+    threadtimer::ThreadTimer,
     utils::BOT_VERSION
   }
 };
 
 use {
-  asahi::info,
+  asahi::{
+    info,
+    spawn
+  },
   poise::serenity_prelude::{
     Context,
     GenericChannelId,
@@ -110,7 +114,11 @@ pub async fn on_ready(
 
   ctx.set_activity(Some(ActivityData::streaming(activity.name.clone(), activity.url.clone()).unwrap()));
 
-  asahi::spawn(Monica { ctx: Arc::new(ctx.clone()) }, Arc::clone(&ctx.data::<BotData>()));
+  let ctx_clone = Arc::new(ctx.clone());
+  let bot_data = Arc::clone(&ctx.data::<BotData>());
+
+  spawn(Monica { ctx: Arc::clone(&ctx_clone) }, Arc::clone(&bot_data));
+  spawn(ThreadTimer { ctx: Arc::clone(&ctx_clone) }, Arc::clone(&bot_data));
 
   Ok(())
 }
