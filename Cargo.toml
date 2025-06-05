@@ -7,7 +7,7 @@ edition = "2024"
 members = ["grpc"]
 
 [workspace.dependencies]
-asahi = { version = "0.1.4", features = ["canvas", "coordinator"] }
+asahi = { version = "0.1.5", features = ["canvas", "coordinator"] }
 bb8 = "0.9.0"
 bb8-redis = "0.23.0"
 cargo_toml = "0.22.1"
@@ -59,7 +59,7 @@ uptime_lib = { workspace = true }
 
 [patch.crates-io]
 poise = { git = "https://github.com/serenity-rs/poise", branch = "serenity-next" }
-asahi = { git = "https://github.com/Niko-Devel/asahi", branch = "master" }
+# asahi = { git = "https://github.com/Niko-Devel/asahi", branch = "master" }
 
 [features]
 production = ["docker", "automod"]

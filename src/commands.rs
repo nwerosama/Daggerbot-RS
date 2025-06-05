@@ -1,4 +1,5 @@
 mod dev;
+mod faq;
 mod moderation;
 mod mp;
 mod ping;
@@ -7,6 +8,7 @@ mod uptime;
 
 pub use {
   dev::dev,
+  faq::faq,
   moderation::*,
   mp::mp,
   ping::ping,
@@ -33,6 +35,7 @@ macro_rules! collect {
       commands::pu(),
       // unsorted mess
       commands::mp(),
+      commands::faq(),
       commands::ping(),
       commands::settings(),
       commands::uptime(),

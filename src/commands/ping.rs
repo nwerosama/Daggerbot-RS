@@ -1,6 +1,7 @@
-use crate::BotError;
-
-use serde::Deserialize;
+use {
+  crate::BotError,
+  serde::Deserialize
+};
 
 #[derive(Deserialize)]
 struct StatusPage {
