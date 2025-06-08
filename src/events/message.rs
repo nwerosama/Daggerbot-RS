@@ -276,6 +276,10 @@ pub async fn on_message_update(
   let event_content = event.message.content.clone().to_string();
   let diffs = TextDiff::from_chars(get_cached_msg.content.as_str(), event_content.as_str());
 
+  const ANSI_THRESHOLD: u16 = 1024;
+  let total_length = get_cached_msg.content.len() + event_content.len() as u16;
+  let use_ansi = total_length <= ANSI_THRESHOLD;
+
   let mut content_old = String::new();
   let mut content_new = String::new();
 
@@ -286,13 +290,21 @@ pub async fn on_message_update(
         content_new.push_str(diff.value());
       },
       ChangeTag::Insert => {
-        for ch in diff.value().chars() {
-          content_new.push_str(&ansi::Green::NORMAL.paint(&ch.to_string()));
+        if use_ansi {
+          for ch in diff.value().chars() {
+            content_new.push_str(&ansi::Green::NORMAL.paint(&ch.to_string()));
+          }
+        } else {
+          content_new.push_str(diff.value());
         }
       },
       ChangeTag::Delete => {
-        for ch in diff.value().chars() {
-          content_old.push_str(&ansi::Red::NORMAL.paint(&ch.to_string()));
+        if use_ansi {
+          for ch in diff.value().chars() {
+            content_old.push_str(&ansi::Red::NORMAL.paint(&ch.to_string()));
+          }
+        } else {
+          content_old.push_str(diff.value());
         }
       },
     }
