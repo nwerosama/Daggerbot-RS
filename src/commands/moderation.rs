@@ -271,7 +271,11 @@ pub async fn ban(
     (ActionType::Ban, "ban")
   };
 
-  ctx.defer().await?;
+  if is_bkl(ctx) {
+    ctx.defer_ephemeral().await?;
+  } else {
+    ctx.defer().await?;
+  }
 
   let notify_user = send_notification(&ctx, &Target::Member(member.clone()), &action_type, &reason, case_id, None).await?;
 
@@ -284,15 +288,11 @@ pub async fn ban(
       }
 
       ctx
-        .send(
-          CreateReply::new()
-            .content(format!(
-              "**#{case_id}** {} now {action_verb}ned for `{reason}` ({})",
-              member.user.name,
-              formate_dm_status(notify_user)
-            ))
-            .ephemeral(is_bkl(ctx))
-        )
+        .send(CreateReply::new().content(format!(
+          "**#{case_id}** {} now {action_verb}ned for `{reason}` ({})",
+          member.user.name,
+          formate_dm_status(notify_user)
+        )))
         .await?;
 
       if !log_entry(
@@ -336,22 +336,22 @@ pub async fn kick(
 ) -> Result<(), BotError> {
   let case_id = generate_id(&ctx.data().postgres).await?;
 
-  ctx.defer().await?;
+  if is_bkl(ctx) {
+    ctx.defer_ephemeral().await?;
+  } else {
+    ctx.defer().await?;
+  }
 
   let notify_user = send_notification(&ctx, &Target::Member(member.clone()), &ActionType::Kick, &reason, case_id, None).await?;
 
   match member.kick(ctx.http(), Some(&format!("{reason} | #{case_id}"))).await {
     Ok(_) => {
       ctx
-        .send(
-          CreateReply::new()
-            .content(format!(
-              "**#{case_id}** {} now kicked for `{reason}` ({})",
-              member.user.name,
-              formate_dm_status(notify_user)
-            ))
-            .ephemeral(is_bkl(ctx))
-        )
+        .send(CreateReply::new().content(format!(
+          "**#{case_id}** {} now kicked for `{reason}` ({})",
+          member.user.name,
+          formate_dm_status(notify_user)
+        )))
         .await?;
 
       if !log_entry(
