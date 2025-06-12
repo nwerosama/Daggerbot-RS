@@ -9,9 +9,9 @@ mod shutdown;
 // Using the new filesystem hierarchy
 
 use {
-  errors::BotError,
   bridges::LuaSerenityBridge,
   dag_grpc::MonicaGRPCClient,
+  errors::BotError,
   internals::{
     invite_data::InviteCache,
     seasonal::SeasonalTheme,

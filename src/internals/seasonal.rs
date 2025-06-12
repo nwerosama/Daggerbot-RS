@@ -128,12 +128,9 @@ fn is_date_in_range(
   }
 }
 
-fn calculate_embed_color() -> u32 {
-  let current_date = get_current_date();
-
+fn calculate_embed_color(current_date: &Date) -> u32 {
   for theme in SEASONAL_THEMES {
-    if is_date_in_range(&current_date, &theme.start, &theme.end) {
-      info!("Matching theme '{}' now applied", theme.name);
+    if is_date_in_range(current_date, &theme.start, &theme.end) {
       return theme.color;
     }
   }
@@ -144,12 +141,20 @@ fn calculate_embed_color() -> u32 {
 pub fn get_embed_color() -> u32 { CURRENT_EMBED_COLOR.load(Ordering::Relaxed) }
 
 fn update_embed_color() {
-  let new_color = calculate_embed_color();
+  let current_date = get_current_date();
+  let new_color = calculate_embed_color(&current_date);
   let current = CURRENT_EMBED_COLOR.load(Ordering::Relaxed);
 
   if new_color != current {
     CURRENT_EMBED_COLOR.store(new_color, Ordering::Relaxed);
-    info!("Updated embed color to use {new_color:06X}")
+
+    let theme = SEASONAL_THEMES
+      .iter()
+      .find(|t| is_date_in_range(&current_date, &t.start, &t.end))
+      .map(|t| t.name)
+      .unwrap_or("Default");
+
+    info!("Updated embed color to use {new_color:06X} ({theme})");
   }
 }
 
