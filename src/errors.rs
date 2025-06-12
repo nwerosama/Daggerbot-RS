@@ -1,12 +1,13 @@
 use {
   crate::{
     BotData,
-    BotError,
     internals::utils::mention_dev
   },
   asahi::error,
   poise::FrameworkError
 };
+
+pub type BotError = Box<dyn std::error::Error + Send + Sync>;
 
 pub async fn fw_errors(error: FrameworkError<'_, BotData, BotError>) {
   match error {
@@ -69,6 +70,7 @@ pub async fn fw_errors(error: FrameworkError<'_, BotData, BotError>) {
         interaction.user.name, interaction.data.name
       );
     },
+    FrameworkError::UnknownCommand { .. } => (),
     other => error!("PoiseOtherError: {other}")
   }
 }

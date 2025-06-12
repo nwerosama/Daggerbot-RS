@@ -9,6 +9,7 @@ mod shutdown;
 // Using the new filesystem hierarchy
 
 use {
+  errors::BotError,
   bridges::LuaSerenityBridge,
   dag_grpc::MonicaGRPCClient,
   internals::{
@@ -40,8 +41,6 @@ use {
     time::Duration
   }
 };
-
-type BotError = Box<dyn std::error::Error + Send + Sync>;
 
 struct BotData {
   redis:           Arc<controllers::cache::RedisController>,
