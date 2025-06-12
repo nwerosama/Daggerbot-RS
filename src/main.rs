@@ -14,6 +14,7 @@ use {
   errors::BotError,
   internals::{
     invite_data::InviteCache,
+    presence::read_config,
     seasonal::SeasonalTheme,
     utils::{
       discord_token,
@@ -29,11 +30,12 @@ use {
   },
   mlua::Lua,
   poise::serenity_prelude::{
+    ActivityData,
     ClientBuilder,
     CreateAllowedMentions,
     GatewayIntents,
-    RoleId,
-    http::Http
+    Http,
+    RoleId
   },
   std::{
     borrow::Cow,
@@ -69,6 +71,9 @@ async fn init_serenity_bridge(
 #[tokio::main]
 async fn main() {
   asahi::log_init();
+
+  let tconf = read_config();
+  let activity = tconf.presence.activities.first().unwrap();
 
   let postgres = {
     info!("Preparing to connect to database...");
@@ -176,6 +181,7 @@ async fn main() {
   .event_handler(events::DiscordEvents)
   .framework(framework)
   .data(bot_data)
+  .activity(ActivityData::streaming(activity.name.clone(), activity.url.clone()).unwrap())
   .await
   .expect("Error creating client");
 

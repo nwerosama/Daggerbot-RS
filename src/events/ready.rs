@@ -24,55 +24,18 @@ use {
       CreateEmbed,
       CreateEmbedAuthor,
       CreateMessage
-    },
-    gateway::ActivityData
+    }
   },
-  serde::{
-    Deserialize,
-    Serialize
-  },
-  std::{
-    fs,
-    sync::{
-      Arc,
-      atomic::{
-        AtomicBool,
-        Ordering
-      }
+  std::sync::{
+    Arc,
+    atomic::{
+      AtomicBool,
+      Ordering
     }
   }
 };
 
-/// The static path to the TOML config file for bot's presence data
-pub const TOML_FILE: &str = if cfg!(feature = "production") {
-  "presence.toml"
-} else {
-  "src/internals/assets/presence.toml"
-};
-
 static READY_ONCE: AtomicBool = AtomicBool::new(false);
-
-#[derive(Serialize, Deserialize)]
-pub struct Activity {
-  pub name: String,
-  pub url:  String
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct Presence {
-  pub activities: Vec<Activity>
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct TomlConfig {
-  pub presence: Presence
-}
-
-fn read_config() -> TomlConfig {
-  let content = fs::read_to_string(TOML_FILE).expect("[TomlConfig] Error loading config file");
-  let config: TomlConfig = toml::from_str(&content).expect("[TomlConfig] Error parsing config file");
-  config
-}
 
 async fn ready_once(
   ctx: &Context,
@@ -108,11 +71,6 @@ pub async fn on_ready(
   if !READY_ONCE.swap(true, Ordering::Relaxed) {
     ready_once(ctx, ready).await.expect("Failed to call on_ready method");
   }
-
-  let tconf = read_config();
-  let activity = tconf.presence.activities.first().unwrap();
-
-  ctx.set_activity(Some(ActivityData::streaming(activity.name.clone(), activity.url.clone()).unwrap()));
 
   let ctx_clone = Arc::new(ctx.clone());
   let bot_data = Arc::clone(&ctx.data::<BotData>());
