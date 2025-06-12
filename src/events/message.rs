@@ -378,9 +378,7 @@ pub async fn on_message_lua(
 ) -> Result<(), BotError> {
   let bridge = ctx.data_ref::<BotData>().serenity_bridge.clone();
 
-  for plugin in &["Message", "MsgResponse"] {
-    bridge.register_plugin(plugin)?;
-  }
+  bridge.register_plugin("MsgResponse")?;
 
   if new_message.author.bot() || new_message.guild_id != Some(GuildId::new(BINARY_PROPERTIES.guild_id)) {
     return Ok(());
@@ -391,9 +389,6 @@ pub async fn on_message_lua(
   }
 
   let message_table = bridge.build_message_table(new_message)?;
-
-  let multifarm_pw: mlua::Function = bridge.lua.globals().get("MFPassword")?;
-  multifarm_pw.call::<()>(message_table.clone())?;
 
   // Lua version of a famous ResponseModule from v3 (TypeScript)
   if new_message.channel_id == GenericChannelId::new(BINARY_PROPERTIES.general_chat) {

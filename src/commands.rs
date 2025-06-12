@@ -3,6 +3,7 @@ mod faq;
 mod moderation;
 mod mp;
 mod ping;
+mod prefix;
 mod settings;
 mod uptime;
 
@@ -12,6 +13,7 @@ pub use {
   moderation::*,
   mp::mp,
   ping::ping,
+  prefix::farmpw,
   settings::settings,
   uptime::uptime
 };
@@ -33,8 +35,10 @@ macro_rules! collect {
       commands::case(),
       commands::pw(),
       commands::pu(),
-      // unsorted mess
+      // fsmp stuff
       commands::mp(),
+      commands::farmpw(),
+      // unsorted mess
       commands::faq(),
       commands::ping(),
       commands::settings(),
