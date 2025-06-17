@@ -59,7 +59,7 @@ uptime_lib = { workspace = true }
 
 [patch.crates-io]
 poise = { git = "https://github.com/serenity-rs/poise", branch = "serenity-next" }
-# asahi = { git = "https://github.com/Niko-Devel/asahi", branch = "master" }
+asahi = { git = "https://github.com/Niko-Devel/asahi", branch = "master" }
 
 [features]
 production = ["docker", "automod"]
