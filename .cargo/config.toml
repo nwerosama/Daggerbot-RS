@@ -1,2 +1,2 @@
-[registries.gitea]
-index = "sparse+https://git.toast-server.net/api/packages/nwerosama/cargo/"
+[registries.local]
+index = "sparse+https://cargo.playground.red/api/v1/crates/"

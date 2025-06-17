@@ -9,7 +9,7 @@ members = ["grpc"]
 [workspace.dependencies]
 asahi = { version = "0.1.5", features = ["canvas", "coordinator"] }
 bb8 = "0.9.0"
-bb8-redis = "0.23.0"
+bb8-redis = "0.24.0"
 cargo_toml = "0.22.1"
 dashmap = "6.1.0"
 lazy_static = "1.5.0"
@@ -26,7 +26,7 @@ similar = "2.7.0"
 smallvec = "1.15.1"
 sqlx = { version = "0.8.6", features = ["runtime-tokio", "postgres", "chrono"] }
 sysinfo = "0.35.2"
-tokenservice-client = { version = "0.4.5", registry = "gitea" }
+tokenservice-client = { version = "0.4.5", registry = "local" }
 tokio = { version = "1.45.1", features = ["rt-multi-thread", "macros", "signal"] }
 toml = "0.8.23"
 tonic = "0.13.1"

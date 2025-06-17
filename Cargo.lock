@@ -179,7 +179,7 @@ version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6df0e1c1e8f13ee705bdd9139f2107364aa1c970da4ddd34792aa473cbf1d045"
 dependencies = [
- "bb8-redis",
+ "bb8-redis 0.23.0",
  "serde_json",
  "sqlx",
  "thiserror 2.0.12",
@@ -351,7 +351,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b7eea5c48080df5cd6c10bc7fec5a160a7d18dc5cf073ab42b49375aa4c748a6"
 dependencies = [
  "bb8",
- "redis",
+ "redis 0.31.0",
+]
+
+[[package]]
+name = "bb8-redis"
+version = "0.24.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5143936af5e1eea1a881e3e3d21b6777da6315e5e307bc3d0c2301c44fa37da9"
+dependencies = [
+ "bb8",
+ "redis 0.32.0",
 ]
 
 [[package]]
@@ -663,7 +673,7 @@ version = "4.1.0"
 dependencies = [
  "asahi",
  "bb8",
- "bb8-redis",
+ "bb8-redis 0.24.0",
  "cargo_toml",
  "dag_grpc",
  "dashmap",
@@ -2721,6 +2731,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "redis"
+version = "0.32.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bd673deb3d184140109c1e27b043c2354cb79399c3ef304c365fc628092ed773"
+dependencies = [
+ "bytes",
+ "cfg-if",
+ "combine",
+ "futures-util",
+ "itoa",
+ "num-bigint",
+ "percent-encoding",
+ "pin-project-lite",
+ "ryu",
+ "socket2",
+ "tokio",
+ "tokio-util",
+ "url",
+]
+
+[[package]]
 name = "redox_syscall"
 version = "0.5.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3735,8 +3766,8 @@ dependencies = [
 [[package]]
 name = "tokenservice-client"
 version = "0.4.5"
-source = "sparse+https://git.toast-server.net/api/packages/nwerosama/cargo/"
-checksum = "98e122fe17ed65659f8a86f0f3bfe03065cff13d26414bb87c5fb622d155d293"
+source = "sparse+https://cargo.playground.red/api/v1/crates/"
+checksum = "ad0427ec6bac81ca18111c5d6288b0453559c40e472f8964aaffea38a8c6cff2"
 dependencies = [
  "reqwest",
  "serde",
