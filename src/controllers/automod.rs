@@ -41,6 +41,7 @@ use {
     Context,
     CreateEmbed,
     CreateMessage,
+    Http,
     Member,
     Mentionable,
     Message,
@@ -167,6 +168,7 @@ pub struct Automoderator {
   policies: Arc<RwLock<Vec<AutomodPolicy>>>,
   pw_list:  Vec<Regex>,
   pu_list:  Vec<String>,
+  http:     Arc<Http>,
   redis:    Arc<RedisController>
 }
 
@@ -230,7 +232,8 @@ impl AutomodPolicy {
 impl Automoderator {
   pub async fn new(
     db: &PgPool,
-    redis: Arc<RedisController>
+    redis: Arc<RedisController>,
+    http: Arc<Http>
   ) -> Result<Self, BotError> {
     Ok(Self {
       policies: Arc::new(RwLock::new(vec![
@@ -242,6 +245,7 @@ impl Automoderator {
       ])),
       pw_list: Self::load_prohibited_words(db).await?,
       pu_list: Self::load_prohibited_urls(db).await?,
+      http,
       redis
     })
   }
@@ -291,7 +295,10 @@ impl Automoderator {
     let current_ts = msg.timestamp.unix_timestamp();
 
     let checks = [
-      (AutomodPolicyType::InviteLinks, self.contains_invite_links(&msg.content)),
+      (
+        AutomodPolicyType::InviteLinks,
+        self.contains_invite_links_v2(self.http.clone(), &msg.content).await
+      ),
       (
         AutomodPolicyType::AntiSpam,
         self.is_spam(msg.author.id.get(), msg.timestamp.unix_timestamp()).await
@@ -368,11 +375,44 @@ impl Automoderator {
     false
   }
 
-  fn contains_invite_links(
+  async fn contains_invite_links_v2(
     &self,
+    http: Arc<Http>,
     content: &str
   ) -> bool {
-    INVITE_REGEX.is_match(content)
+    if !INVITE_REGEX.is_match(content) {
+      return false;
+    }
+
+    for caps in INVITE_REGEX.captures_iter(content) {
+      if let Some(inv) = caps.get(0) {
+        let icode = if let Some(code) = inv.as_str().split('/').next_back() {
+          code
+        } else {
+          continue;
+        };
+
+        if icode.is_empty() {
+          continue;
+        }
+
+        match http.get_invite(icode, false, false, None).await {
+          Ok(i) => {
+            if let Some(g) = i.guild
+              && g.id.get() != BINARY_PROPERTIES.guild_id
+            {
+              return true;
+            }
+          },
+          Err(e) => {
+            error!("Couldn't resolve an invite code ({icode}): {e}");
+            return true;
+          }
+        }
+      }
+    }
+
+    false
   }
 
   async fn contains_malicious_links(

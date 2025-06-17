@@ -105,7 +105,7 @@ async fn use_automod(
   msg: &Message
 ) -> Result<(), BotError> {
   use crate::controllers::automod::Automoderator;
-  let automod = Automoderator::new(&ctx.data::<BotData>().postgres, ctx.data::<BotData>().redis.clone())
+  let automod = Automoderator::new(&ctx.data::<BotData>().postgres, ctx.data::<BotData>().redis.clone(), ctx.http.clone())
     .await
     .expect("failed to initialize automod");
   automod.process_message(ctx, msg).await.expect("automod's process_message failed");
