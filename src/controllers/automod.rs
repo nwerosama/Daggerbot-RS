@@ -84,7 +84,7 @@ const MD_KEY_MAIN: &str = "MaliciousDomains";
 const MD_KEY_LU: &str = "MaliciousDomains:LastUpdate";
 const MD_BLOCKLIST: [&str; 4] = [
   "https://raw.githubusercontent.com/Discord-AntiScam/scam-links/main/list.txt",
-  "https://raw.githubusercontent.com/mitchellkrogza/Phishing.Database/master/phishing-links-NEW-today.txt",
+  "https://raw.githubusercontent.com/Phishing-Database/Phishing.Database/master/phishing-links-NEW-today.txt",
   "https://raw.githubusercontent.com/RedPanda4552/PandaPhishLists/main/seen-on-discord.txt",
   "https://raw.githubusercontent.com/nwerosama/FishDB/main/domains.txt"
 ];
