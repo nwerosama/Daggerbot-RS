@@ -5,7 +5,6 @@ use crate::{
     config::BINARY_PROPERTIES,
     monica::{
       Collider,
-      DssData,
       EmbedPalette,
       SERVER_SEARCH_FILTERS,
       TASK_NAME,
@@ -34,6 +33,7 @@ use {
   },
   dag_grpc::FetchRequest,
   dashmap::DashMap,
+  farmsim::DssData,
   poise::{
     CreateReply,
     serenity_prelude::{
@@ -213,7 +213,7 @@ async fn data_warehouse(
             .and_then(|dss| {
               serde_json::from_value::<DssData>(dss.clone()).map_err(|e| {
                 error!("(DataWarehouse) Pipeline error: {e}");
-                format!("**Pipeline error:** {e}").into()
+                e.into()
               })
             })
         })

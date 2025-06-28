@@ -29,6 +29,11 @@ use {
     warn
   },
   dag_grpc::FetchRequest,
+  farmsim::{
+    CareerSavegame,
+    DssData,
+    Player
+  },
   lazy_static::lazy_static,
   num_format::{
     Locale,
@@ -144,106 +149,11 @@ impl EmbedPalette {
   }
 }
 
-// Parts of Farming Simulator API is used, so we
-// need to implement the structs for it to be usable
-// - Nwero, 6/7/24
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct DssData {
-  pub server:   Option<DssServer>,
-  pub slots:    Option<DssSlots>,
-  pub vehicles: Vec<DssVehicle>
+trait Validation {
+  fn is_valid(&self) -> bool;
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-struct CsgData {
-  settings:    Option<CsgSettings>,
-  #[serde(rename = "slotSystem")]
-  slot_system: Option<CsgSlotSystem>
-}
-
-// DSS section start
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct DssServer {
-  #[serde(rename = "dayTime")]
-  pub day_time: i32,
-  #[serde(rename = "mapName")]
-  pub map_name: String,
-  pub name:     String,
-  pub version:  String
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct DssSlots {
-  pub capacity: i8,
-  pub used:     i8,
-  pub players:  Vec<DssPlayer>
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct DssPlayer {
-  #[serde(rename = "isUsed")]
-  pub is_used:  Option<bool>,
-  #[serde(rename = "isAdmin")]
-  pub is_admin: Option<bool>,
-  pub uptime:   Option<i32>,
-  pub name:     Option<String>
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct DssVehicle {
-  pub name:     Option<String>,
-  pub category: Option<String>
-}
-
-// DSS section end
-
-// CSG section start
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-struct CsgSettings {
-  #[serde(rename = "mapTitle")]
-  map_title:                  String,
-  #[serde(rename = "growthMode")]
-  growth_mode:                i8,
-  #[serde(rename = "plannedDaysPerPeriod")]
-  planned_days_per_period:    i8,
-  #[serde(rename = "fruitDestruction")]
-  fruit_destruction:          bool,
-  #[serde(rename = "plowingRequiredEnabled")]
-  plowing_required_enabled:   bool,
-  #[serde(rename = "stonesEnabled")]
-  stones_enabled:             bool,
-  #[serde(rename = "weedsEnabled")]
-  weeds_enabled:              bool,
-  #[serde(rename = "limeRequired")]
-  lime_enabled:               bool,
-  #[serde(rename = "fuelUsage")]
-  fuel_usage:                 i8,
-  #[serde(rename = "economicDifficulty")]
-  economic_difficulty:        String,
-  #[serde(rename = "disasterDestructionState")]
-  disaster_destruction_state: String,
-  #[serde(rename = "dirtInterval")]
-  dirt_interval:              i8,
-  #[serde(rename = "timeScale")]
-  time_scale:                 f32,
-  #[serde(rename = "autoSaveInterval")]
-  auto_save_interval:         f32
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-struct CsgSlotSystem {
-  // Caused by a breaking change in serde-xml-rs
-  // crate in the backend service
-  #[serde(rename = "@slotUsage")]
-  slot_usage: String
-}
-
-// CSG section end
-
-impl DssData {
+impl Validation for DssData {
   fn is_valid(&self) -> bool {
     match &self.server {
       Some(server) => server.day_time > 0,
@@ -252,7 +162,7 @@ impl DssData {
   }
 }
 
-impl CsgData {
+impl Validation for CareerSavegame {
   fn is_valid(&self) -> bool {
     if let Some(slot_system) = &self.slot_system
       && !slot_system.slot_usage.is_empty()
@@ -473,7 +383,7 @@ impl AsahiCoordinator<BotData> for Monica {
         let dss_data = json_value.get("dss");
         let csg_data = json_value.get("csg");
 
-        let (dss, csg): (DssData, CsgData) = {
+        let (dss, csg): (DssData, CareerSavegame) = {
           if dss_data.is_none() || csg_data.is_none() {
             error!("Missing DSS/CSG fields for {server}: dss={dss_data:?} | csg={csg_data:?}");
             embeds.push(
@@ -501,8 +411,8 @@ impl AsahiCoordinator<BotData> for Monica {
           }
 
           match (
-            serde_json::from_value(dss_data.unwrap().clone()),
-            serde_json::from_value(csg_data.unwrap().clone())
+            serde_json::from_value::<DssData>(dss_data.unwrap().clone()),
+            serde_json::from_value::<CareerSavegame>(csg_data.unwrap().clone())
           ) {
             (Ok(dss), Ok(csg)) => (dss, csg),
             (Err(_), Err(_)) => {
@@ -680,7 +590,7 @@ pub fn format_player_uptime(uptime: i32) -> String {
   )
 }
 
-pub fn playerlist_constructor(players: Vec<DssPlayer>) -> String {
+pub fn playerlist_constructor(players: Vec<Player>) -> String {
   let mut builder = String::new();
 
   for player in players.into_iter().filter(|p| p.is_used.unwrap_or(false)) {
@@ -700,9 +610,9 @@ pub fn playerlist_constructor(players: Vec<DssPlayer>) -> String {
   builder
 }
 
-fn icon_factory(player: &DssPlayer) -> String {
+fn icon_factory(player: &Player) -> String {
   struct IconCondition<'a> {
-    condition: Box<dyn Fn(&DssPlayer) -> bool + 'a>,
+    condition: Box<dyn Fn(&Player) -> bool + 'a>,
     icon:      &'a str
   }
 
@@ -747,7 +657,7 @@ async fn savegame_settings_webhook(
     SETTINGS_TXT_MAP.get(map_key).and_then(|map| map.get(key)).unwrap_or(&"Unknown Value")
   }
 
-  let csg: CsgData = match serde_json::from_value(data["csg"].clone()) {
+  let csg: CareerSavegame = match serde_json::from_value(data["csg"].clone()) {
     Ok(c) => c,
     Err(e) => {
       let _ = AsahiError::Parse(format!("[savegame_settings_webhook:{server}] Failed to deserialize CSG data: {e}").into());
@@ -791,7 +701,7 @@ async fn savegame_settings_webhook(
       ),
       (
         "Lime",
-        get_mapped_value(&TxtMapKey::GenericBools, &csg_settings.lime_enabled.to_string()),
+        get_mapped_value(&TxtMapKey::GenericBools, &csg_settings.lime_required.to_string()),
         true
       ),
       (

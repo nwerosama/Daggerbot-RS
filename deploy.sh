@@ -3,7 +3,7 @@
 MACHINE_USER=toast
 MACHINE_IP=192.168.68.100
 DOCKER_REG=ghcr.io/nwerosama/daggerbot-rs
-DOCKER_TAG=koi
+DOCKER_TAG=experimental
 SSH_EXIT_STATUS=$?
 
 ssh $MACHINE_USER@$MACHINE_IP "script -qc 'docker service update daggerbot_app --force --image $DOCKER_REG:$DOCKER_TAG --with-registry-auth' /dev/null"
