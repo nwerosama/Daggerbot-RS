@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: daggerbot
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: daggerbot
+  template:
+    metadata:
+      labels:
+        app: daggerbot
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: daggerbot-app
+          image: ghcr.io/nwerosama/daggerbot-rs:koi
+          env:
+            - name: DOCKER_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: MONICA_GRPC_URI
+              valueFrom:
+                secretKeyRef:
+                  name: daggerbot-secret
+                  key: MONICA_GRPC_URI
+          # i dont like this. but do it to
+          # get rid of warnings anyways.
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

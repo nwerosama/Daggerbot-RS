@@ -1,2 +1,5 @@
 target
 .env*
+
+old_deploy.sh
+k-secret.yml
