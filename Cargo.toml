@@ -61,7 +61,8 @@ toml = { workspace = true }
 uptime_lib = { workspace = true }
 
 [patch.crates-io]
-poise = { git = "https://github.com/serenity-rs/poise", branch = "serenity-next" }
+# poise = { git = "https://github.com/serenity-rs/poise", branch = "serenity-next" }
+poise = { git = "http://localhost:65100/nwerosama/poise", branch = "cv2" }
 asahi = { git = "https://github.com/Niko-Devel/asahi", branch = "master" }
 farmsim = { git = "https://github.com/nwerosama/farmsim-rs", branch = "master" }
 

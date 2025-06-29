@@ -20,6 +20,7 @@ use {
     Context,
     CreateActionRow,
     CreateButton,
+    CreateComponent,
     CreateEmbed,
     CreateEmbedAuthor,
     CreateInteractionResponseFollowup,
@@ -139,9 +140,9 @@ async fn reusable_log(
   if title.contains("edited")
     && let Some(msg) = evt_msg
   {
-    message = message.components(vec![CreateActionRow::Buttons(Cow::Owned(vec![
+    message = message.components(vec![CreateComponent::ActionRow(CreateActionRow::Buttons(Cow::Owned(vec![
       CreateButton::new_link(msg.link()).label("Jump!"),
-    ]))]);
+    ])))]);
   }
 
   match GenericChannelId::new(BINARY_PROPERTIES.bot_log).send_message(&ctx.http, message).await {
