@@ -42,3 +42,24 @@ jobs:
 
       - name: Clippy
         run: cargo clippy --locked --all-features
+  deploy:
+    runs-on: ubuntu-latest
+    needs: ci
+    if: github.ref == 'refs/heads/koi'
+
+    steps:
+      - name: Create deployment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo '{
+            "ref": "${{ github.sha }}",
+            "environment": "production",
+            "auto_merge": false,
+            "required_contexts": ["ci"],
+            "payload": {
+              "deployment_name": "daggerbot",
+              "container_name": "daggerbot-app",
+              "image": "ghcr.io/nwerosama/daggerbot-rs:koi"
+            }
+          }' | gh api repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/deployments --method POST --input -
