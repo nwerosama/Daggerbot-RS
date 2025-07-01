@@ -67,7 +67,7 @@ static SEASONAL_THEMES: &[Theme] = &[
   }
 ];
 
-fn is_leap_year(year: u32) -> bool { (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0) }
+fn is_leap_year(year: u32) -> bool { (year.is_multiple_of(4) && !year.is_multiple_of(100)) || year.is_multiple_of(400) }
 
 fn get_current_date() -> Date {
   let now = SystemTime::now().duration_since(UNIX_EPOCH).expect("Incorrect system time");
