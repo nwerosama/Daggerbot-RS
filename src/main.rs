@@ -76,7 +76,6 @@ async fn main() {
   let activity = tconf.presence.activities.first().unwrap();
 
   let postgres = {
-    info!("Preparing to connect to database...");
     match sqlx::postgres::PgPoolOptions::new()
       .max_connections(28)
       .max_lifetime(Some(Duration::from_secs(600))) // 10 minutes
