@@ -143,10 +143,12 @@ impl UserMessageStats {
 
   fn reset_warnings(
     &self,
-    policy_type: &AutomodPolicyType
+    policy_type: &AutomodPolicyType,
+    current_ts: i64
   ) {
-    if let Some(entry) = self.policy_warnings.get(policy_type) {
+    if let Some(mut entry) = self.policy_warnings.get_mut(policy_type) {
       entry.0.store(0, SeqCst);
+      entry.1 = current_ts;
     }
   }
 
@@ -159,7 +161,7 @@ impl UserMessageStats {
     if let Some(entry) = self.policy_warnings.get(policy_type)
       && current_ts - entry.1 >= reset_interval
     {
-      self.reset_warnings(policy_type);
+      self.reset_warnings(policy_type, current_ts);
     }
   }
 }
@@ -574,7 +576,7 @@ impl Automoderator {
 
     let should_action = new_warnings >= policy.warn_threshold;
     if should_action {
-      user_stats.reset_warnings(&policy.policy_type);
+      user_stats.reset_warnings(&policy.policy_type, current_ts);
 
       // Save state to external cache
       let user_stats_data = serde_json::to_string(&user_stats)?;
