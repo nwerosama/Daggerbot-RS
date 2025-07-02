@@ -29,7 +29,7 @@ impl EventHandler for DiscordEvents {
   ) {
     let shard_latency = ctx.runners.get(&ctx.shard_id).unwrap().0.latency;
     match event {
-      FullEvent::Ready { data_about_bot, .. } => ready::on_ready(ctx, data_about_bot).await.unwrap(),
+      FullEvent::Ready { data_about_bot, .. } => ready::on_ready(ctx, data_about_bot, &self.probe).await.unwrap(),
       FullEvent::ShardStageUpdate { event, .. } => match event.new {
         ConnectionStage::Connected => self.probe.update_ws_status(true, shard_latency).await,
         ConnectionStage::Resuming => self.probe.update_ws_status(true, shard_latency).await,

@@ -15,7 +15,7 @@ use {
 pub struct Health {
   pub status:         String,
   pub ws_connected:   bool,
-  pub last_heartbeat: Option<std::time::Duration>
+  pub last_heartbeat: Option<u64>
 }
 
 #[derive(Debug, Clone)]
@@ -49,7 +49,7 @@ impl HealthProbe {
     );
     let mut status = self.status.write().await;
     status.ws_connected = connected;
-    status.last_heartbeat = heartbeat;
+    status.last_heartbeat = heartbeat.map(|d| d.as_nanos() as u64);
     status.status = if connected { "healthy".to_string() } else { "unhealthy".to_string() }
   }
 
