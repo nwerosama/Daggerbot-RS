@@ -438,20 +438,60 @@ async fn pallets(
     let pallet_details = pallet_counts
       .iter()
       .map(|(k, v)| {
+        let fixed_name = k.replace("&quot;", "\"");
         let width = get_longest_name + 3;
-        let padding = format!("{k:<width$}");
+        let padding = format!("{fixed_name:<width$}");
         format!("{}{}", ansi::Blue::BOLD.paint(&padding), ansi::Yellow::BOLD.paint(&v.to_string()))
       })
-      .collect::<Vec<String>>()
-      .join("\n");
+      .collect::<Vec<String>>();
 
-    ctx
-      .reply(format!(
-        "There are currently **{}** {rules} on **{}**. Here's the breakdown:\n```ansi\n{pallet_details}\n```",
-        filter.len(),
-        srv.name
-      ))
-      .await?;
+    let header = format!(
+      "There are currently **{}** {rules} on **{}**. Here's the breakdown:",
+      filter.len(),
+      srv.name
+    );
+
+    const MAX_CONTENT_LENGTH: usize = 1900;
+    let mut current_chunk = Vec::new();
+    let mut current_length = 0;
+    let mut is_first_message = true;
+
+    for line in pallet_details {
+      let line_length = line.len() + 1;
+
+      if current_length + line_length > MAX_CONTENT_LENGTH && !current_chunk.is_empty() {
+        let chunk_content = current_chunk.join("\n");
+        let message_content = if is_first_message {
+          format!("{header}\n```ansi\n{chunk_content}\n```")
+        } else {
+          format!("```ansi\n{chunk_content}\n```")
+        };
+
+        if is_first_message {
+          ctx.reply(message_content).await?;
+          is_first_message = false;
+        } else {
+          ctx.send(CreateReply::default().content(message_content)).await?;
+        }
+
+        current_chunk.clear();
+        current_length = 0;
+      }
+
+      current_chunk.push(line);
+      current_length += line_length;
+    }
+
+    if !current_chunk.is_empty() {
+      let chunk_content = current_chunk.join("\n");
+      let message_content = if is_first_message {
+        format!("{header}\n```ansi\n{chunk_content}\n```")
+      } else {
+        format!("```ansi\n{chunk_content}\n```")
+      };
+
+      ctx.reply(message_content).await?;
+    }
   }
 
   Ok(())
