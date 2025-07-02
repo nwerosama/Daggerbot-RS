@@ -7,17 +7,19 @@ use {
   tokio::sync::RwLock,
   warp::{
     Filter,
+    Rejection,
     http::StatusCode,
-    reply::with_status,
-    reply::json,
-    Rejection
+    reply::{
+      json,
+      with_status
+    }
   }
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Health {
-  pub status:         String,
-  pub ws_connected:   bool
+  pub status:       String,
+  pub ws_connected: bool
 }
 
 #[derive(Debug, Clone)]
@@ -33,8 +35,8 @@ impl HealthProbe {
   pub fn new() -> Self {
     Self {
       status: Arc::new(RwLock::new(Health {
-        status:         "starting".to_string(),
-        ws_connected:   false
+        status:       "starting".to_string(),
+        ws_connected: false
       }))
     }
   }
@@ -43,9 +45,7 @@ impl HealthProbe {
     &self,
     connected: bool
   ) {
-    asahi::info!(
-      "health endpoint updated; ws_connected: {connected}"
-    );
+    asahi::info!("health endpoint updated; ws_connected: {connected}");
     let mut status = self.status.write().await;
     status.ws_connected = connected;
     status.status = if connected { "healthy".to_string() } else { "unhealthy".to_string() }
