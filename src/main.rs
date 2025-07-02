@@ -11,6 +11,7 @@ mod shutdown;
 use {
   bridges::LuaSerenityBridge,
   dag_grpc::MonicaGRPCClient,
+  dag_kube::HealthProbe,
   errors::BotError,
   internals::{
     invite_data::InviteCache,
@@ -71,6 +72,12 @@ async fn init_serenity_bridge(
 #[tokio::main]
 async fn main() {
   asahi::log_init();
+
+  let health_probe = Arc::new(HealthProbe::new());
+  let kserver = health_probe.clone();
+  tokio::spawn(async move {
+    kserver.init(9000).await;
+  });
 
   let tconf = read_config();
   let activity = tconf.presence.activities.first().unwrap();
@@ -177,7 +184,9 @@ async fn main() {
       | GatewayIntents::MESSAGE_CONTENT
       | GatewayIntents::DIRECT_MESSAGES
   )
-  .event_handler(events::DiscordEvents)
+  .event_handler(events::DiscordEvents {
+    probe: Arc::clone(&health_probe)
+  })
   .framework(framework)
   .data(bot_data)
   .activity(ActivityData::streaming(activity.name.clone(), activity.url.clone()).unwrap())

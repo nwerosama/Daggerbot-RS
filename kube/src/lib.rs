@@ -1,0 +1,92 @@
+use {
+  serde::{
+    Deserialize,
+    Serialize
+  },
+  std::sync::Arc,
+  tokio::sync::RwLock,
+  warp::{
+    Filter,
+    http::StatusCode
+  }
+};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Health {
+  pub status:         String,
+  pub ws_connected:   bool,
+  pub last_heartbeat: Option<std::time::Duration>
+}
+
+#[derive(Debug, Clone)]
+pub struct HealthProbe {
+  pub status: Arc<RwLock<Health>>
+}
+
+impl Default for HealthProbe {
+  fn default() -> Self { Self::new() }
+}
+
+impl HealthProbe {
+  pub fn new() -> Self {
+    Self {
+      status: Arc::new(RwLock::new(Health {
+        status:         "starting".to_string(),
+        ws_connected:   false,
+        last_heartbeat: None
+      }))
+    }
+  }
+
+  pub async fn update_ws_status(
+    &self,
+    connected: bool,
+    heartbeat: Option<std::time::Duration>
+  ) {
+    asahi::info!(
+      "health endpoint updated; ws_connected: {connected}, last_heartbeat: {:?}",
+      heartbeat.unwrap_or(std::time::Duration::from_secs(0))
+    );
+    let mut status = self.status.write().await;
+    status.ws_connected = connected;
+    status.last_heartbeat = heartbeat;
+    status.status = if connected { "healthy".to_string() } else { "unhealthy".to_string() }
+  }
+
+  pub async fn init(
+    &self,
+    port: u16
+  ) {
+    let health_prober = self.clone();
+    let readiness_prober = self.clone();
+
+    let health = warp::path("health").and(warp::get()).and_then(move || {
+      let prober = health_prober.clone();
+      async move {
+        let status = prober.status.read().await;
+        let status_code = if status.ws_connected {
+          StatusCode::OK
+        } else {
+          StatusCode::SERVICE_UNAVAILABLE
+        };
+
+        Ok::<_, warp::Rejection>(warp::reply::with_status(warp::reply::json(&*status), status_code))
+      }
+    });
+
+    let readiness = warp::path("ready").and(warp::get()).and_then(move || {
+      let prober = readiness_prober.clone();
+      async move {
+        let status = prober.status.read().await;
+        if status.ws_connected {
+          Ok::<_, warp::Rejection>(warp::reply::with_status("Ready", StatusCode::OK))
+        } else {
+          Ok::<_, warp::Rejection>(warp::reply::with_status("Not Ready", StatusCode::SERVICE_UNAVAILABLE))
+        }
+      }
+    });
+
+    asahi::info!("K8s API server launched on port {port}");
+    warp::serve(health.or(readiness)).run(([0, 0, 0, 0], port)).await;
+  }
+}

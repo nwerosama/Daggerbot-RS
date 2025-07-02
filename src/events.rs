@@ -4,14 +4,21 @@ mod member;
 mod message;
 pub mod ready;
 
-use poise::serenity_prelude::{
-  Context,
-  EventHandler,
-  FullEvent,
-  async_trait
+use {
+  dag_kube::HealthProbe,
+  poise::serenity_prelude::{
+    ConnectionStage,
+    Context,
+    EventHandler,
+    FullEvent,
+    async_trait
+  },
+  std::sync::Arc
 };
 
-pub struct DiscordEvents;
+pub struct DiscordEvents {
+  pub probe: Arc<HealthProbe>
+}
 
 #[async_trait]
 impl EventHandler for DiscordEvents {
@@ -20,8 +27,15 @@ impl EventHandler for DiscordEvents {
     ctx: &Context,
     event: &FullEvent
   ) {
+    let shard_latency = ctx.runners.get(&ctx.shard_id).unwrap().0.latency;
     match event {
       FullEvent::Ready { data_about_bot, .. } => ready::on_ready(ctx, data_about_bot).await.unwrap(),
+      FullEvent::ShardStageUpdate { event, .. } => match event.new {
+        ConnectionStage::Connected => self.probe.update_ws_status(true, shard_latency).await,
+        ConnectionStage::Resuming => self.probe.update_ws_status(true, shard_latency).await,
+        ConnectionStage::Disconnected => self.probe.update_ws_status(false, None).await,
+        _ => ()
+      },
       FullEvent::InviteCreate { data, .. } => invite::on_invite_create(ctx, data).await.unwrap(),
       FullEvent::InviteDelete { data, .. } => invite::on_invite_delete(ctx, data).await.unwrap(),
       FullEvent::Message { new_message, .. } => {
