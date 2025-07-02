@@ -1,12 +1,12 @@
 [package]
 name = "dag_kube"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 
 [dependencies]
-tokio = { workspace = true }
+asahi = { workspace = true }
+poise = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-poise = { workspace = true }
+tokio = { workspace = true }
 warp = "0.3.7"
-asahi = { workspace = true }

@@ -27,13 +27,12 @@ impl EventHandler for DiscordEvents {
     ctx: &Context,
     event: &FullEvent
   ) {
-    let shard_latency = ctx.runners.get(&ctx.shard_id).unwrap().0.latency;
     match event {
-      FullEvent::Ready { data_about_bot, .. } => ready::on_ready(ctx, data_about_bot, &self.probe).await.unwrap(),
+      FullEvent::Ready { data_about_bot, .. } => ready::on_ready(ctx, data_about_bot).await.unwrap(),
       FullEvent::ShardStageUpdate { event, .. } => match event.new {
-        ConnectionStage::Connected => self.probe.update_ws_status(true, shard_latency).await,
-        ConnectionStage::Resuming => self.probe.update_ws_status(true, shard_latency).await,
-        ConnectionStage::Disconnected => self.probe.update_ws_status(false, None).await,
+        ConnectionStage::Connected => self.probe.update_ws_status(true).await,
+        ConnectionStage::Resuming => self.probe.update_ws_status(true).await,
+        ConnectionStage::Disconnected => self.probe.update_ws_status(false).await,
         _ => ()
       },
       FullEvent::InviteCreate { data, .. } => invite::on_invite_create(ctx, data).await.unwrap(),

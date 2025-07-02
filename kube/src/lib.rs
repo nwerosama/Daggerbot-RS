@@ -7,15 +7,17 @@ use {
   tokio::sync::RwLock,
   warp::{
     Filter,
-    http::StatusCode
+    http::StatusCode,
+    reply::with_status,
+    reply::json,
+    Rejection
   }
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Health {
   pub status:         String,
-  pub ws_connected:   bool,
-  pub last_heartbeat: Option<u64>
+  pub ws_connected:   bool
 }
 
 #[derive(Debug, Clone)]
@@ -32,24 +34,20 @@ impl HealthProbe {
     Self {
       status: Arc::new(RwLock::new(Health {
         status:         "starting".to_string(),
-        ws_connected:   false,
-        last_heartbeat: None
+        ws_connected:   false
       }))
     }
   }
 
   pub async fn update_ws_status(
     &self,
-    connected: bool,
-    heartbeat: Option<std::time::Duration>
+    connected: bool
   ) {
     asahi::info!(
-      "health endpoint updated; ws_connected: {connected}, last_heartbeat: {:?}",
-      heartbeat.unwrap_or(std::time::Duration::from_secs(0))
+      "health endpoint updated; ws_connected: {connected}"
     );
     let mut status = self.status.write().await;
     status.ws_connected = connected;
-    status.last_heartbeat = heartbeat.map(|d| d.as_nanos() as u64);
     status.status = if connected { "healthy".to_string() } else { "unhealthy".to_string() }
   }
 
@@ -70,7 +68,7 @@ impl HealthProbe {
           StatusCode::SERVICE_UNAVAILABLE
         };
 
-        Ok::<_, warp::Rejection>(warp::reply::with_status(warp::reply::json(&*status), status_code))
+        Ok::<_, Rejection>(with_status(json(&*status), status_code))
       }
     });
 
@@ -79,14 +77,13 @@ impl HealthProbe {
       async move {
         let status = prober.status.read().await;
         if status.ws_connected {
-          Ok::<_, warp::Rejection>(warp::reply::with_status("Ready", StatusCode::OK))
+          Ok::<_, Rejection>(with_status("Ready", StatusCode::OK))
         } else {
-          Ok::<_, warp::Rejection>(warp::reply::with_status("Not Ready", StatusCode::SERVICE_UNAVAILABLE))
+          Ok::<_, Rejection>(with_status("Not Ready", StatusCode::SERVICE_UNAVAILABLE))
         }
       }
     });
 
-    asahi::info!("K8s API server launched on port {port}");
     warp::serve(health.or(readiness)).run(([0, 0, 0, 0], port)).await;
   }
 }

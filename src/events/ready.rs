@@ -1,11 +1,8 @@
-use dag_kube::HealthProbe;
-
 use crate::{
   BotData,
   BotError,
   GIT_COMMIT_BRANCH,
   GIT_COMMIT_HASH,
-  heartbeat::HeartbeatLoop,
   internals::{
     config::BINARY_PROPERTIES,
     monica::Monica,
@@ -69,8 +66,7 @@ async fn ready_once(
 
 pub async fn on_ready(
   ctx: &Context,
-  ready: &Ready,
-  probe: &Arc<HealthProbe>
+  ready: &Ready
 ) -> Result<(), BotError> {
   if !READY_ONCE.swap(true, Ordering::Relaxed) {
     ready_once(ctx, ready).await.expect("Failed to call on_ready method");
@@ -79,13 +75,6 @@ pub async fn on_ready(
   let ctx_clone = Arc::new(ctx.clone());
   let bot_data = Arc::clone(&ctx.data::<BotData>());
 
-  spawn(
-    HeartbeatLoop {
-      ctx:   Arc::clone(&ctx_clone),
-      probe: probe.clone()
-    },
-    Arc::clone(&bot_data)
-  );
   spawn(Monica { ctx: Arc::clone(&ctx_clone) }, Arc::clone(&bot_data));
   spawn(ThreadTimer { ctx: Arc::clone(&ctx_clone) }, Arc::clone(&bot_data));
 
