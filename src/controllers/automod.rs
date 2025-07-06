@@ -91,7 +91,7 @@ const MD_BLOCKLIST: [&str; 4] = [
 
 lazy_static! {
   static ref URL_REGEX: Regex = Regex::new(r"(?i)(?:https?://)?(?:www\.)?([a-zA-Z0-9][a-zA-Z0-9-]*(?:\.[a-zA-Z0-9-]+)+)").unwrap();
-  static ref INVITE_REGEX: Regex = Regex::new(r"(?i)discord(?:\.gg|(?:app)?\.com/invite)/[\w-]+").unwrap();
+  static ref INVITE_REGEX: Regex = Regex::new(r"(?i)discord(?:\.gg|(?:app)?\.com[/\\]invite)[/\\][\w-]+").unwrap();
   static ref MASKED_URL_REGEX: Regex = Regex::new(r"\[.*?\]\(<?(https?://[^>]+)>?\)").unwrap();
   static ref REQWEST_CLIENT: Client = Client::new();
 }
