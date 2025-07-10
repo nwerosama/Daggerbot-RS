@@ -250,9 +250,9 @@ dependencies = [
 
 [[package]]
 name = "avif-serialize"
-version = "0.8.4"
+version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "19135c0c7a60bfee564dbe44ab5ce0557c6bf3884e5291a50be76a15640c4fbd"
+checksum = "2ea8ef51aced2b9191c08197f55450d830876d9933f8f48a429b354f1d496b42"
 dependencies = [
  "arrayvec",
 ]
@@ -467,14 +467,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "02260d489095346e5cafd04dea8e8cb54d1d74fcd759022a9b72986ebe9a1257"
 dependencies = [
  "serde",
- "toml",
+ "toml 0.8.23",
 ]
 
 [[package]]
 name = "cc"
-version = "1.2.27"
+version = "1.2.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d487aa071b5f64da6f19a3e848e3578944b726ee5a4854b82172f02aa876bfdc"
+checksum = "5c1599538de2394445747c8cf7935946e3cc27e9625f889d979bfb2aaf569362"
 dependencies = [
  "jobserver",
  "libc",
@@ -698,7 +698,7 @@ dependencies = [
  "sysinfo",
  "tokenservice-client",
  "tokio",
- "toml",
+ "toml 0.9.0",
  "uptime_lib",
 ]
 
@@ -1463,9 +1463,9 @@ dependencies = [
 
 [[package]]
 name = "hyper-util"
-version = "0.1.14"
+version = "0.1.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc2fdfdbff08affe55bb779f33b053aa1fe5dd5b54c257343c17edfa55711bdb"
+checksum = "7f66d5bd4c6f02bf0542fad85d626775bab9258cf795a4256dcaf3161114d1df"
 dependencies = [
  "base64 0.22.1",
  "bytes",
@@ -1802,9 +1802,9 @@ checksum = "1171693293099992e19cddea4e8b849964e9846f4acee11b3948bcc337be8776"
 
 [[package]]
 name = "libfuzzer-sys"
-version = "0.4.9"
+version = "0.4.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf78f52d400cf2d84a3a973a78a592b4adc535739e0a5597a0da6f0c357adc75"
+checksum = "5037190e1f70cbeef565bd267599242926f724d3b8a9f510fd7e0b540cfa4404"
 dependencies = [
  "arbitrary",
  "cc",
@@ -2472,7 +2472,7 @@ dependencies = [
 [[package]]
 name = "poise"
 version = "0.6.1"
-source = "git+http://localhost:65100/nwerosama/poise?branch=cv2#779158ee6209ea0907e06bbbab062e57e333987e"
+source = "git+https://git.playground.red/nwerosama/poise?branch=cv2#c52e04c6071e17d5463c05aef1d73ac6f212244d"
 dependencies = [
  "async-trait",
  "derivative",
@@ -2490,7 +2490,7 @@ dependencies = [
 [[package]]
 name = "poise_macros"
 version = "0.6.1"
-source = "git+http://localhost:65100/nwerosama/poise?branch=cv2#779158ee6209ea0907e06bbbab062e57e333987e"
+source = "git+https://git.playground.red/nwerosama/poise?branch=cv2#c52e04c6071e17d5463c05aef1d73ac6f212244d"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -2986,9 +2986,9 @@ dependencies = [
 
 [[package]]
 name = "rgb"
-version = "0.8.50"
+version = "0.8.51"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57397d16646700483b67d2dd6511d79318f9d057fdbd21a4066aeac8b41d310a"
+checksum = "a457e416a0f90d246a4c3288bd7a25b2304ca727f253f95be383dd17af56be8f"
 
 [[package]]
 name = "ring"
@@ -3221,6 +3221,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_spanned"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "40734c41988f7306bb04f0ecf60ec0f3f1caa34290e4e8ea471dcd3346483b83"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "serde_urlencoded"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3235,7 +3244,7 @@ dependencies = [
 [[package]]
 name = "serenity"
 version = "0.12.4"
-source = "git+https://github.com/serenity-rs/serenity?branch=next#361e2fcbf9cc3e639dcc12ee175c0ddb02d804ee"
+source = "git+https://github.com/serenity-rs/serenity?branch=next#9a0067c172b5da03af0089c3ea7cf006ec473b89"
 dependencies = [
  "aformat",
  "arrayvec",
@@ -3743,7 +3752,7 @@ dependencies = [
  "cfg-expr",
  "heck",
  "pkg-config",
- "toml",
+ "toml 0.8.23",
  "version-compare",
 ]
 
@@ -3907,9 +3916,9 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.46.0"
+version = "1.46.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1140bb80481756a8cbe10541f37433b459c5aa1e727b4c020fbfebdc25bf3ec4"
+checksum = "0cc3a2344dafbe23a245241fe8b09735b521110d30fcefbbd5feb1797ca35d17"
 dependencies = [
  "backtrace",
  "bytes",
@@ -4015,9 +4024,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dc1beb996b9d83529a9e75c17a1686767d148d70663143c7854d8b4a09ced362"
 dependencies = [
  "serde",
- "serde_spanned",
- "toml_datetime",
+ "serde_spanned 0.6.9",
+ "toml_datetime 0.6.11",
  "toml_edit",
+]
+
+[[package]]
+name = "toml"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f271e09bde39ab52250160a67e88577e0559ad77e9085de6e9051a2c4353f8f8"
+dependencies = [
+ "indexmap",
+ "serde",
+ "serde_spanned 1.0.0",
+ "toml_datetime 0.7.0",
+ "toml_parser",
+ "toml_writer",
+ "winnow",
 ]
 
 [[package]]
@@ -4030,6 +4054,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "toml_datetime"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bade1c3e902f58d73d3f294cd7f20391c1cb2fbcb643b73566bc773971df91e3"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "toml_edit"
 version = "0.22.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4037,9 +4070,18 @@ checksum = "41fe8c660ae4257887cf66394862d21dbca4a6ddd26f04a3560410406a2f819a"
 dependencies = [
  "indexmap",
  "serde",
- "serde_spanned",
- "toml_datetime",
+ "serde_spanned 0.6.9",
+ "toml_datetime 0.6.11",
  "toml_write",
+ "winnow",
+]
+
+[[package]]
+name = "toml_parser"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b5c1c469eda89749d2230d8156a5969a69ffe0d6d01200581cdc6110674d293e"
+dependencies = [
  "winnow",
 ]
 
@@ -4048,6 +4090,12 @@ name = "toml_write"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d99f8c9a7727884afe522e9bd5edbfc91a3312b36a77b5fb8926e4c31a41801"
+
+[[package]]
+name = "toml_writer"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b679217f2848de74cabd3e8fc5e6d66f40b7da40f8e1954d92054d9010690fd5"
 
 [[package]]
 name = "tonic"
@@ -5083,9 +5131,9 @@ checksum = "ea2f10b9bb0928dfb1b42b65e1f9e36f7f54dbdf08457afefb38afcdec4fa2bb"
 
 [[package]]
 name = "xml-rs"
-version = "0.8.26"
+version = "0.8.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a62ce76d9b56901b19a74f19431b0d8b3bc7ca4ad685a746dfd78ca8f4fc6bda"
+checksum = "6fd8403733700263c6eb89f192880191f1b83e332f7a20371ddcf421c4a337c7"
 
 [[package]]
 name = "yoke"
@@ -5208,9 +5256,9 @@ dependencies = [
 
 [[package]]
 name = "zune-jpeg"
-version = "0.4.18"
+version = "0.4.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7384255a918371b5af158218d131530f694de9ad3815ebdd0453a940485cb0fa"
+checksum = "2c9e525af0a6a658e031e95f14b7f889976b74a11ba0eca5a5fc9ac8a1c43a6a"
 dependencies = [
  "zune-core",
 ]
