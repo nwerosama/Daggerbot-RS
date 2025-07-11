@@ -94,6 +94,7 @@ lazy_static! {
   static ref INVITE_REGEX: Regex = Regex::new(r"(?i)discord(?:\.gg|(?:app)?\.com[/\\]invite)[/\\][\w-]+").unwrap();
   static ref MASKED_URL_REGEX: Regex = Regex::new(r"\[.*?\]\(<?(https?://[^>]+)>?\)").unwrap();
   static ref REQWEST_CLIENT: Client = Client::new();
+  static ref POLICY_WARNINGS: DashMap<(u64, AutomodPolicyType), (AtomicU32, i64)> = DashMap::new();
 }
 
 pub struct MaliciousDomains;
@@ -123,20 +124,18 @@ pub enum AutomodPolicyType {
 // Spam tracking
 #[derive(Debug, Default, Serialize, Deserialize)]
 struct UserMessageStats {
-  messages:        SmallVec<[i64; 5]>,
-  policy_warnings: DashMap<AutomodPolicyType, (AtomicU32, i64)>
+  messages: SmallVec<[i64; 5]>
 }
 
 impl UserMessageStats {
   fn increment_warnings(
     &self,
     policy_type: &AutomodPolicyType,
+    user_id: u64,
     timestamp: i64
   ) -> u32 {
-    let mut entry = self
-      .policy_warnings
-      .entry(policy_type.clone())
-      .or_insert_with(|| (AtomicU32::new(0), timestamp));
+    let key = (user_id, policy_type.clone());
+    let mut entry = POLICY_WARNINGS.entry(key).or_insert_with(|| (AtomicU32::new(0), timestamp));
     entry.1 = timestamp;
     entry.0.fetch_add(1, SeqCst) + 1
   }
@@ -144,9 +143,11 @@ impl UserMessageStats {
   fn reset_warnings(
     &self,
     policy_type: &AutomodPolicyType,
+    user_id: u64,
     current_ts: i64
   ) {
-    if let Some(mut entry) = self.policy_warnings.get_mut(policy_type) {
+    let key = (user_id, policy_type.clone());
+    if let Some(mut entry) = POLICY_WARNINGS.get_mut(&key) {
       entry.0.store(0, SeqCst);
       entry.1 = current_ts;
     }
@@ -155,13 +156,15 @@ impl UserMessageStats {
   fn check_and_reset_warns(
     &self,
     policy_type: &AutomodPolicyType,
+    user_id: u64,
     current_ts: i64,
     reset_interval: i64
   ) {
-    if let Some(entry) = self.policy_warnings.get(policy_type)
+    let key = (user_id, policy_type.clone());
+    if let Some(entry) = POLICY_WARNINGS.get(&key)
       && current_ts - entry.1 >= reset_interval
     {
-      self.reset_warnings(policy_type, current_ts);
+      self.reset_warnings(policy_type, user_id, current_ts);
     }
   }
 }
@@ -312,10 +315,11 @@ impl Automoderator {
 
     for (policy_type, violated) in checks {
       if violated && let Some(policy) = policies.iter().find(|p| p.enabled && p.policy_type == policy_type) {
-        let user_stats_key = format!("Discord:UserStats:{}", msg.author.id.get());
+        let user_id = msg.author.id.get();
+        let user_stats_key = format!("Discord:UserStats:{user_id}");
         if let Ok(Some(d)) = self.redis.get(&user_stats_key).await {
           let stats: UserMessageStats = serde_json::from_str(&d).unwrap_or_default();
-          stats.check_and_reset_warns(&policy_type, current_ts, 300); // 5m
+          stats.check_and_reset_warns(&policy_type, user_id, current_ts, 300); // 5m
           let data = serde_json::to_string(&stats).unwrap();
           self.redis.set(&user_stats_key, &data).await.unwrap();
         }
@@ -541,7 +545,7 @@ impl Automoderator {
     }
 
     let current_ts = msg.timestamp.unix_timestamp();
-    let new_warnings = user_stats.increment_warnings(&policy.policy_type, current_ts);
+    let new_warnings = user_stats.increment_warnings(&policy.policy_type, user_id, current_ts);
 
     let user_stats_data = serde_json::to_string(&user_stats)?;
     self.redis.set(&user_stats_key, &user_stats_data).await?;
@@ -576,7 +580,7 @@ impl Automoderator {
 
     let should_action = new_warnings >= policy.warn_threshold;
     if should_action {
-      user_stats.reset_warnings(&policy.policy_type, current_ts);
+      user_stats.reset_warnings(&policy.policy_type, user_id, current_ts);
 
       // Save state to external cache
       let user_stats_data = serde_json::to_string(&user_stats)?;
