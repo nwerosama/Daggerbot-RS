@@ -7,23 +7,17 @@ use crate::{
 
 use {
   asahi::utils::{
+    format_bytes,
     format_duration,
     os::{
-      format_bytes,
       get_kernel_info,
-      get_os_info
+      get_memory,
+      get_os_info,
+      get_uptime
     }
   },
-  std::{
-    env::var,
-    time::{
-      Duration,
-      SystemTime,
-      UNIX_EPOCH
-    }
-  },
-  sysinfo::System,
-  uptime_lib::get
+  std::env::var,
+  sysinfo::System
 };
 
 /// Retrieve host and bot uptimes
@@ -33,30 +27,16 @@ pub async fn uptime(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
   let mut sys = System::new_all();
   sys.refresh_all();
 
-  // Fetch system's uptime
-  let sys_uptime = get().unwrap().as_secs();
-
   // Fetch system's processor
   let cpu = sys.cpus();
 
-  // Fetch system memory usage
-  let sram = format_bytes(sys.used_memory());
-  let sram_total = format_bytes(sys.total_memory());
-
-  // Fetch process memory usage
-  let pram = match sys.process(sysinfo::get_current_pid().unwrap()) {
-    Some(proc) => format_bytes(proc.memory()),
-    None => String::from("Unavailable")
-  };
-
-  // Fetch process uptime
-  let curr_pid = sysinfo::get_current_pid().unwrap();
-  let now = SystemTime::now();
-  let mut proc_uptime = 0;
-  if let Some(process) = sys.process(curr_pid) {
-    let time_started = UNIX_EPOCH + Duration::from_secs(process.start_time());
-    proc_uptime = now.duration_since(time_started).unwrap().as_secs();
-  }
+  // Fetch system and process memory usage
+  let memory = get_memory();
+  let (pram, sram, sram_total) = (
+    format_bytes(memory.process),
+    format_bytes(memory.system.used),
+    format_bytes(memory.system.total)
+  );
 
   // Fetch the node hostname from envvar
   let docker_node = match var("DOCKER_HOSTNAME") {
@@ -66,8 +46,8 @@ pub async fn uptime(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
 
   let stat_msg = [
     format!("**{} {}** `{GIT_COMMIT_HASH}:{GIT_COMMIT_BRANCH}`", _bot.name, BOT_VERSION.as_str()),
-    format!(">>> System: `{}`", format_duration(sys_uptime)),
-    format!("Process: `{}`", format_duration(proc_uptime)),
+    format!(">>> System: `{}`", format_duration(get_uptime().system)),
+    format!("Process: `{}`", format_duration(get_uptime().process)),
     format!("Node: `{docker_node}`"),
     format!("CPU: `{}`", cpu[0].brand()),
     format!("RAM: `{pram}` (`{sram}/{sram_total}`)"),

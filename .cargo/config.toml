@@ -1,2 +1,5 @@
 [registries.local]
 index = "sparse+https://cargo.playground.red/api/v1/crates/"
+
+[build]
+rustflags = ["--cfg", "tokio_unstable", "--cfg", "tokio_taskdump"]

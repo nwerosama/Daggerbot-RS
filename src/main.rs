@@ -42,7 +42,7 @@ use {
     borrow::Cow,
     sync::Arc,
     time::Duration
-  }
+  } // tokio_util_watchdog::Watchdog
 };
 
 struct BotData {
@@ -72,6 +72,7 @@ async fn init_serenity_bridge(
 #[tokio::main]
 async fn main() {
   asahi::log_init();
+  // Watchdog::builder().build();
 
   let health_probe = Arc::new(HealthProbe::new());
   let kserver = health_probe.clone();

@@ -19,6 +19,9 @@ spec:
         - name: daggerbot-app
           image: ghcr.io/nwerosama/daggerbot-rs:koi
           imagePullPolicy: Always
+          # securityContext:
+          #   capabilities:
+          #     add: ["SYS_PTRACE"]
           env:
             - name: DOCKER_HOSTNAME
               valueFrom:
