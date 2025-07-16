@@ -23,21 +23,9 @@ use {
     Member,
     RoleId,
     Timestamp,
-    User,
-    small_fixed_array::FixedString
-  },
-  serde::{
-    Deserialize,
-    Serialize
+    User
   }
 };
-
-#[derive(Clone, Serialize, Deserialize)]
-pub(super) struct CachedMember {
-  pub nick:  FixedString<u8>,
-  pub roles: Vec<RoleId>,
-  pub user:  User
-}
 
 pub async fn on_guild_member_addition(
   ctx: &Context,
