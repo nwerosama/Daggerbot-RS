@@ -25,7 +25,6 @@ use {
   asahi::{
     AsahiCoordinator,
     AsahiResult,
-    async_trait,
     debug,
     error,
     info,
@@ -96,8 +95,6 @@ lazy_static! {
   static ref REQWEST_CLIENT: Client = Client::new();
   static ref POLICY_WARNINGS: DashMap<(u64, AutomodPolicyType), (AtomicU32, i64)> = DashMap::new();
 }
-
-pub struct MaliciousDomains;
 
 // Rule configuration
 #[derive(Debug, Clone)]
@@ -746,16 +743,19 @@ async fn process_response_text(text: String) -> Vec<String> {
     .collect()
 }
 
-#[async_trait]
-impl AsahiCoordinator<BotData> for MaliciousDomains {
+pub struct MaliciousDomains {
+  pub ctx: Arc<Context>
+}
+
+#[asahi::async_trait]
+impl AsahiCoordinator for MaliciousDomains {
   fn name(&self) -> &'static str { "Malicious Domains Updater" }
 
   fn interval(&self) -> u64 { 3600 }
 
-  async fn main_loop(
-    &self,
-    bot_data: Arc<BotData>
-  ) -> AsahiResult<()> {
+  async fn main_loop(&self) -> AsahiResult<()> {
+    let bot_data = self.ctx.data::<BotData>();
+
     let last_update = match bot_data.redis.get(MD_KEY_LU).await? {
       Some(ts) => ts.parse::<i64>().unwrap_or(0),
       None => 0

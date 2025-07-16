@@ -140,8 +140,7 @@ dependencies = [
 [[package]]
 name = "asahi"
 version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e52d767a096ddf94209e5f62e67fe7290279bdaa1cb9bc64b37aae8e77ac9534"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#2a0c00a2bcf70d8c2c310361ff1e806d52ba8ed0"
 dependencies = [
  "asahi_canvas",
  "asahi_coordinator",
@@ -153,8 +152,7 @@ dependencies = [
 [[package]]
 name = "asahi_canvas"
 version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "40f55b9b741a976f36d496f776a5f4faa05ab7acf35697c2089e94d0f334944c"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#2a0c00a2bcf70d8c2c310361ff1e806d52ba8ed0"
 dependencies = [
  "ab_glyph",
  "asahi_utils",
@@ -165,8 +163,7 @@ dependencies = [
 [[package]]
 name = "asahi_coordinator"
 version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "21b5bf9c4581d9fb7ced4664d60250480c7d40e4db5e024a874e93ae30ee28f5"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#2a0c00a2bcf70d8c2c310361ff1e806d52ba8ed0"
 dependencies = [
  "asahi_internal",
  "async-trait",
@@ -176,8 +173,7 @@ dependencies = [
 [[package]]
 name = "asahi_internal"
 version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f9063ec02a2e2ecaadeb3a0b7a4516f8f2378adfe17c2ea77c1579eaa36230ba"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#2a0c00a2bcf70d8c2c310361ff1e806d52ba8ed0"
 dependencies = [
  "bb8-redis",
  "hyper 1.6.0",
@@ -192,14 +188,12 @@ dependencies = [
 [[package]]
 name = "asahi_macros"
 version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "640e0ed27de542d55db0bfc8120e8b5264033e9cad849045d0d080252abaaf47"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#2a0c00a2bcf70d8c2c310361ff1e806d52ba8ed0"
 
 [[package]]
 name = "asahi_utils"
 version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c2cfaa5749e785fa9e61bdf103b54106566739de513241a344bfcea96ce9a27"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#2a0c00a2bcf70d8c2c310361ff1e806d52ba8ed0"
 dependencies = [
  "asahi_internal",
  "lazy_static",

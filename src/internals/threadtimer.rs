@@ -1,8 +1,5 @@
 use {
-  crate::{
-    BotData,
-    internals::config::BINARY_PROPERTIES
-  },
+  crate::internals::config::BINARY_PROPERTIES,
   asahi::{
     AsahiCoordinator,
     AsahiResult,
@@ -29,15 +26,12 @@ pub struct ThreadTimer {
 }
 
 #[async_trait]
-impl AsahiCoordinator<BotData> for ThreadTimer {
+impl AsahiCoordinator for ThreadTimer {
   fn name(&self) -> &'static str { "Thread Timer" }
 
   fn interval(&self) -> u64 { 900 }
 
-  async fn main_loop(
-    &self,
-    _: Arc<BotData>
-  ) -> AsahiResult<()> {
+  async fn main_loop(&self) -> AsahiResult<()> {
     let help_forum_id = ChannelId::new(BINARY_PROPERTIES.help_forum);
     let mut threads = Vec::new();
 

@@ -1,5 +1,4 @@
 use crate::{
-  BotData,
   BotError,
   GIT_COMMIT_BRANCH,
   GIT_COMMIT_HASH,
@@ -73,10 +72,11 @@ pub async fn on_ready(
   }
 
   let ctx_clone = Arc::new(ctx.clone());
-  let bot_data = Arc::clone(&ctx.data::<BotData>());
 
-  spawn(Monica { ctx: Arc::clone(&ctx_clone) }, Arc::clone(&bot_data));
-  spawn(ThreadTimer { ctx: Arc::clone(&ctx_clone) }, Arc::clone(&bot_data));
+  spawn(Monica { ctx: Arc::clone(&ctx_clone) });
+  spawn(ThreadTimer { ctx: Arc::clone(&ctx_clone) });
+  #[cfg(feature = "automod")]
+  spawn(crate::controllers::automod::MaliciousDomains { ctx: Arc::clone(&ctx_clone) });
 
   Ok(())
 }

@@ -1,5 +1,4 @@
 use {
-  crate::BotData,
   asahi::{
     AsahiCoordinator,
     AsahiResult,
@@ -9,7 +8,6 @@ use {
   },
   std::{
     sync::{
-      Arc,
       LazyLock,
       atomic::{
         AtomicU32,
@@ -161,15 +159,12 @@ fn update_embed_color() {
 pub struct SeasonalTheme;
 
 #[async_trait]
-impl AsahiCoordinator<BotData> for SeasonalTheme {
+impl AsahiCoordinator for SeasonalTheme {
   fn name(&self) -> &'static str { "Seasonal Theme" }
 
   fn interval(&self) -> u64 { 3600 }
 
-  async fn main_loop(
-    &self,
-    _: Arc<BotData>
-  ) -> AsahiResult<()> {
+  async fn main_loop(&self) -> AsahiResult<()> {
     update_embed_color();
     Ok(())
   }

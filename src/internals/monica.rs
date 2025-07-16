@@ -277,15 +277,13 @@ pub struct Monica {
 }
 
 #[asahi::async_trait]
-impl AsahiCoordinator<BotData> for Monica {
+impl AsahiCoordinator for Monica {
   fn name(&self) -> &'static str { TASK_NAME }
 
   fn interval(&self) -> u64 { REFRESH_TIMER_SECS }
 
-  async fn main_loop(
-    &self,
-    bot_data: Arc<BotData>
-  ) -> AsahiResult<()> {
+  async fn main_loop(&self) -> AsahiResult<()> {
+    let bot_data = self.ctx.data::<BotData>();
     let redis = bot_data.redis.clone();
     let postgres = bot_data.postgres.clone();
     let palette = EmbedPalette::new();
