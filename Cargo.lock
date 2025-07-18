@@ -4,9 +4,9 @@ version = 4
 
 [[package]]
 name = "ab_glyph"
-version = "0.2.30"
+version = "0.2.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e0f4f6fbdc5ee39f2ede9f5f3ec79477271a6d6a2baff22310d51736bda6cea"
+checksum = "e074464580a518d16a7126262fffaaa47af89d4099d4cb403f8ed938ba12ee7d"
 dependencies = [
  "ab_glyph_rasterizer",
  "owned_ttf_parser",
@@ -140,7 +140,7 @@ dependencies = [
 [[package]]
 name = "asahi"
 version = "0.1.6"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#2a0c00a2bcf70d8c2c310361ff1e806d52ba8ed0"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#6e77c4c56b24c2db000341f9dd7a5a4496ef7a3c"
 dependencies = [
  "asahi_canvas",
  "asahi_coordinator",
@@ -152,18 +152,23 @@ dependencies = [
 [[package]]
 name = "asahi_canvas"
 version = "0.1.6"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#2a0c00a2bcf70d8c2c310361ff1e806d52ba8ed0"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#6e77c4c56b24c2db000341f9dd7a5a4496ef7a3c"
 dependencies = [
  "ab_glyph",
  "asahi_utils",
  "image",
  "imageproc",
+ "lazy_static",
+ "regex",
+ "reqwest",
+ "tokio",
+ "unicode-segmentation",
 ]
 
 [[package]]
 name = "asahi_coordinator"
 version = "0.1.6"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#2a0c00a2bcf70d8c2c310361ff1e806d52ba8ed0"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#6e77c4c56b24c2db000341f9dd7a5a4496ef7a3c"
 dependencies = [
  "asahi_internal",
  "async-trait",
@@ -173,7 +178,7 @@ dependencies = [
 [[package]]
 name = "asahi_internal"
 version = "0.1.6"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#2a0c00a2bcf70d8c2c310361ff1e806d52ba8ed0"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#6e77c4c56b24c2db000341f9dd7a5a4496ef7a3c"
 dependencies = [
  "bb8-redis",
  "hyper 1.6.0",
@@ -188,12 +193,12 @@ dependencies = [
 [[package]]
 name = "asahi_macros"
 version = "0.1.6"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#2a0c00a2bcf70d8c2c310361ff1e806d52ba8ed0"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#6e77c4c56b24c2db000341f9dd7a5a4496ef7a3c"
 
 [[package]]
 name = "asahi_utils"
 version = "0.1.6"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#2a0c00a2bcf70d8c2c310361ff1e806d52ba8ed0"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#6e77c4c56b24c2db000341f9dd7a5a4496ef7a3c"
 dependencies = [
  "asahi_internal",
  "lazy_static",
@@ -3245,7 +3250,7 @@ dependencies = [
 [[package]]
 name = "serenity"
 version = "0.12.4"
-source = "git+https://github.com/serenity-rs/serenity?branch=next#8f8d63d6c6864892f279dd5226d21e0e6f71d797"
+source = "git+https://github.com/serenity-rs/serenity?branch=next#e6b1758cff7bebdc7eab6af57ff8d97d3445277e"
 dependencies = [
  "aformat",
  "arrayvec",
@@ -4406,6 +4411,12 @@ name = "unicode-properties"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e70f2a8b45122e719eb623c01822704c4e0907e7e426a05927e1a1cfff5b75d0"
+
+[[package]]
+name = "unicode-segmentation"
+version = "1.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6ccf251212114b54433ec949fd6a7841275f9ada20dddd2f29e9ceea4501493"
 
 [[package]]
 name = "untrusted"

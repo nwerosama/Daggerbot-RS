@@ -19,6 +19,10 @@ use {
     AsahiCoordinator,
     AsahiError,
     AsahiResult,
+    canvas::{
+      parse_all_emotes,
+      prefetch_emotes
+    },
     debug,
     error,
     info,
@@ -143,6 +147,11 @@ impl EmbedPalette {
       red:    BINARY_PROPERTIES.embed_colors.red
     }
   }
+}
+
+struct IconCondition<'a> {
+  condition: Box<dyn Fn(&Player) -> bool + 'a>,
+  icon:      &'a str
 }
 
 trait Validation {
@@ -287,6 +296,7 @@ impl AsahiCoordinator for Monica {
     let redis = bot_data.redis.clone();
     let postgres = bot_data.postgres.clone();
     let palette = EmbedPalette::new();
+    let mut emote_sources = Vec::new();
 
     let (mp_info, mp_info_msg) = {
       (
@@ -446,6 +456,15 @@ impl AsahiCoordinator for Monica {
         time_drift_webhook(server, self.ctx.clone(), &json_value).await;
       }
 
+      {
+        if let Some(players) = dss.slots.clone().map(|s| s.players) {
+          for player in players.into_iter().filter(|p| p.is_used.unwrap_or(false)) {
+            let icon = icon_factory(&player);
+            emote_sources.extend(parse_all_emotes(&icon));
+          }
+        }
+      }
+
       if !dss.server.clone().unwrap().name.is_empty() && !dss.is_valid() && !csg.is_valid() {
         debug!("{dss:?}");
         embeds.push(
@@ -551,6 +570,11 @@ impl AsahiCoordinator for Monica {
       error!("{TASK_NAME} | Error editing message: {y}");
     }
 
+    {
+      debug!("Prefetched {} emotes!", emote_sources.len());
+      prefetch_emotes(emote_sources);
+    }
+
     Ok(())
   }
 }
@@ -600,12 +624,7 @@ pub fn playerlist_constructor(players: Vec<Player>) -> String {
   builder
 }
 
-fn icon_factory(player: &Player) -> String {
-  struct IconCondition<'a> {
-    condition: Box<dyn Fn(&Player) -> bool + 'a>,
-    icon:      &'a str
-  }
-
+pub fn icon_factory(player: &Player) -> String {
   let icon_conditions = vec![
     IconCondition {
       condition: Box::new(|p| p.is_admin.unwrap_or(false)),
@@ -613,11 +632,15 @@ fn icon_factory(player: &Player) -> String {
     },
     IconCondition {
       condition: Box::new(|p| p.name.as_ref().is_some_and(|n| n.contains("Nwero"))),
-      icon:      "<:NeuroLoad:1334279559889293344>"
+      icon:      "<:minyanstare:1395559912079233044>"
     },
     IconCondition {
       condition: Box::new(|p| p.name.as_ref().is_some_and(|n| n.contains("Daggerwin"))),
       icon:      "<:Daggerwin:549283056079339520>"
+    },
+    IconCondition {
+      condition: Box::new(|p| p.name.as_ref().is_some_and(|n| n.contains("XiniX"))),
+      icon:      "🍌" // heh.
     },
   ];
 

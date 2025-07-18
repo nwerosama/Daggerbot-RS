@@ -12,6 +12,7 @@ use crate::{
       extract_ip_and_code,
       format_daytime,
       format_player_uptime,
+      icon_factory,
       mod_page_url
     }
   }
@@ -284,7 +285,7 @@ async fn players(
           name:     name.to_string(),
           uptime:   format_player_uptime(player.uptime.unwrap_or(0)),
           is_admin: player.is_admin.unwrap_or(false),
-          emoji:    String::new()
+          emoji:    icon_factory(player)
         })
       }
     }
@@ -296,6 +297,7 @@ async fn players(
     &pd,
     true,
     Some(Style {
+      render_discord_emotes: true,
       graph_color: to_rgba(color),
       ..Default::default()
     })
