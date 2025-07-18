@@ -140,7 +140,7 @@ dependencies = [
 [[package]]
 name = "asahi"
 version = "0.1.6"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#924ce525a08f8565064f866ca5cfef8604819cb9"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#fffd6c1dc375c655760f64da800e2c96e3e7c279"
 dependencies = [
  "asahi_canvas",
  "asahi_coordinator",
@@ -152,7 +152,7 @@ dependencies = [
 [[package]]
 name = "asahi_canvas"
 version = "0.1.6"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#924ce525a08f8565064f866ca5cfef8604819cb9"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#fffd6c1dc375c655760f64da800e2c96e3e7c279"
 dependencies = [
  "ab_glyph",
  "asahi_utils",
@@ -168,7 +168,7 @@ dependencies = [
 [[package]]
 name = "asahi_coordinator"
 version = "0.1.6"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#924ce525a08f8565064f866ca5cfef8604819cb9"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#fffd6c1dc375c655760f64da800e2c96e3e7c279"
 dependencies = [
  "asahi_internal",
  "async-trait",
@@ -178,28 +178,31 @@ dependencies = [
 [[package]]
 name = "asahi_internal"
 version = "0.1.6"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#924ce525a08f8565064f866ca5cfef8604819cb9"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#fffd6c1dc375c655760f64da800e2c96e3e7c279"
 dependencies = [
  "bb8-redis",
  "hyper 1.6.0",
  "reqwest",
+ "serde",
  "serde-xml-rs",
  "serde_json",
  "sqlx",
  "thiserror 2.0.12",
+ "tokio",
  "tracing",
  "tracing-subscriber",
+ "warp",
 ]
 
 [[package]]
 name = "asahi_macros"
 version = "0.1.6"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#924ce525a08f8565064f866ca5cfef8604819cb9"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#fffd6c1dc375c655760f64da800e2c96e3e7c279"
 
 [[package]]
 name = "asahi_utils"
 version = "0.1.6"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#924ce525a08f8565064f866ca5cfef8604819cb9"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#fffd6c1dc375c655760f64da800e2c96e3e7c279"
 dependencies = [
  "asahi_internal",
  "lazy_static",
@@ -669,16 +672,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dag_kube"
-version = "0.1.1"
-dependencies = [
- "asahi",
- "serde",
- "tokio",
- "warp",
-]
-
-[[package]]
 name = "daggerbot-rs"
 version = "4.2.0"
 dependencies = [
@@ -687,7 +680,6 @@ dependencies = [
  "bb8-redis",
  "cargo_toml",
  "dag_grpc",
- "dag_kube",
  "dashmap",
  "farmsim",
  "lazy_static",

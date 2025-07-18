@@ -4,10 +4,10 @@ version = "4.2.0"
 edition = "2024"
 
 [workspace]
-members = ["grpc", "kube"]
+members = ["grpc"]
 
 [workspace.dependencies]
-asahi = { version = "0.1.6", features = ["canvas", "coordinator", "sqlx-pg"] }
+asahi = { version = "0.1.6", features = ["canvas", "coordinator", "prober", "sqlx-pg"] }
 bb8 = "0.9.0"
 bb8-redis = "0.24.0"
 cargo_toml = "0.22.1"
@@ -38,7 +38,6 @@ bb8 = { workspace = true }
 bb8-redis = { workspace = true }
 cargo_toml = { workspace = true }
 dag_grpc = { path = "grpc" }
-dag_kube = { path = "kube" }
 dashmap = { workspace = true }
 farmsim = { workspace = true }
 lazy_static = { workspace = true }
@@ -67,6 +66,7 @@ path = "src/main.rs"
 # poise = { git = "https://github.com/serenity-rs/poise", branch = "serenity-next" }
 poise = { git = "https://git.playground.red/nwerosama/poise", branch = "cv2" }
 asahi = { git = "https://github.com/Niko-Devel/asahi", branch = "master" }
+# asahi = { path = "../asahi" }
 # farmsim = { git = "https://github.com/nwerosama/farmsim-rs", branch = "master" }
 
 [features]

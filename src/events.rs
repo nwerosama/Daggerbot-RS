@@ -6,7 +6,7 @@ mod message;
 pub mod ready;
 
 use {
-  dag_kube::HealthProbe,
+  asahi::Probe,
   poise::serenity_prelude::{
     ConnectionStage,
     Context,
@@ -18,7 +18,7 @@ use {
 };
 
 pub struct DiscordEvents {
-  pub probe: Arc<HealthProbe>
+  pub probe: Arc<Probe>
 }
 
 #[async_trait]
@@ -31,9 +31,9 @@ impl EventHandler for DiscordEvents {
     match event {
       FullEvent::Ready { data_about_bot, .. } => ready::on_ready(ctx, data_about_bot).await.unwrap(),
       FullEvent::ShardStageUpdate { event, .. } => match event.new {
-        ConnectionStage::Connected => self.probe.update_ws_status(true).await,
-        ConnectionStage::Resuming => self.probe.update_ws_status(true).await,
-        ConnectionStage::Disconnected => self.probe.update_ws_status(false).await,
+        ConnectionStage::Connected => self.probe.update_status(true).await,
+        ConnectionStage::Resuming => self.probe.update_status(true).await,
+        ConnectionStage::Disconnected => self.probe.update_status(false).await,
         _ => ()
       },
       FullEvent::InviteCreate { data, .. } => invite::on_invite_create(ctx, data).await.unwrap(),

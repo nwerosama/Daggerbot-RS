@@ -11,7 +11,6 @@ mod shutdown;
 use {
   bridges::LuaSerenityBridge,
   dag_grpc::MonicaGRPCClient,
-  dag_kube::HealthProbe,
   errors::BotError,
   internals::{
     invite_data::InviteCache,
@@ -26,6 +25,7 @@ use {
 
 use {
   asahi::{
+    Probe,
     error,
     info,
     utils::database::{
@@ -88,7 +88,7 @@ async fn main() {
   asahi::log_init();
   // Watchdog::builder().build();
 
-  let health_probe = Arc::new(HealthProbe::new());
+  let health_probe = Arc::new(Probe::new());
   let kserver = health_probe.clone();
   tokio::spawn(async move {
     kserver.init(9000).await;
