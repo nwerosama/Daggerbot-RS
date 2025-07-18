@@ -16,14 +16,12 @@ use {
   poise::serenity_prelude::{
     Attachment,
     ButtonStyle,
-    ComponentInteractionCollector,
     Context,
     CreateActionRow,
     CreateButton,
     CreateComponent,
     CreateEmbed,
     CreateEmbedAuthor,
-    CreateInteractionResponseFollowup,
     CreateMessage,
     GenericChannelId,
     GuildId,
@@ -35,7 +33,6 @@ use {
     Poll,
     Timestamp,
     User,
-    UserId,
     small_fixed_array::FixedString
   },
   serde::{
@@ -46,10 +43,7 @@ use {
     ChangeTag,
     TextDiff
   },
-  std::{
-    borrow::Cow,
-    time::Duration
-  }
+  std::borrow::Cow
 };
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -414,15 +408,6 @@ pub async fn on_message_lua(
   Ok(())
 }
 
-#[derive(Debug, poise::Modal)]
-struct DmModal {
-  #[name = "Your message"]
-  #[placeholder = "Markdown is supported, but attachments do not"]
-  #[max_length = 1024]
-  #[paragraph]
-  mod_reply: String
-}
-
 async fn on_message_dm(
   ctx: &Context,
   new_message: &Message
@@ -449,35 +434,6 @@ async fn on_message_dm(
         )
     )
     .await?;
-
-  // 900 secs = 15 mins
-  while let Some(mci) = ComponentInteractionCollector::new(ctx)
-    .timeout(Duration::from_secs(900))
-    .filter(move |int| int.data.custom_id.contains("dm-"))
-    .await
-  {
-    let uid = mci
-      .data
-      .custom_id
-      .strip_prefix("dm-")
-      .and_then(|id| id.parse::<u64>().ok())
-      .ok_or_else(|| BotError::from("Collector picked up an invalid UserID"))?;
-    let data = poise::execute_modal_on_component_interaction::<DmModal>(ctx, mci.clone(), None, None).await?;
-
-    UserId::new(uid)
-      .dm(
-        &ctx.http,
-        CreateMessage::new().content(format!("You have a new message!\n> {}", data.unwrap().mod_reply))
-      )
-      .await?;
-
-    mci
-      .create_followup(
-        &ctx.http,
-        CreateInteractionResponseFollowup::new().content(format!("Sent your response to **{name}**"))
-      )
-      .await?;
-  }
 
   Ok(())
 }
