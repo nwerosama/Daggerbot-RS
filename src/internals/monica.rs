@@ -529,7 +529,11 @@ impl AsahiCoordinator for Monica {
         )))
         .footer(CreateEmbedFooter::new(format!(
           "Autosave: {} mins ∙ Version: {}",
-          csg.settings.expect("no csg data").auto_save_interval,
+          csg
+            .settings
+            .as_ref()
+            .map(|s| s.auto_save_interval.to_string())
+            .unwrap_or_else(|| "?".to_string()),
           dss.server.clone().unwrap().version
         )))
         .timestamp(Timestamp::now());
