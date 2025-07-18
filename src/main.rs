@@ -27,7 +27,12 @@ use {
 use {
   asahi::{
     error,
-    info
+    info,
+    utils::database::{
+      AsahiDatabaseConfig,
+      AsahiDatabaseKind,
+      connect
+    }
   },
   mlua::Lua,
   poise::serenity_prelude::{
@@ -40,8 +45,7 @@ use {
   },
   std::{
     borrow::Cow,
-    sync::Arc,
-    time::Duration
+    sync::Arc
   } // tokio_util_watchdog::Watchdog
 };
 
@@ -51,6 +55,16 @@ struct BotData {
   serenity_bridge: Arc<LuaSerenityBridge>,
   invite_data:     Arc<InviteCache>,
   grpc:            MonicaGRPCClient
+}
+
+struct Database(String);
+
+impl AsahiDatabaseConfig for Database {
+  fn uri(&self) -> &str { &self.0 }
+
+  fn kind(&self) -> AsahiDatabaseKind { AsahiDatabaseKind::Postgres }
+
+  fn max_connections(&self) -> u32 { 26 }
 }
 
 #[cfg(feature = "production")]
@@ -83,22 +97,14 @@ async fn main() {
   let tconf = read_config();
   let activity = tconf.presence.activities.first().unwrap();
 
-  let postgres = {
-    match sqlx::postgres::PgPoolOptions::new()
-      .max_connections(28)
-      .max_lifetime(Some(Duration::from_secs(600))) // 10 minutes
-      .idle_timeout(Some(Duration::from_secs(360))) // 6 minutes
-      .connect(&token_path().await.postgres_uri)
-      .await
-    {
-      Ok(p) => {
-        info!("Database connection established");
-        p
-      },
-      Err(e) => {
-        error!("Database connection error: {e}");
-        std::process::exit(1);
-      }
+  let postgres = match connect(&Database(token_path().await.postgres_uri)).await {
+    Ok(p) => {
+      info!("Database connection established");
+      p
+    },
+    Err(e) => {
+      error!("Database connection error: {e}");
+      std::process::exit(1);
     }
   };
 

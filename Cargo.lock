@@ -140,7 +140,7 @@ dependencies = [
 [[package]]
 name = "asahi"
 version = "0.1.6"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#6e77c4c56b24c2db000341f9dd7a5a4496ef7a3c"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#924ce525a08f8565064f866ca5cfef8604819cb9"
 dependencies = [
  "asahi_canvas",
  "asahi_coordinator",
@@ -152,7 +152,7 @@ dependencies = [
 [[package]]
 name = "asahi_canvas"
 version = "0.1.6"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#6e77c4c56b24c2db000341f9dd7a5a4496ef7a3c"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#924ce525a08f8565064f866ca5cfef8604819cb9"
 dependencies = [
  "ab_glyph",
  "asahi_utils",
@@ -168,7 +168,7 @@ dependencies = [
 [[package]]
 name = "asahi_coordinator"
 version = "0.1.6"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#6e77c4c56b24c2db000341f9dd7a5a4496ef7a3c"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#924ce525a08f8565064f866ca5cfef8604819cb9"
 dependencies = [
  "asahi_internal",
  "async-trait",
@@ -178,10 +178,11 @@ dependencies = [
 [[package]]
 name = "asahi_internal"
 version = "0.1.6"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#6e77c4c56b24c2db000341f9dd7a5a4496ef7a3c"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#924ce525a08f8565064f866ca5cfef8604819cb9"
 dependencies = [
  "bb8-redis",
  "hyper 1.6.0",
+ "reqwest",
  "serde-xml-rs",
  "serde_json",
  "sqlx",
@@ -193,18 +194,19 @@ dependencies = [
 [[package]]
 name = "asahi_macros"
 version = "0.1.6"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#6e77c4c56b24c2db000341f9dd7a5a4496ef7a3c"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#924ce525a08f8565064f866ca5cfef8604819cb9"
 
 [[package]]
 name = "asahi_utils"
 version = "0.1.6"
-source = "git+https://github.com/Niko-Devel/asahi?branch=master#6e77c4c56b24c2db000341f9dd7a5a4496ef7a3c"
+source = "git+https://github.com/Niko-Devel/asahi?branch=master#924ce525a08f8565064f866ca5cfef8604819cb9"
 dependencies = [
  "asahi_internal",
  "lazy_static",
  "num-bigint",
  "num-traits",
  "regex",
+ "sqlx",
  "sysinfo",
  "uptime_lib",
 ]
@@ -479,9 +481,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.2.29"
+version = "1.2.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c1599538de2394445747c8cf7935946e3cc27e9625f889d979bfb2aaf569362"
+checksum = "deec109607ca693028562ed836a5f1c4b8bd77755c4e132fc5ce11b0b6211ae7"
 dependencies = [
  "jobserver",
  "libc",
@@ -1435,7 +1437,7 @@ dependencies = [
  "tokio",
  "tokio-rustls",
  "tower-service",
- "webpki-roots 1.0.1",
+ "webpki-roots 1.0.2",
 ]
 
 [[package]]
@@ -2987,7 +2989,7 @@ dependencies = [
  "wasm-bindgen-futures",
  "wasm-streams",
  "web-sys",
- "webpki-roots 1.0.1",
+ "webpki-roots 1.0.2",
 ]
 
 [[package]]
@@ -3207,9 +3209,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.140"
+version = "1.0.141"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20068b6e96dc6c9bd23e01df8827e6c7e1f2fddd43c21810382803c136b99373"
+checksum = "30b9eff21ebe718216c6ec64e1d9ac57087aad11efc64e32002bce4a0d4c03d3"
 dependencies = [
  "itoa",
  "memchr",
@@ -3726,9 +3728,9 @@ dependencies = [
 
 [[package]]
 name = "sysinfo"
-version = "0.36.0"
+version = "0.36.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aab138f5c1bb35231de19049060a87977ad23e04f2303e953bc5c2947ac7dec4"
+checksum = "252800745060e7b9ffb7b2badbd8b31cfa4aa2e61af879d0a3bf2a317c20217d"
 dependencies = [
  "libc",
  "memchr",
@@ -4663,14 +4665,14 @@ version = "0.26.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "521bc38abb08001b01866da9f51eb7c5d647a19260e00054a8c7fd5f9e57f7a9"
 dependencies = [
- "webpki-roots 1.0.1",
+ "webpki-roots 1.0.2",
 ]
 
 [[package]]
 name = "webpki-roots"
-version = "1.0.1"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8782dd5a41a24eed3a4f40b606249b3e236ca61adf1f25ea4d45c73de122b502"
+checksum = "7e8983c3ab33d6fb807cfcdad2491c4ea8cbc8ed839181c7dfd9c67c83e261b2"
 dependencies = [
  "rustls-pki-types",
 ]
