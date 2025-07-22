@@ -273,14 +273,17 @@ impl Automoderator {
             return Ok(());
           }
         },
-        Err(_) => {
-          error!("Got hit by an error, couldn't check anyway!");
+        Err(e) => {
+          error!("Couldn't process the message due to an error: {e}");
           return Ok(());
         }
       }
 
-      if violation.policy_type == AutomodPolicyType::MaliciousLinks {
-        info!("({}) Malicious URL: {}", msg.author.name, msg.content);
+      if matches!(
+        violation.policy_type,
+        AutomodPolicyType::MaliciousLinks | AutomodPolicyType::ProhibitedUrls
+      ) {
+        info!("({}) Moderated content: {}", msg.author.name, msg.content);
       }
 
       self.handle_violation(ctx, msg, violation).await?;
