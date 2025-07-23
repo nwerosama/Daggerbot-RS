@@ -91,6 +91,7 @@ const MD_BLOCKLIST: [&str; 4] = [
 lazy_static! {
   static ref URL_REGEX: Regex = Regex::new(r"(?i)(?:https?://)?(?:www\.)?([a-zA-Z0-9][a-zA-Z0-9-]*(?:\.[a-zA-Z0-9-]+)+)").unwrap();
   static ref INVITE_REGEX: Regex = Regex::new(r"(?i)discord(?:\.gg|(?:app)?\.com[/\\]invite)[/\\][\w-]+").unwrap();
+  static ref CRYPTO_REGEX: Regex = Regex::new(r"(?i)\b(?:help|learn|earn|profit|invest|wealth|mentor)\b.*?\b(?:\d+k|\$\d+(?:,\d{3})*(?:\.\d{2})?|crypto|bitcoin|eth|(?:crypto)?currency|market)\b.*?\b(?:dm|[mp][ae]ssage|contact|telegram|t\.me|ask\s+how)\b").unwrap();
   static ref MASKED_URL_REGEX: Regex = Regex::new(r"\[.*?\]\(<?(https?://[^>]+)>?\)").unwrap();
   static ref REQWEST_CLIENT: Client = Client::new();
   static ref POLICY_WARNINGS: DashMap<(u64, AutomodPolicyType), (AtomicU32, i64)> = DashMap::new();
@@ -115,7 +116,8 @@ pub enum AutomodPolicyType {
   InviteLinks,
   ProhibitedWords,
   MaliciousLinks, // For phishing links
-  ProhibitedUrls
+  ProhibitedUrls,
+  Phishing
 }
 
 // Spam tracking
@@ -229,6 +231,17 @@ impl AutomodPolicy {
       mute_duration:  Some(1800) // 30 minutes
     }
   }
+
+  pub fn phishing() -> Self {
+    Self {
+      enabled:        true,
+      policy_type:    AutomodPolicyType::Phishing,
+      action:         ActionType::Ban,
+      reason:         "Compromised account spreading fishy message".to_string(),
+      warn_threshold: 0,
+      mute_duration:  None
+    }
+  }
 }
 
 impl Automoderator {
@@ -244,6 +257,7 @@ impl Automoderator {
         AutomodPolicy::invite_links(),
         AutomodPolicy::malicious_links(),
         AutomodPolicy::prohibited_urls(),
+        AutomodPolicy::phishing(),
       ])),
       pw_list: Self::load_prohibited_words(db).await?,
       pu_list: Self::load_prohibited_urls(db).await?,
@@ -310,7 +324,8 @@ impl Automoderator {
       ),
       (AutomodPolicyType::ProhibitedWords, self.contains_prohibited_words(&msg.content)),
       (AutomodPolicyType::MaliciousLinks, self.contains_malicious_links(&msg.content).await),
-      (AutomodPolicyType::ProhibitedUrls, self.contains_prohibited_urls(&msg.content))
+      (AutomodPolicyType::ProhibitedUrls, self.contains_prohibited_urls(&msg.content)),
+      (AutomodPolicyType::Phishing, self.contains_fishy_message(&msg.content))
     ];
 
     for (policy_type, violated) in checks {
@@ -453,6 +468,13 @@ impl Automoderator {
     false
   }
 
+  fn contains_fishy_message(
+    &self,
+    content: &str
+  ) -> bool {
+    CRYPTO_REGEX.is_match(content)
+  }
+
   async fn log_violation(
     &self,
     ctx: &Context,
@@ -555,26 +577,29 @@ impl Automoderator {
         AutomodPolicyType::AntiSpam => "Stop spamming!",
         AutomodPolicyType::InviteLinks => "Discord invite links aren't allowed in this server!",
         AutomodPolicyType::ProhibitedWords => "Watch your language!",
-        AutomodPolicyType::MaliciousLinks => "Phishing links aren't allowed in this server!",
-        AutomodPolicyType::ProhibitedUrls => "That link is currently banned in this server!"
+        AutomodPolicyType::MaliciousLinks => "Malicious links aren't allowed in this server!",
+        AutomodPolicyType::ProhibitedUrls => "That link is currently banned in this server!",
+        _ => ""
       };
 
-      if let Ok(reply) = msg.reply(&ctx.http, reply_to_msg).await {
-        let http = ctx.http.clone();
-        let reply_id = reply.id;
-        let channel_id = reply.channel_id;
-        tokio::spawn(async move {
-          sleep(Duration::from_secs(10)).await;
-          if let Err(e) = channel_id.delete_message(&http, reply_id, None).await {
-            error!("Failed to delete the bot's reply message: {e}");
-          }
-        });
-      } else {
-        error!("Failed to reply to user's message");
-      }
+      if policy.warn_threshold > 0 && !reply_to_msg.is_empty() {
+        if let Ok(reply) = msg.reply(&ctx.http, reply_to_msg).await {
+          let http = ctx.http.clone();
+          let reply_id = reply.id;
+          let channel_id = reply.channel_id;
+          tokio::spawn(async move {
+            sleep(Duration::from_secs(10)).await;
+            if let Err(e) = channel_id.delete_message(&http, reply_id, None).await {
+              error!("Failed to delete the bot's reply message: {e}");
+            }
+          });
+        } else {
+          error!("Failed to reply to user's message");
+        }
 
-      if let Err(e) = msg.delete(&ctx.http, Some("Message violated the automod's policy!")).await {
-        error!("Failed to delete the message: {e}");
+        if let Err(e) = msg.delete(&ctx.http, Some("Message violated the automod's policy!")).await {
+          error!("Failed to delete the message: {e}");
+        }
       }
     }
 
@@ -588,36 +613,49 @@ impl Automoderator {
 
       self.log_violation(ctx, msg, &policy, case_id).await?;
 
+      let guild_id = msg.guild_id.expect("Expected message to be in guild");
+
       match policy.action {
         ActionType::Warn => self.create_sanction(ctx, msg.author.id, "Warn", &policy.reason, None, case_id).await?,
         ActionType::Mute => {
-          if let Some(duration) = policy.mute_duration {
-            let guild_id = msg.guild_id.expect("Expected message to be in guild");
-            if let Ok(mut member) = guild_id.member(&ctx.http, msg.author.id).await {
-              let until = Timestamp::from_unix_timestamp(msg.timestamp.unix_timestamp() + duration).expect("Invalid timestamp");
-              member.disable_communication_until(&ctx.http, until).await?;
-              self
-                .create_sanction(ctx, msg.author.id, "Mute", &policy.reason, Some(duration), case_id)
-                .await?;
-            }
+          if let Some(duration) = policy.mute_duration
+            && let Ok(mut member) = guild_id.member(&ctx.http, msg.author.id).await
+          {
+            let until = Timestamp::from_unix_timestamp(msg.timestamp.unix_timestamp() + duration).expect("Invalid timestamp");
+            member.disable_communication_until(&ctx.http, until).await?;
+            self
+              .create_sanction(ctx, msg.author.id, "Mute", &policy.reason, Some(duration), case_id)
+              .await?;
           }
         },
         ActionType::Kick => {
           if let Ok(member) = msg.member(&ctx.http).await {
-            member.kick(&ctx.http, Some(&policy.reason)).await?;
+            member.kick(&ctx.http, Some(&audit_log_reason(&policy.reason, case_id))).await?;
             self.create_sanction(ctx, msg.author.id, "Kick", &policy.reason, None, case_id).await?;
           }
         },
-        ActionType::Ban => {
-          let guild_id = msg.guild_id.expect("Expected message to be in guild");
-          guild_id.ban(&ctx.http, msg.author.id, 86400, Some(&policy.reason)).await?;
-          self.create_sanction(ctx, msg.author.id, "Ban", &policy.reason, None, case_id).await?;
+        ActionType::Ban => match guild_id
+          .ban(&ctx.http, msg.author.id, 86400, Some(&audit_log_reason(&policy.reason, case_id)))
+          .await
+        {
+          Ok(_) => self.create_sanction(ctx, msg.author.id, "Ban", &policy.reason, None, case_id).await?,
+          Err(e) => {
+            error!("ban failed: {e:?}");
+            return Ok(())
+          }
         },
-        ActionType::Softban => {
-          let guild_id = msg.guild_id.expect("Expected message to be in guild");
-          guild_id.ban(&ctx.http, msg.author.id, 86400, Some(&policy.reason)).await?;
-          guild_id.unban(&ctx.http, msg.author.id, None).await?;
-          self.create_sanction(ctx, msg.author.id, "Softban", &policy.reason, None, case_id).await?;
+        ActionType::Softban => match guild_id
+          .ban(&ctx.http, msg.author.id, 86400, Some(&audit_log_reason(&policy.reason, case_id)))
+          .await
+        {
+          Ok(_) => {
+            guild_id.unban(&ctx.http, msg.author.id, None).await.expect("unban failure");
+            self.create_sanction(ctx, msg.author.id, "Softban", &policy.reason, None, case_id).await?;
+          },
+          Err(e) => {
+            error!("ban failed: {e:?}");
+            return Ok(())
+          }
         },
         _ => error!("Unknown ActionType ended up here!")
       }
@@ -683,6 +721,14 @@ impl Automoderator {
     let domains = urls.into_iter().map(|u| u.url.to_lowercase()).collect();
     Ok(domains)
   }
+}
+
+/// Format the policy reason into Discord format to be more consistent with moderation commands
+fn audit_log_reason(
+  reason: &str,
+  case_id: i32
+) -> String {
+  format!("{reason} | Case #{case_id}")
 }
 
 /// Send a notification to a user about a moderation action
