@@ -1,1 +1,1 @@
-fn main() { tonic_build::compile_protos("../protobufs/monica.proto").unwrap(); }
+fn main() { tonic_prost_build::compile_protos("../protobufs/monica.proto").unwrap(); }

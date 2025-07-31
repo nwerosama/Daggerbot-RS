@@ -1,14 +1,15 @@
 [package]
 name = "dag_grpc"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 
 [package.metadata.cargo-machete]
-ignored = ["prost"]
+ignored = ["prost", "tonic-prost"]
 
 [dependencies]
 prost = { workspace = true }
 tonic = { workspace = true }
+tonic-prost = { workspace = true }
 
 [build-dependencies]
-tonic-build = "0.13.1"
+tonic-prost-build = "0.14.0"
