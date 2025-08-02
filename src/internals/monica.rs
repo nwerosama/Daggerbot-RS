@@ -348,15 +348,11 @@ impl AsahiCoordinator for Monica {
         Ok(d) => {
           let response_data = d.into_inner().data;
           if response_data.is_empty() {
-            if let Some(e) = LAST_GOOD_STATE_EMBEDS.get(&server.name) {
-              e.clone()
-            } else {
-              CreateEmbed::new()
-                .color(palette.red)
-                .title(server.name.to_string())
-                .description(":no_entry_sign: **Monica passed empty data!**")
-                .timestamp(Timestamp::now())
-            }
+            CreateEmbed::new()
+              .color(palette.red)
+              .title(server.name.to_string())
+              .description(":no_entry_sign: **Monica passed empty data!**")
+              .timestamp(Timestamp::now())
           } else {
             match serde_json::from_str::<Value>(&response_data) {
               Ok(json_value) => {
@@ -487,17 +483,12 @@ impl AsahiCoordinator for Monica {
                       }
                     },
                     (Err(_), Err(_)) => {
-                      if let Some(e) = LAST_GOOD_STATE_EMBEDS.get(&server.name) {
-                        warn!("{server} is dead, delivering last good state");
-                        e.clone()
-                      } else {
-                        warn!("{server} is dead, generating new state");
-                        CreateEmbed::new()
-                          .color(palette.red)
-                          .title(server.name.to_string())
-                          .description(":no_entry_sign: **Request failed ─ Dead server**")
-                          .timestamp(Timestamp::now())
-                      }
+                      warn!("{server} is dead, generating new state");
+                      CreateEmbed::new()
+                        .color(palette.red)
+                        .title(server.name.to_string())
+                        .description(":no_entry_sign: **Request failed ─ Dead server**")
+                        .timestamp(Timestamp::now())
                     },
                     (..) => {
                       warn!("Either the data mapping is incorrect or improperly set, otherwise no data received from gameserver!");
