@@ -611,8 +611,6 @@ impl Automoderator {
       let user_stats_data = serde_json::to_string(&user_stats)?;
       self.redis.set(&user_stats_key, &user_stats_data).await?;
 
-      self.log_violation(ctx, msg, &policy, case_id).await?;
-
       let guild_id = msg.guild_id.expect("Expected message to be in guild");
 
       match policy.action {
@@ -659,6 +657,8 @@ impl Automoderator {
         },
         _ => error!("Unknown ActionType ended up here!")
       }
+
+      self.log_violation(ctx, msg, &policy, case_id).await?;
     }
 
     Ok(())
