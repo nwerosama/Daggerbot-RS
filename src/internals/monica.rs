@@ -482,12 +482,12 @@ impl AsahiCoordinator for Monica {
                         main_embed
                       }
                     },
-                    (Err(_), Err(_)) => {
-                      warn!("{server} is dead, generating new state");
+                    (Err(de), Err(ce)) => {
+                      error!("Deserialization failed for {server} -- DSS: {de:?} | CSG: {ce:?}");
                       CreateEmbed::new()
                         .color(palette.red)
                         .title(server.name.to_string())
-                        .description(":no_entry_sign: **Request failed ─ Dead server**")
+                        .description(":no_entry_sign: **Deserialization error, notify Nwero!**")
                         .timestamp(Timestamp::now())
                     },
                     (..) => {
@@ -509,31 +509,30 @@ impl AsahiCoordinator for Monica {
           }
         },
         Err(e) => {
-          if e.message().contains("request timed out: deadline has elapsed") {
-            warn!("gRPC deadline: {e}");
-            if let Some(e) = LAST_GOOD_STATE_EMBEDS.get(&server.name) {
-              warn!("{server} temporarily unavailable due to gRPC deadline, delivering last good state");
-              e.clone()
-            } else {
-              warn!("{server} temporarily unavailable due to gRPC deadline, generating new state");
-              CreateEmbed::new()
-                .color(palette.yellow)
-                .title(server.name.to_string())
-                .description(":hourglass: **Server temporarily unavailable**")
-                .footer(CreateEmbedFooter::new(
-                  "Please ping Nwero if this still continues for more than a minute!"
-                ))
-                .timestamp(Timestamp::now())
-            }
+          debug!("(gRPC) {e}");
+          if e.message().contains("Network error") {
+            warn!("{server} is currently dead");
+            CreateEmbed::new()
+              .color(palette.red)
+              .title(server.name.to_string())
+              .description(":no_entry_sign: **Request failed ─ Dead server**")
+              .timestamp(Timestamp::now())
+          } else if e.message().contains("tcp connect error") {
+            error!("(gRPC) Lost connection to Monica's daemon, container not responding");
+            CreateEmbed::new()
+              .color(palette.red)
+              .title(server.name.to_string())
+              .description("<a:neuroSMH:1321893238105313393> **Connection lost ─ Daemon might be down!**")
+              .timestamp(Timestamp::now())
           } else {
             error!("(gRPC) Monica reported an error: {e}");
             CreateEmbed::new()
               .color(palette.red)
               .title(server.name.to_string())
-              .description(":no_entry_sign: **Monica is currently unavailable!**")
+              .description("<:skeletonShocked:1218161036058689577> **Unknown error!**")
               .timestamp(Timestamp::now())
           }
-        },
+        }
       };
 
       embeds.push(embed);
