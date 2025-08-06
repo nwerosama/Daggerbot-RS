@@ -511,7 +511,7 @@ impl AsahiCoordinator for Monica {
         Err(e) => {
           debug!("(gRPC) {e}");
           if e.message().contains("Network error") {
-            warn!("{server} is currently dead");
+            warn!("Request failed for {server}");
             CreateEmbed::new()
               .color(palette.red)
               .title(server.name.to_string())
