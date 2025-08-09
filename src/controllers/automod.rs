@@ -841,6 +841,15 @@ impl AsahiCoordinator for MaliciousDomains {
         Ok(r) => {
           if !r.status().is_success() {
             debug!("(MaliciousDomains) {url} returned status {}", r.status());
+
+            let _ = LogChannel::BotLog
+              .to_discord()
+              .send_message(
+                &self.ctx.http,
+                CreateMessage::default().content(format!("**[MaliciousDomains]**\nSource failed: <{url}>\nHTTP Status: `{}`", r.status()))
+              )
+              .await;
+
             continue;
           }
 

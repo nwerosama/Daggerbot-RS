@@ -2,6 +2,7 @@
   "files.trimTrailingWhitespace": true,
   "rust-analyzer.showUnlinkedFileNotification": false,
   "rust-analyzer.linkedProjects": ["./Cargo.toml"],
+  "rust-analyzer.cargo.features": ["automod"],
   "Lua.diagnostics.globals": [
     "rs_msg",
     "rs_regex",
