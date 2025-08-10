@@ -12,7 +12,7 @@ bb8 = "0.9.0"
 bb8-redis = "0.24.0"
 cargo_toml = "0.22.3"
 dashmap = "6.1.0"
-farmsim = { version = "0.1.3", features = ["fs25"] }
+farmsim = { git = "https://github.com/nwerosama/farmsim-rs", branch = "master", features = ["fs25"] }
 lazy_static = "1.5.0"
 mlua = { version = "0.11.1", features = ["lua54", "send", "vendored"] }
 num-format = "0.4.4"
