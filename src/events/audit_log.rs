@@ -64,7 +64,7 @@ pub async fn on_audit_log_entry_create(
                   "You unlocked new perks;",
                   "- Access to **Members** server",
                   "  - Server details are located [here](https://discord.com/channels/468835415093411861/511657659364147200/1333059733854224384)",
-                  "  - Todo list: <#949380187668242483>",
+                  "  - Server is only online during the recording sessions",
                   "- Early access to new episodes before it goes live to everyone else!",
                   "- Members-only community posts",
                   "- Nickname & external emotes permissions"
