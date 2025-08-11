@@ -7,7 +7,7 @@ use serde::{
 pub const TOML_FILE: &str = if cfg!(feature = "production") {
   "presence.toml"
 } else {
-  "src/internals/assets/presence.toml"
+  "assets/presence.toml"
 };
 
 #[derive(Serialize, Deserialize)]

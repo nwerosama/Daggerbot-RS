@@ -1,6 +1,5 @@
-use super::tsclient::TSClient;
-
 use {
+  super::tsclient::TSClient,
   poise::serenity_prelude::{
     Token,
     UserId
@@ -12,16 +11,6 @@ use {
   tokenservice_client::TokenServiceApi,
   tokio::sync::Mutex
 };
-
-pub static BOT_VERSION: LazyLock<String> = LazyLock::new(|| {
-  let cargo_version = cargo_toml::Manifest::from_str(include_str!("../../Cargo.toml"))
-    .unwrap()
-    .package
-    .unwrap()
-    .version
-    .unwrap();
-  format!("v{cargo_version}")
-});
 
 static TSCLIENT: LazyLock<Mutex<TSClient>> = LazyLock::new(|| Mutex::new(TSClient::new()));
 

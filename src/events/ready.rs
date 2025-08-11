@@ -1,19 +1,20 @@
-use crate::{
-  BotError,
-  GIT_COMMIT_BRANCH,
-  GIT_COMMIT_HASH,
-  internals::{
-    config::BINARY_PROPERTIES,
-    monica::Monica,
-    threadtimer::ThreadTimer,
-    utils::BOT_VERSION
-  }
-};
-
 use {
+  crate::{
+    BotError,
+    internals::{
+      config::BINARY_PROPERTIES,
+      monica::Monica,
+      threadtimer::ThreadTimer
+    }
+  },
   asahi::{
     info,
     spawn
+  },
+  daggerbot::{
+    BOT_VERSION,
+    GIT_COMMIT_BRANCH,
+    GIT_COMMIT_HASH
   },
   poise::serenity_prelude::{
     Context,
@@ -42,7 +43,7 @@ async fn ready_once(
 ) -> Result<(), BotError> {
   #[cfg(not(feature = "production"))]
   {
-    info!("Detected a development environment!");
+    asahi::warn!("Detected a development environment!");
     let gateway = ctx.http.get_bot_gateway().await?;
     let session = gateway.session_start_limit;
     info!("Gateway session limit: {}/{}", session.remaining, session.total);

@@ -77,7 +77,7 @@ pub async fn faq(
         .await?;
     },
     Questions::FsVerifyGameFiles => {
-      let image = include_bytes!("../internals/assets/faq/verify-gamefiles.png");
+      let image = include_bytes!("../../assets/faq/verify-gamefiles.png");
       let filename = "verify-gamefiles.png";
 
       let steam_panel = [
@@ -116,7 +116,7 @@ pub async fn faq(
         .await?;
     },
     Questions::FsEnableDevConsole => {
-      let image = include_bytes!("../internals/assets/faq/enable-console.png");
+      let image = include_bytes!("../../assets/faq/enable-console.png");
       let filename = "enable-console.png";
 
       let embed = build_faq(

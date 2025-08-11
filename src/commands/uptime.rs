@@ -1,10 +1,5 @@
 use {
-  crate::{
-    BotError,
-    GIT_COMMIT_BRANCH,
-    GIT_COMMIT_HASH,
-    internals::utils::BOT_VERSION
-  },
+  crate::BotError,
   asahi::utils::{
     format_bytes,
     format_duration,
@@ -15,6 +10,11 @@ use {
       get_os_info,
       get_uptime
     }
+  },
+  daggerbot::{
+    BOT_VERSION,
+    GIT_COMMIT_BRANCH,
+    GIT_COMMIT_HASH
   }
 };
 

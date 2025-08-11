@@ -1,5 +1,5 @@
 <p align='center'>
-  <img src='src/internals/assets/daggerbot.png' height='300' width='300'>
+  <img src='assets/daggerbot.png' height='300' width='300'>
   <h1 align='center'>Daggerbot Rev.4<br>Discord bot written in Rust</h1>
 </p>
 

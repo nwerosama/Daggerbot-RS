@@ -9,6 +9,16 @@ mod shutdown;
 // Using the new filesystem hierarchy
 
 use {
+  asahi::{
+    Probe,
+    error,
+    info,
+    utils::database::{
+      AsahiDatabaseConfig,
+      AsahiDatabaseKind,
+      connect
+    }
+  },
   bridges::LuaSerenityBridge,
   dag_grpc::MonicaGRPCClient,
   errors::BotError,
@@ -19,19 +29,6 @@ use {
     utils::{
       discord_token,
       token_path
-    }
-  }
-};
-
-use {
-  asahi::{
-    Probe,
-    error,
-    info,
-    utils::database::{
-      AsahiDatabaseConfig,
-      AsahiDatabaseKind,
-      connect
     }
   },
   mlua::Lua,
@@ -46,7 +43,7 @@ use {
   std::{
     borrow::Cow,
     sync::Arc
-  } // tokio_util_watchdog::Watchdog
+  }
 };
 
 struct BotData {
@@ -67,13 +64,6 @@ impl AsahiDatabaseConfig for Database {
   fn max_connections(&self) -> u32 { 26 }
 }
 
-#[cfg(feature = "production")]
-pub static GIT_COMMIT_HASH: &str = env!("GIT_COMMIT_HASH");
-pub static GIT_COMMIT_BRANCH: &str = env!("GIT_COMMIT_BRANCH");
-
-#[cfg(not(feature = "production"))]
-pub static GIT_COMMIT_HASH: &str = "devel";
-
 async fn init_serenity_bridge(
   lua: Arc<Lua>,
   serenity_http: Arc<Http>
@@ -86,7 +76,6 @@ async fn init_serenity_bridge(
 #[tokio::main]
 async fn main() {
   asahi::log_init();
-  // Watchdog::builder().build();
 
   let health_probe = Arc::new(Probe::new());
   let kserver = health_probe.clone();
