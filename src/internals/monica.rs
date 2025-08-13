@@ -383,11 +383,14 @@ impl AsahiCoordinator for Monica {
                   }
                 } else {
                   match (
-                    serde_json::from_value::<DssData>(dss_data.unwrap().clone()),
-                    serde_json::from_value::<CareerSavegame>(csg_data.unwrap().clone())
+                    serde_json::from_value::<DssData>(dss_data.expect("dss data is required").clone()),
+                    serde_json::from_value::<CareerSavegame>(csg_data.expect("csg data is required").clone())
                   ) {
                     (Ok(dss), Ok(csg)) => {
-                      let used_slots = dss.slots.clone().unwrap().used as i32;
+                      let used_slots = match dss.slots.as_ref() {
+                        Some(s) => s.used as i32,
+                        None => 0
+                      };
                       let peak_reset_result = MpServers::reset_peak_players(&postgres, server.name.clone()).await.unwrap();
                       let peak_update_result = MpServers::update_peak_players(&postgres, server.name.clone(), used_slots).await.unwrap();
                       MpServers::update_player_data(&postgres, server.name.clone(), used_slots).await.unwrap();
@@ -406,7 +409,7 @@ impl AsahiCoordinator for Monica {
                         }
                       }
 
-                      if !dss.server.clone().unwrap().name.is_empty() && !dss.is_valid() && !csg.is_valid() {
+                      if !dss.server.clone().expect("expected server name").name.is_empty() && !dss.is_valid() && !csg.is_valid() {
                         debug!("{dss:?}");
                         return Ok(());
                       }
