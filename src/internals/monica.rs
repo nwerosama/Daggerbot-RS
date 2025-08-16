@@ -294,7 +294,7 @@ impl AsahiCoordinator for Monica {
 
   fn interval(&self) -> u64 { REFRESH_TIMER_SECS }
 
-  async fn main_loop(&self) -> AsahiResult<()> {
+  async fn main_loop(&self) -> AsahiResult {
     let bot_data = self.ctx.data::<BotData>();
     let redis = bot_data.redis.clone();
     let postgres = bot_data.postgres.clone();
@@ -355,152 +355,175 @@ impl AsahiCoordinator for Monica {
               .timestamp(Timestamp::now())
           } else {
             match serde_json::from_str::<Value>(&response_data) {
+              // code's starting to rot, every fix just breaks more stuff.
+              // i rewrote the daemon months ago but its been sitting dead since.
+              // no energy left to touch either of them. don't even bother touching
+              // the rest of this code at this point or you want that curse to come back!
+              // -nwero, 17/08/25
               Ok(json_value) => {
                 let dss_data = json_value.get("dss");
                 let csg_data = json_value.get("csg");
 
-                if dss_data.is_none() || csg_data.is_none() {
-                  error!("Missing DSS/CSG fields for {server}: dss={dss_data:?} | csg={csg_data:?}");
-                  CreateEmbed::new()
-                    .color(palette.red)
-                    .title(server.name.to_string())
-                    .description(":no_entry_sign: **DSS/CSG data missing some fields, check terminal**")
-                    .timestamp(Timestamp::now())
-                } else if dss_data.unwrap().is_null() || csg_data.unwrap().is_null() {
-                  if let Some(e) = LAST_GOOD_STATE_EMBEDS.get(&server.name) {
-                    warn!("{server} temporarily unavailable, delivering last good state");
-                    e.clone()
-                  } else {
-                    warn!("{server} temporarily unavailable, generating new state");
-                    CreateEmbed::new()
-                      .color(palette.yellow)
-                      .title(server.name.to_string())
-                      .description(":hourglass: **Server temporarily unavailable**")
-                      .footer(CreateEmbedFooter::new(
-                        "Please ping Nwero if this still continues for more than a minute!"
-                      ))
-                      .timestamp(Timestamp::now())
-                  }
-                } else {
-                  match (
-                    serde_json::from_value::<DssData>(dss_data.expect("dss data is required").clone()),
-                    serde_json::from_value::<CareerSavegame>(csg_data.expect("csg data is required").clone())
-                  ) {
-                    (Ok(dss), Ok(csg)) => {
-                      let used_slots = match dss.slots.as_ref() {
-                        Some(s) => s.used as i32,
-                        None => 0
-                      };
-                      let peak_reset_result = MpServers::reset_peak_players(&postgres, server.name.clone()).await.unwrap();
-                      let peak_update_result = MpServers::update_peak_players(&postgres, server.name.clone(), used_slots).await.unwrap();
-                      MpServers::update_player_data(&postgres, server.name.clone(), used_slots).await.unwrap();
-
-                      {
-                        savegame_settings_webhook(server, self.ctx.clone(), &json_value).await;
-                        time_drift_webhook(server, self.ctx.clone(), &json_value).await;
-                      }
-
-                      {
-                        if let Some(players) = dss.slots.clone().map(|s| s.players) {
-                          for player in players.into_iter().filter(|p| p.is_used.unwrap_or(false)) {
-                            let icon = icon_factory(&player);
-                            emote_sources.extend(parse_all_emotes(&icon));
-                          }
-                        }
-                      }
-
-                      if !dss.server.clone().expect("expected server name").name.is_empty() && !dss.is_valid() && !csg.is_valid() {
-                        debug!("{dss:?}");
-                        return Ok(());
-                      }
-
-                      let peak_players = MpServers::get_peak_players(&postgres, server.name.clone()).await.unwrap();
-                      if peak_reset_result || peak_update_result {
-                        const PEAK_PLRS_TXT: &str = "Peak players count for";
-                        if peak_reset_result {
-                          info!("{PEAK_PLRS_TXT} \"{server}\" has passed 72 hours and now since reset");
-                          cache_servers(&redis, servers.clone()).await.unwrap();
-                        } else {
-                          cache_servers(&redis, servers.clone()).await.unwrap();
-                        }
-                      }
-
-                      let players = match dss.slots.clone().unwrap().used {
-                        0 => EMPTY_PLAYER_LIST_TEXT.to_string(),
-                        _ => playerlist_constructor(dss.slots.clone().unwrap().players)
-                      };
-
-                      let slot_usage = csg.slot_system.map_or_else(
-                        || UNKNOWN_SLOT_SYSTEM.to_string(),
-                        |slot_system| {
-                          slot_system.slot_usage.parse::<i32>().map_or_else(
-                            |_| UNKNOWN_SLOT_SYSTEM.to_string(),
-                            |current_usage| {
-                              let formatted_usage = current_usage.to_formatted_string(&Locale::en_AU);
-                              let limit_str = CONSOLE_SLOT_LIMIT.to_formatted_string(&Locale::en_AU);
-                              format!("**{formatted_usage}**/**{limit_str}**")
-                            }
-                          )
-                        }
-                      );
-
-                      let timescale = csg.settings.clone().map_or_else(|| 0.0, |settings| settings.time_scale);
-
-                      let main_embed = CreateEmbed::new()
-                        .color(BINARY_PROPERTIES.embed_colors.primary())
-                        .title(dss.server.clone().unwrap().name)
-                        .description(players)
-                        .fields(vec![
-                          (
-                            "Time",
-                            format!("{} ({timescale}x)", format_daytime(dss.server.clone().unwrap().day_time)),
-                            true
-                          ),
-                          ("Map", dss.server.clone().unwrap().map_name, true),
-                          ("Slot Usage", slot_usage, true),
-                        ])
-                        .author(CreateEmbedAuthor::new(format!(
-                          "{}/{} ({peak_players})",
-                          dss.slots.clone().unwrap().used,
-                          dss.slots.clone().unwrap().capacity
-                        )))
-                        .footer(CreateEmbedFooter::new(format!(
-                          "Autosave: {} mins ∙ Version: {}",
-                          csg
-                            .settings
-                            .as_ref()
-                            .map(|s| s.auto_save_interval.to_string())
-                            .unwrap_or_else(|| "?".to_string()),
-                          dss.server.clone().unwrap().version
-                        )))
-                        .timestamp(Timestamp::now());
-
-                      if dss.server.unwrap().name.is_empty() {
-                        CreateEmbed::new()
-                          .color(palette.red)
-                          .title(format!("{server} is offline"))
-                          .timestamp(Timestamp::now())
+                match (dss_data, csg_data) {
+                  (Some(dss_data), Some(csg_data)) => {
+                    if dss_data.is_null() || csg_data.is_null() {
+                      if let Some(e) = LAST_GOOD_STATE_EMBEDS.get(&server.name) {
+                        warn!("{server} temporarily unavailable, delivering last good state");
+                        e.clone()
                       } else {
-                        LAST_GOOD_STATE_EMBEDS.insert(server.name.clone(), main_embed.clone());
-                        main_embed
+                        warn!("{server} temporarily unavailable, generating new state");
+                        CreateEmbed::new()
+                          .color(palette.yellow)
+                          .title(server.name.to_string())
+                          .description(":hourglass: **Server temporarily unavailable**")
+                          .footer(CreateEmbedFooter::new(
+                            "Please ping Nwero if this still continues for more than a minute!"
+                          ))
+                          .timestamp(Timestamp::now())
                       }
-                    },
-                    (Err(de), Err(ce)) => {
-                      error!("Deserialization failed for {server} -- DSS: {de:?} | CSG: {ce:?}");
-                      CreateEmbed::new()
-                        .color(palette.red)
-                        .title(server.name.to_string())
-                        .description(":no_entry_sign: **Deserialization error, notify Nwero!**")
-                        .timestamp(Timestamp::now())
-                    },
-                    (..) => {
-                      warn!("Either the data mapping is incorrect or improperly set, otherwise no data received from gameserver!");
-                      CreateEmbed::new()
-                        .color(palette.yellow)
-                        .title(server.name.to_string())
-                        .description(":warning: **Empty data**")
-                        .timestamp(Timestamp::now())
+                    } else {
+                      match (
+                        serde_json::from_value::<DssData>(dss_data.clone()),
+                        serde_json::from_value::<CareerSavegame>(csg_data.clone())
+                      ) {
+                        (Ok(dss), Ok(csg)) => {
+                          let used_slots = match dss.slots.as_ref() {
+                            Some(s) => s.used as i32,
+                            None => 0
+                          };
+                          let peak_reset_result = MpServers::reset_peak_players(&postgres, server.name.clone()).await.unwrap();
+                          let peak_update_result = MpServers::update_peak_players(&postgres, server.name.clone(), used_slots).await.unwrap();
+                          MpServers::update_player_data(&postgres, server.name.clone(), used_slots).await.unwrap();
+
+                          {
+                            savegame_settings_webhook(server, self.ctx.clone(), &json_value).await;
+                            time_drift_webhook(server, self.ctx.clone(), &json_value).await;
+                          }
+
+                          {
+                            if let Some(players) = dss.slots.clone().map(|s| s.players) {
+                              for player in players.into_iter().filter(|p| p.is_used.unwrap_or(false)) {
+                                let icon = icon_factory(&player);
+                                emote_sources.extend(parse_all_emotes(&icon));
+                              }
+                            }
+                          }
+
+                          if let Some(server_data) = &dss.server
+                            && !server_data.name.is_empty()
+                            && !dss.is_valid()
+                            && !csg.is_valid()
+                          {
+                            debug!("{dss:?}");
+                            return Ok(());
+                          }
+
+                          let peak_players = MpServers::get_peak_players(&postgres, server.name.clone()).await.unwrap();
+                          if peak_reset_result || peak_update_result {
+                            const PEAK_PLRS_TXT: &str = "Peak players count for";
+                            if peak_reset_result {
+                              info!("{PEAK_PLRS_TXT} \"{server}\" has passed 72 hours and now since reset");
+                              cache_servers(&redis, servers.clone()).await.unwrap();
+                            } else {
+                              cache_servers(&redis, servers.clone()).await.unwrap();
+                            }
+                          }
+
+                          let players = match dss.slots.as_ref().map(|s| s.used).unwrap_or(0) {
+                            0 => EMPTY_PLAYER_LIST_TEXT.to_string(),
+                            _ => {
+                              if let Some(slots) = &dss.slots {
+                                playerlist_constructor(slots.players.clone())
+                              } else {
+                                EMPTY_PLAYER_LIST_TEXT.to_string()
+                              }
+                            },
+                          };
+
+                          let slot_usage = csg.slot_system.map_or_else(
+                            || UNKNOWN_SLOT_SYSTEM.to_string(),
+                            |slot_system| {
+                              slot_system.slot_usage.parse::<i32>().map_or_else(
+                                |_| UNKNOWN_SLOT_SYSTEM.to_string(),
+                                |current_usage| {
+                                  let formatted_usage = current_usage.to_formatted_string(&Locale::en_AU);
+                                  let limit_str = CONSOLE_SLOT_LIMIT.to_formatted_string(&Locale::en_AU);
+                                  format!("**{formatted_usage}**/**{limit_str}**")
+                                }
+                              )
+                            }
+                          );
+
+                          let timescale = csg.settings.clone().map_or_else(|| 0.0, |settings| settings.time_scale);
+
+                          if let Some(server_data) = &dss.server {
+                            let main_embed = CreateEmbed::new()
+                              .color(BINARY_PROPERTIES.embed_colors.primary())
+                              .title(server_data.name.clone())
+                              .description(players)
+                              .fields(vec![
+                                ("Time", format!("{} ({timescale}x)", format_daytime(server_data.day_time)), true),
+                                ("Map", server_data.map_name.clone(), true),
+                                ("Slot Usage", slot_usage, true),
+                              ])
+                              .author(CreateEmbedAuthor::new(format!(
+                                "{}/{} ({peak_players})",
+                                dss.slots.as_ref().map(|s| s.used).unwrap_or(0),
+                                dss.slots.as_ref().map(|s| s.capacity).unwrap_or(0)
+                              )))
+                              .footer(CreateEmbedFooter::new(format!(
+                                "Autosave: {} mins ∙ Version: {}",
+                                csg
+                                  .settings
+                                  .as_ref()
+                                  .map(|s| s.auto_save_interval.to_string())
+                                  .unwrap_or_else(|| "?".to_string()),
+                                server_data.version.clone()
+                              )))
+                              .timestamp(Timestamp::now());
+
+                            if server_data.name.is_empty() {
+                              CreateEmbed::new()
+                                .color(palette.red)
+                                .title(format!("{server} is offline"))
+                                .timestamp(Timestamp::now())
+                            } else {
+                              LAST_GOOD_STATE_EMBEDS.insert(server.name.clone(), main_embed.clone());
+                              main_embed
+                            }
+                          } else {
+                            CreateEmbed::new()
+                              .color(palette.red)
+                              .title(format!("{server} is offline"))
+                              .timestamp(Timestamp::now())
+                          }
+                        },
+                        (Err(de), Err(ce)) => {
+                          error!("Deserialization failed for {server} -- DSS: {de:?} | CSG: {ce:?}");
+                          CreateEmbed::new()
+                            .color(palette.red)
+                            .title(server.name.to_string())
+                            .description(":no_entry_sign: **Deserialization error, notify Nwero!**")
+                            .timestamp(Timestamp::now())
+                        },
+                        (..) => {
+                          warn!("Either the data mapping is incorrect or improperly set, otherwise no data received from gameserver!");
+                          CreateEmbed::new()
+                            .color(palette.yellow)
+                            .title(server.name.to_string())
+                            .description(":warning: **Empty data**")
+                            .timestamp(Timestamp::now())
+                        }
+                      }
                     }
+                  },
+                  _ => {
+                    error!("Missing DSS/CSG fields for {server}: dss={dss_data:?} | csg={csg_data:?}");
+                    CreateEmbed::new()
+                      .color(palette.red)
+                      .title(server.name.to_string())
+                      .description(":no_entry_sign: **DSS/CSG data missing some fields**")
+                      .timestamp(Timestamp::now())
                   }
                 }
               },

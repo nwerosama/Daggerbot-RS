@@ -802,7 +802,7 @@ impl AsahiCoordinator for MaliciousDomains {
 
   fn interval(&self) -> u64 { 3600 }
 
-  async fn main_loop(&self) -> AsahiResult<()> {
+  async fn main_loop(&self) -> AsahiResult {
     let bot_data = self.ctx.data::<BotData>();
 
     let last_update = match bot_data.redis.get(MD_KEY_LU).await? {

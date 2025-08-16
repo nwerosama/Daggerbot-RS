@@ -31,7 +31,7 @@ impl AsahiCoordinator for ThreadTimer {
 
   fn interval(&self) -> u64 { 900 }
 
-  async fn main_loop(&self) -> AsahiResult<()> {
+  async fn main_loop(&self) -> AsahiResult {
     let help_forum_id = ChannelId::new(BINARY_PROPERTIES.help_forum);
     let mut threads = Vec::new();
 

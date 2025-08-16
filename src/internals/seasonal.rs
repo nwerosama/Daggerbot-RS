@@ -164,7 +164,7 @@ impl AsahiCoordinator for SeasonalTheme {
 
   fn interval(&self) -> u64 { 3600 }
 
-  async fn main_loop(&self) -> AsahiResult<()> {
+  async fn main_loop(&self) -> AsahiResult {
     update_embed_color();
     Ok(())
   }

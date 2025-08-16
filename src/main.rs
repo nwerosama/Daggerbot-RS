@@ -78,10 +78,7 @@ async fn main() {
   asahi::log_init();
 
   let health_probe = Arc::new(Probe::new());
-  let kserver = health_probe.clone();
-  tokio::spawn(async move {
-    kserver.init(9000).await;
-  });
+  health_probe.spawn_server(9000);
 
   let tconf = read_config();
   let activity = tconf.presence.activities.first().unwrap();
