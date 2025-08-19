@@ -139,21 +139,19 @@ dependencies = [
 
 [[package]]
 name = "asahi"
-version = "0.1.8"
-source = "git+https://git.playground.red/nwerosama/asahi?branch=master#0c73888318bf26c42643535403ccf49cf0fa5842"
+version = "0.1.9"
+source = "git+https://git.playground.red/nwerosama/asahi?branch=master#cf0841b51a12462646e5e5b78ac076b8b7c5d246"
 dependencies = [
  "asahi_canvas",
  "asahi_coordinator",
  "asahi_internal",
- "asahi_macros",
  "asahi_utils",
- "warp",
 ]
 
 [[package]]
 name = "asahi_canvas"
-version = "0.1.8"
-source = "git+https://git.playground.red/nwerosama/asahi?branch=master#0c73888318bf26c42643535403ccf49cf0fa5842"
+version = "0.1.9"
+source = "git+https://git.playground.red/nwerosama/asahi?branch=master#cf0841b51a12462646e5e5b78ac076b8b7c5d246"
 dependencies = [
  "ab_glyph",
  "asahi_utils",
@@ -168,8 +166,8 @@ dependencies = [
 
 [[package]]
 name = "asahi_coordinator"
-version = "0.1.8"
-source = "git+https://git.playground.red/nwerosama/asahi?branch=master#0c73888318bf26c42643535403ccf49cf0fa5842"
+version = "0.1.9"
+source = "git+https://git.playground.red/nwerosama/asahi?branch=master#cf0841b51a12462646e5e5b78ac076b8b7c5d246"
 dependencies = [
  "asahi_internal",
  "async-trait",
@@ -178,8 +176,8 @@ dependencies = [
 
 [[package]]
 name = "asahi_internal"
-version = "0.1.8"
-source = "git+https://git.playground.red/nwerosama/asahi?branch=master#0c73888318bf26c42643535403ccf49cf0fa5842"
+version = "0.1.9"
+source = "git+https://git.playground.red/nwerosama/asahi?branch=master#cf0841b51a12462646e5e5b78ac076b8b7c5d246"
 dependencies = [
  "bb8-redis",
  "hyper",
@@ -188,7 +186,7 @@ dependencies = [
  "serde-xml-rs",
  "serde_json",
  "sqlx",
- "thiserror 2.0.14",
+ "thiserror 2.0.15",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -196,14 +194,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "asahi_macros"
-version = "0.1.8"
-source = "git+https://git.playground.red/nwerosama/asahi?branch=master#0c73888318bf26c42643535403ccf49cf0fa5842"
-
-[[package]]
 name = "asahi_utils"
-version = "0.1.8"
-source = "git+https://git.playground.red/nwerosama/asahi?branch=master#0c73888318bf26c42643535403ccf49cf0fa5842"
+version = "0.1.9"
+source = "git+https://git.playground.red/nwerosama/asahi?branch=master#cf0841b51a12462646e5e5b78ac076b8b7c5d246"
 dependencies = [
  "asahi_internal",
  "lazy_static",
@@ -1324,13 +1317,14 @@ checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 
 [[package]]
 name = "hyper"
-version = "1.6.0"
+version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc2b571658e38e0c01b1fdca3bbbe93c00d3d71693ff2770043f8c29bc7d6f80"
+checksum = "eb3aa54a13a0dfe7fbe3a59e0c76093041720fdc77b110cc0fc260fafb4dc51e"
 dependencies = [
+ "atomic-waker",
  "bytes",
  "futures-channel",
- "futures-util",
+ "futures-core",
  "h2",
  "http",
  "http-body",
@@ -1338,6 +1332,7 @@ dependencies = [
  "httpdate",
  "itoa",
  "pin-project-lite",
+ "pin-utils",
  "smallvec",
  "tokio",
  "want",
@@ -2445,9 +2440,9 @@ dependencies = [
 
 [[package]]
 name = "prettyplease"
-version = "0.2.36"
+version = "0.2.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ff24dfcda44452b9816fff4cd4227e1bb73ff5a2f1bc1105aa92fb8565ce44d2"
+checksum = "479ca8adacdd7ce8f1fb39ce9ecccbfe93a3f1344b3d0d97f20bc0196208f62b"
 dependencies = [
  "proc-macro2",
  "syn 2.0.106",
@@ -2455,9 +2450,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.97"
+version = "1.0.101"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d61789d7719defeb74ea5fe81f2fdfdbd28a803847077cecce2ff14e1472f6f1"
+checksum = "89ae43fd86e4158d6db51ad8e2b80f313af9cc74f5c0e03ccb87de09998732de"
 dependencies = [
  "unicode-ident",
 ]
@@ -2584,7 +2579,7 @@ dependencies = [
  "rustc-hash",
  "rustls",
  "socket2 0.5.10",
- "thiserror 2.0.14",
+ "thiserror 2.0.15",
  "tokio",
  "tracing",
  "web-time",
@@ -2605,7 +2600,7 @@ dependencies = [
  "rustls",
  "rustls-pki-types",
  "slab",
- "thiserror 2.0.14",
+ "thiserror 2.0.15",
  "tinyvec",
  "tracing",
  "web-time",
@@ -3417,7 +3412,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "smallvec",
- "thiserror 2.0.14",
+ "thiserror 2.0.15",
  "tokio",
  "tokio-stream",
  "tracing",
@@ -3500,7 +3495,7 @@ dependencies = [
  "smallvec",
  "sqlx-core",
  "stringprep",
- "thiserror 2.0.14",
+ "thiserror 2.0.15",
  "tracing",
  "whoami",
 ]
@@ -3538,7 +3533,7 @@ dependencies = [
  "smallvec",
  "sqlx-core",
  "stringprep",
- "thiserror 2.0.14",
+ "thiserror 2.0.15",
  "tracing",
  "whoami",
 ]
@@ -3563,7 +3558,7 @@ dependencies = [
  "serde",
  "serde_urlencoded",
  "sqlx-core",
- "thiserror 2.0.14",
+ "thiserror 2.0.15",
  "tracing",
  "url",
 ]
@@ -3739,11 +3734,11 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "2.0.14"
+version = "2.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b0949c3a6c842cbde3f1686d6eea5a010516deb7085f79db747562d4102f41e"
+checksum = "80d76d3f064b981389ecb4b6b7f45a0bf9fdac1d5b9204c7bd6714fecc302850"
 dependencies = [
- "thiserror-impl 2.0.14",
+ "thiserror-impl 2.0.15",
 ]
 
 [[package]]
@@ -3759,9 +3754,9 @@ dependencies = [
 
 [[package]]
 name = "thiserror-impl"
-version = "2.0.14"
+version = "2.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc5b44b4ab9c2fdd0e0512e6bece8388e214c0749f5862b114cc5b7a25daf227"
+checksum = "44d29feb33e986b6ea906bd9c3559a856983f92371b3eaa5e83782a351623de0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3831,9 +3826,9 @@ dependencies = [
 
 [[package]]
 name = "tinyvec"
-version = "1.9.0"
+version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09b3661f17e86524eccd4371ab0429194e0d7c008abb45f7a7495b1719463c71"
+checksum = "bfa5fdc3bce6191a1dbc8c02d5c8bffcf557bafa17c124c5264a458f1b0613fa"
 dependencies = [
  "tinyvec_macros",
 ]
@@ -4243,7 +4238,7 @@ dependencies = [
  "rustls",
  "rustls-pki-types",
  "sha1",
- "thiserror 2.0.14",
+ "thiserror 2.0.15",
  "url",
  "utf-8",
 ]
