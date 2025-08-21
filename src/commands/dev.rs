@@ -1,16 +1,17 @@
-use crate::{
-  BotError,
-  bridges::PLUGIN_DIR,
-  controllers::sql::execute_schemas
-};
-
-use poise::{
-  CreateReply,
-  serenity_prelude::{
-    Attachment,
-    CreateAllowedMentions,
-    GenericChannelId,
-    builder::CreateMessage
+use {
+  crate::{
+    BotError,
+    bridges::PLUGIN_DIR
+  },
+  asahi::utils::database::prepare_tables,
+  poise::{
+    CreateReply,
+    serenity_prelude::{
+      Attachment,
+      CreateAllowedMentions,
+      GenericChannelId,
+      builder::CreateMessage
+    }
   }
 };
 
@@ -68,7 +69,7 @@ async fn deploy(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
 /// Load schemas into the database
 #[poise::command(prefix_command, slash_command)]
 async fn schemas(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
-  match execute_schemas(&ctx.data().postgres).await {
+  match prepare_tables(&ctx.data().postgres, "schemas").await {
     Ok(s) => {
       ctx.reply(s).await?;
     },
