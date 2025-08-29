@@ -33,7 +33,7 @@ use {
   farmsim::{
     CareerSavegame,
     DssData,
-    Player
+    DssPlayer
   },
   lazy_static::lazy_static,
   num_format::{
@@ -153,7 +153,7 @@ impl EmbedPalette {
 }
 
 struct IconCondition<'a> {
-  condition: Box<dyn Fn(&Player) -> bool + 'a>,
+  condition: Box<dyn Fn(&DssPlayer) -> bool + 'a>,
   icon:      &'a str
 }
 
@@ -622,7 +622,7 @@ pub fn format_player_uptime(uptime: i32) -> String {
   )
 }
 
-pub fn playerlist_constructor(players: Vec<Player>) -> String {
+pub fn playerlist_constructor(players: Vec<DssPlayer>) -> String {
   let mut builder = String::new();
 
   for player in players.into_iter().filter(|p| p.is_used.unwrap_or(false)) {
@@ -642,7 +642,7 @@ pub fn playerlist_constructor(players: Vec<Player>) -> String {
   builder
 }
 
-pub fn icon_factory(player: &Player) -> String {
+pub fn icon_factory(player: &DssPlayer) -> String {
   let icon_conditions = vec![
     IconCondition {
       condition: Box::new(|p| p.is_admin.unwrap_or(false)),
