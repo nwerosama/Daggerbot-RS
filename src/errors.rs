@@ -4,7 +4,10 @@ use {
     internals::utils::mention_dev
   },
   asahi::error,
-  poise::FrameworkError
+  poise::{
+    CreateReply,
+    FrameworkError
+  }
 };
 
 pub type BotError = Box<dyn std::error::Error + Send + Sync>;
@@ -46,12 +49,23 @@ pub async fn fw_errors(error: FrameworkError<'_, BotData, BotError>) {
       error!("PoiseCommandCheckFailed({}): {error}", ctx.command().qualified_name);
       ctx
         .send(
-          poise::CreateReply::default()
+          CreateReply::default()
             .content("This command uses a check and you don't meet the requirements.")
             .ephemeral(true)
         )
         .await
         .expect("Error sending message");
+    },
+    FrameworkError::ArgumentParse { error, input, ctx, .. } => {
+      let input = input.unwrap_or_else(|| "<none>".to_string());
+      let msg = format!("PoiseArgumentParse({input}): {error:?}");
+      if (ctx.reply(format!("Wrong command argument! Used `{input}`, error: `{error}`")))
+        .await
+        .is_err()
+      {
+        error!(msg)
+      }
+      error!(msg)
     },
     FrameworkError::NotAnOwner { ctx, .. } => {
       error!(
