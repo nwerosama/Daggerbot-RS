@@ -59,6 +59,8 @@ struct Database(String);
 impl AsahiDatabaseConfig for Database {
   fn uri(&self) -> &str { &self.0 }
 
+  fn app_name(&self) -> &str { "Daggerbot" }
+
   fn kind(&self) -> AsahiDatabaseKind { AsahiDatabaseKind::Postgres }
 
   fn max_connections(&self) -> u32 { 26 }
