@@ -122,9 +122,9 @@ pub async fn send_notification(
   reason: &str,
   case_id: i32,
   duration: Option<u64>
-) -> Result<bool, BotError> {
+) -> Result<Option<bool>, BotError> {
   let user = match target {
-    Target::User(user) => user,
+    Target::User(_) => return Ok(None),
     Target::Member(mem) => &mem.user
   };
 
@@ -155,18 +155,19 @@ pub async fn send_notification(
     .description(description);
 
   match user.id.direct_message(ctx.http(), CreateMessage::new().embed(embed)).await {
-    Ok(_) => Ok(true),
+    Ok(_) => Ok(Some(true)),
     Err(e) => {
-      error!("Send DM failed with error: {e}");
-      Ok(false)
+      error!("DM failed with error: {e}");
+      Ok(Some(false))
     }
   }
 }
 
-fn formate_dm_status(b: bool) -> String {
+fn format_dm_status(b: Option<bool>) -> String {
   match b {
-    true => "dm sent".to_string(),
-    false => "dm failed".to_string()
+    Some(true) => "dm sent".to_string(),
+    Some(false) => "dm failed".to_string(),
+    None => "user not in server, no dm".to_string()
   }
 }
 
@@ -256,13 +257,13 @@ async fn log_entry(
 #[poise::command(slash_command, default_member_permissions = "BAN_MEMBERS")]
 pub async fn ban(
   ctx: super::PoiseContext<'_>,
-  #[description = "The member to ban"] member: Member,
+  #[description = "The member to ban"] member: User,
   #[description = "The reason for the ban"] reason: String,
   #[description = "Should the ban be soft? (ban and unban immediately)"] soft: Option<bool>
 ) -> Result<(), BotError> {
   let is_soft = soft.unwrap_or(false);
   let guild_id = ctx.guild_id().expect("expected guild id to be present");
-  let user_id = member.user.id;
+  let user_id = member.id;
   let case_id = generate_id(&ctx.data().postgres).await?;
 
   let (action_type, action_verb) = if is_soft {
@@ -277,7 +278,12 @@ pub async fn ban(
     ctx.defer().await?;
   }
 
-  let notify_user = send_notification(&ctx, &Target::Member(member.clone()), &action_type, &reason, case_id, None).await?;
+  let target = match guild_id.member(ctx.http(), user_id).await {
+    Ok(m) => Target::Member(m),
+    Err(_) => Target::User(member.clone())
+  };
+
+  let notify_user = send_notification(&ctx, &target, &action_type, &reason, case_id, None).await?;
 
   match guild_id.ban(ctx.http(), user_id, 86400, Some(&format!("{reason} | #{case_id}"))).await {
     Ok(_) => {
@@ -290,8 +296,8 @@ pub async fn ban(
       ctx
         .send(CreateReply::new().content(format!(
           "**#{case_id}** {} now {action_verb}ned for `{reason}` ({})",
-          member.user.name,
-          formate_dm_status(notify_user)
+          member.name,
+          format_dm_status(notify_user)
         )))
         .await?;
 
@@ -299,7 +305,7 @@ pub async fn ban(
         ctx,
         case_id,
         ctx.author_member().await.unwrap_or_default().into_owned(),
-        Target::Member(member.clone()),
+        target,
         action_type,
         &reason,
         None,
@@ -350,7 +356,7 @@ pub async fn kick(
         .send(CreateReply::new().content(format!(
           "**#{case_id}** {} now kicked for `{reason}` ({})",
           member.user.name,
-          formate_dm_status(notify_user)
+          format_dm_status(notify_user)
         )))
         .await?;
 
@@ -462,7 +468,7 @@ pub async fn warn(
         .reply(format!(
           "**#{case_id}** {} now warned for `{reason}` ({})",
           member.user.name,
-          formate_dm_status(notify_user)
+          format_dm_status(notify_user)
         ))
         .await?;
     },
@@ -536,7 +542,7 @@ pub async fn mute(
         .reply(format!(
           "**#{case_id}** {} now muted for `{reason}` ({})",
           member.user.name,
-          formate_dm_status(notify_user)
+          format_dm_status(notify_user)
         ))
         .await?;
       if !log_entry(
