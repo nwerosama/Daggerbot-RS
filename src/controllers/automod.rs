@@ -778,7 +778,7 @@ async fn send_notification(
       Ok(true)
     },
     Err(e) => {
-      error!("(#{case_id}:{}) Send DM failed with error: {e}", user.name);
+      error!("(#{case_id}:{}) DM failed with error: {e}", user.name);
       Ok(false)
     }
   }
