@@ -20,9 +20,6 @@ spec:
         - name: daggerbot-app
           image: ghcr.io/nwerosama/daggerbot-rs:koi
           imagePullPolicy: Always
-          # securityContext:
-          #   capabilities:
-          #     add: ["SYS_PTRACE"]
           env:
             - name: DOCKER_HOSTNAME
               valueFrom:
@@ -45,19 +42,17 @@ spec:
             httpGet:
               path: /ready
               port: 9000
-            initialDelaySeconds: 5
+            initialDelaySeconds: 3
             periodSeconds: 10
             timeoutSeconds: 3
             failureThreshold: 3
-          # i dont like this. but do it to
-          # get rid of warnings anyways.
           resources:
             requests:
-              cpu: "150m"
-              memory: "128Mi"
-            limits:
               cpu: "500m"
-              memory: "512Mi"
+              memory: "64Mi"
+            limits:
+              cpu: "2000m"
+              memory: "128Mi"
 ---
 apiVersion: v1
 kind: Service
