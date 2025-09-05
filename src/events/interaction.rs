@@ -48,13 +48,16 @@ pub async fn on_interaction_create(
       };
 
       UserId::new(uid)
-        .dm(&ctx.http, CreateMessage::new().content(format!("You have a new message!\n> {mod_reply}")))
+        .dm(
+          &ctx.http,
+          CreateMessage::new().content(format!("You have a new message!\n>>> {mod_reply}"))
+        )
         .await?;
 
       component
         .create_followup(
           &ctx.http,
-          CreateInteractionResponseFollowup::new().content(format!("Sent your response back!\n> {mod_reply}"))
+          CreateInteractionResponseFollowup::new().content(format!("Sent your response back!\n>>> {mod_reply}"))
         )
         .await?;
 
