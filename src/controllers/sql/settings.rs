@@ -1,42 +1,37 @@
-use super::{
-  DAG_SQL,
-  QUERY_FAILED
-};
-
 use {
+  super::QUERY_FAILED,
   asahi::error,
   sqlx::{
-    FromRow,
     PgPool,
-    Result,
-    Row
+    Result
   }
 };
 
-#[derive(Debug, Clone, FromRow)]
+#[derive(Debug, Clone)]
 pub struct Settings {
   pub logs_ignored_channels: Vec<i64>
 }
 
 impl Settings {
   pub async fn get_logs_ignored_channels(pool: &PgPool) -> Result<Vec<i64>> {
-    let row_exists = sqlx::query("SELECT EXISTS(SELECT 1 FROM settings WHERE id = 1)")
+    let row_exists = sqlx::query!("SELECT EXISTS(SELECT 1 FROM settings WHERE id = 1)")
       .fetch_one(pool)
       .await?
-      .get::<bool, _>("exists");
+      .exists
+      .unwrap();
 
     if !row_exists {
-      sqlx::query("INSERT INTO settings (id, logs_ignored_channels) VALUES (1, '{}')")
+      sqlx::query!("INSERT INTO settings (id, logs_ignored_channels) VALUES (1, '{}')")
         .execute(pool)
         .await?;
     }
 
-    let q = sqlx::query_as::<_, Self>("SELECT logs_ignored_channels FROM settings WHERE id = 1")
+    let q = sqlx::query_as!(Settings, "SELECT logs_ignored_channels FROM settings WHERE id = 1")
       .fetch_one(pool)
       .await;
 
     if let Err(e) = q {
-      error!("{DAG_SQL}[Database:Settings:get_logs_ignored_channels:Error] {QUERY_FAILED}\n{e}");
+      error!("{QUERY_FAILED}\n{e}");
       return Err(e);
     };
 
@@ -47,13 +42,11 @@ impl Settings {
     &self,
     pool: &PgPool
   ) -> Result<()> {
-    let q = sqlx::query("UPDATE settings SET logs_ignored_channels = $1 WHERE id = 1")
-      .bind(&self.logs_ignored_channels)
+    if let Err(e) = sqlx::query!("UPDATE settings SET logs_ignored_channels = $1 WHERE id = 1", &self.logs_ignored_channels)
       .execute(pool)
-      .await;
-
-    if let Err(e) = q {
-      error!("{DAG_SQL}[Database:Settings:update_logs_ignored_channels:Error] {QUERY_FAILED}\n{e}");
+      .await
+    {
+      error!("{QUERY_FAILED}\n{e}");
       return Err(e);
     };
 

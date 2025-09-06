@@ -104,9 +104,7 @@ impl LogChannel {
 }
 
 pub async fn generate_id(pool: &sqlx::PgPool) -> Result<i32, BotError> {
-  let q: Option<i32> = sqlx::query_scalar("SELECT MAX(case_id) FROM sanctions").fetch_one(pool).await?;
-
-  match q {
+  match sqlx::query_scalar!("SELECT MAX(case_id) FROM sanctions").fetch_one(pool).await? {
     Some(id) => Ok(id + 1),
     None => Ok(1)
   }
@@ -756,9 +754,7 @@ async fn update(
       return Ok(())
     }
 
-    sqlx::query("UPDATE sanctions SET reason = $1 WHERE case_id = $2")
-      .bind(reason.clone())
-      .bind(case_id)
+    sqlx::query!("UPDATE sanctions SET reason = $1 WHERE case_id = $2", reason.clone(), case_id)
       .execute(&db)
       .await?;
 

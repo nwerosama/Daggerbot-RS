@@ -1,16 +1,11 @@
-use super::{
-  DAG_SQL,
-  QUERY_FAILED
+use {
+  super::QUERY_FAILED,
+  sqlx::{
+    PgPool,
+    Result
+  }
 };
 
-use sqlx::{
-  FromRow,
-  PgPool,
-  Result,
-  Row
-};
-
-#[derive(FromRow)]
 pub struct Webhooks {
   pub name:       String,
   pub thread_id:  String,
@@ -21,28 +16,12 @@ pub struct Webhooks {
 
 impl Webhooks {
   pub async fn get_hooks(pool: &PgPool) -> Result<Vec<Self>> {
-    let q = sqlx::query("SELECT * FROM webhooks").fetch_all(pool).await;
-
-    let mut hooks = Vec::new();
-
-    match q {
-      Ok(r) => {
-        for row in r {
-          hooks.push(Self {
-            name:       row.get("name"),
-            thread_id:  row.get("thread_id"),
-            message_id: row.get("message_id"),
-            id:         row.get("id"),
-            token:      row.get("token")
-          });
-        }
-      },
+    match sqlx::query_as!(Webhooks, "SELECT * FROM webhooks").fetch_all(pool).await {
+      Ok(h) => Ok(h),
       Err(e) => {
-        asahi::error!("{DAG_SQL}[Database:Webhooks:get_hooks:Error] {QUERY_FAILED}\n{e}");
-        return Err(e);
+        asahi::error!("{QUERY_FAILED}\n{e}");
+        Err(e)
       }
     }
-
-    Ok(hooks)
   }
 }

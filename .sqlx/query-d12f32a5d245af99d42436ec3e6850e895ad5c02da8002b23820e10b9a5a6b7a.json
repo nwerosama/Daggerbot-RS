@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE mpservers\n      SET peak_players = 0, last_peak_update = CURRENT_TIMESTAMP\n      WHERE name = $1 AND (\n        last_peak_update IS NULL OR last_peak_update < CURRENT_TIMESTAMP - INTERVAL '3 days'\n      )\n      RETURNING 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "?column?",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "d12f32a5d245af99d42436ec3e6850e895ad5c02da8002b23820e10b9a5a6b7a"
+}

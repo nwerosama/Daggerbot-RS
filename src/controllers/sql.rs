@@ -16,5 +16,4 @@ pub use webhooks::Webhooks;
 mod prohibited_urls;
 pub use prohibited_urls::ProhibitedUrls;
 
-static DAG_SQL: &str = "DagSql";
 static QUERY_FAILED: &str = "Failed to query the database";

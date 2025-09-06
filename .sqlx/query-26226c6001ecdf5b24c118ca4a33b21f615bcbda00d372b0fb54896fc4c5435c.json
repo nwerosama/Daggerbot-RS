@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE sanctions SET reason = $1 WHERE case_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "26226c6001ecdf5b24c118ca4a33b21f615bcbda00d372b0fb54896fc4c5435c"
+}

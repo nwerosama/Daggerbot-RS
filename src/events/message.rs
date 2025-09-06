@@ -152,13 +152,13 @@ async fn ignored_channels(
   ctx: &Context,
   channel_id: &u64
 ) -> sqlx::Result<bool> {
-  let q = sqlx::query("SELECT * FROM settings WHERE $1 = ANY(logs_ignored_channels)")
-    .bind(*channel_id as i64)
-    .execute(&ctx.data_ref::<BotData>().postgres)
+  let q = sqlx::query!("SELECT * FROM settings WHERE $1 = ANY(logs_ignored_channels)", *channel_id as i64)
+    .fetch_optional(&ctx.data_ref::<BotData>().postgres)
     .await;
 
   match q {
-    Ok(r) => Ok(r.rows_affected() > 0),
+    Ok(Some(_)) => Ok(true),
+    Ok(None) => Ok(false),
     Err(e) => {
       error!("Ignored channels error: {e}");
       Err(e)

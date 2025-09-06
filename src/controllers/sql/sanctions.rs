@@ -1,9 +1,5 @@
-use super::{
-  DAG_SQL,
-  QUERY_FAILED
-};
-
 use {
+  super::QUERY_FAILED,
   asahi::{
     error,
     info
@@ -11,10 +7,8 @@ use {
   dashmap::DashMap,
   lazy_static::lazy_static,
   sqlx::{
-    FromRow,
     PgPool,
-    Result,
-    Row
+    Result
   },
   tokio::time::Instant
 };
@@ -24,7 +18,7 @@ lazy_static! {
   static ref LOCKS: DashMap<String, Instant> = DashMap::new();
 }
 
-#[derive(Clone, FromRow)]
+#[derive(Clone)]
 pub struct Sanctions {
   pub case_id:        i32,
   pub case_type:      String,
@@ -50,24 +44,11 @@ impl Sanctions {
     pool: &PgPool,
     case_id: i32
   ) -> Result<Option<Self>> {
-    let q = sqlx::query("SELECT * FROM sanctions WHERE case_id = $1")
-      .bind(case_id)
+    if let Some(r) = sqlx::query_as!(Sanctions, "SELECT * FROM sanctions WHERE case_id = $1", case_id)
       .fetch_optional(pool)
-      .await?;
-
-    if let Some(r) = q {
-      Ok(Some(Self {
-        case_id:        r.get("case_id"),
-        case_type:      r.get("case_type"),
-        member_name:    r.get("member_name"),
-        member_id:      r.get("member_id"),
-        moderator_name: r.get("moderator_name"),
-        moderator_id:   r.get("moderator_id"),
-        timestamp:      r.get("timestamp"),
-        end_time:       r.try_get("end_time").ok(),
-        duration:       r.try_get("duration").ok(),
-        reason:         r.get("reason")
-      }))
+      .await?
+    {
+      Ok(Some(r))
     } else {
       Ok(None)
     }
@@ -89,11 +70,11 @@ impl Sanctions {
     pool: &PgPool
   ) -> Result<Self> {
     if !Self::acquire_lock(&self.member_id) {
-      info!("{DAG_SQL}[Database:Sanctions:create] {} is already being moderated!", self.member_name);
+      info!("{} is already being moderated!", self.member_name);
       return Ok(self.clone())
     }
 
-    let q = sqlx::query(
+    let q = sqlx::query!(
       "INSERT INTO sanctions (
         case_id, case_type,
         member_name, member_id,
@@ -104,54 +85,41 @@ impl Sanctions {
         $1, $2, $3, $4,
         $5, $6, $7,
         $8, $9, $10
-      ) RETURNING case_id"
+      ) RETURNING case_id",
+      self.case_id,
+      self.case_type.clone(),
+      self.member_name.clone(),
+      self.member_id.clone(),
+      self.moderator_name.clone(),
+      self.moderator_id.clone(),
+      self.timestamp,
+      self.end_time,
+      self.duration,
+      self.reason.clone()
     )
-    .bind(self.case_id)
-    .bind(self.case_type.clone())
-    .bind(self.member_name.clone())
-    .bind(self.member_id.clone())
-    .bind(self.moderator_name.clone())
-    .bind(self.moderator_id.clone())
-    .bind(self.timestamp)
-    .bind(self.end_time)
-    .bind(self.duration)
-    .bind(self.reason.clone())
     .fetch_one(pool)
     .await;
 
     match q {
       Ok(r) => Ok(Self {
-        case_id: r.get("case_id"),
+        case_id: r.case_id,
         ..self.clone()
       }),
       Err(e) => {
-        error!("{DAG_SQL}[Database:Sanctions:create:Error] {QUERY_FAILED}\n{e}");
+        error!("{QUERY_FAILED}\n{e}");
         Err(e)
       }
     }
   }
 
   pub async fn get_cases(pool: &PgPool) -> Result<Vec<ReturnedCase>> {
-    let q = sqlx::query("SELECT case_id, case_type, member_id, member_name FROM sanctions")
+    match sqlx::query_as!(ReturnedCase, "SELECT case_id, case_type, member_id, member_name FROM sanctions")
       .fetch_all(pool)
-      .await;
-
-    match q {
-      Ok(r) => {
-        let cases = r
-          .into_iter()
-          .map(|row| ReturnedCase {
-            case_id:     row.get("case_id"),
-            case_type:   row.get("case_type"),
-            member_id:   row.get("member_id"),
-            member_name: row.get("member_name")
-          })
-          .collect();
-
-        Ok(cases)
-      },
+      .await
+    {
+      Ok(cases) => Ok(cases),
       Err(e) => {
-        error!("{DAG_SQL}[Database:Sanctions:get_cases:Error] {QUERY_FAILED}\n{e}");
+        error!("{QUERY_FAILED}\n{e}");
         Err(e)
       }
     }

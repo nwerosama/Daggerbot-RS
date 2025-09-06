@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO mpservers (name, ip, code, is_active, game_password, peak_players, player_data)\n      VALUES ($1, $2, $3, $4, $5, 0, '{0,0}')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar",
+        "Varchar",
+        "Bool",
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "2efd4c9a4a5e63f7ff2b18aefaadf9e8247cb3b321b1df644be58f0d15f8a6e7"
+}

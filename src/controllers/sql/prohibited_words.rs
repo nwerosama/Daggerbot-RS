@@ -1,69 +1,57 @@
-use super::{
-  DAG_SQL,
-  QUERY_FAILED
-};
-
 use {
+  super::QUERY_FAILED,
   asahi::error,
   sqlx::{
-    FromRow,
     PgPool,
     Result
   }
 };
 
-#[derive(Clone, FromRow, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct ProhibitedWords {
   pub word: String
 }
 
 impl ProhibitedWords {
   pub async fn get_words(pool: &PgPool) -> Result<Vec<ProhibitedWords>> {
-    let rows = match sqlx::query_as::<_, ProhibitedWords>("SELECT word FROM prohibited_words")
+    match sqlx::query_as!(ProhibitedWords, "SELECT word FROM prohibited_words")
       .fetch_all(pool)
       .await
     {
-      Ok(r) => r,
+      Ok(r) => Ok(r),
       Err(e) => {
-        error!("{DAG_SQL}[Database:ProhibitedWords:get_words:Error] {QUERY_FAILED}\n{e}");
-        return Err(e)
+        error!("{QUERY_FAILED}\n{e}");
+        Err(e)
       }
-    };
-
-    Ok(rows)
+    }
   }
 
   pub async fn add_word(
     pool: &PgPool,
     word: &str
   ) -> Result<()> {
-    match sqlx::query("INSERT INTO prohibited_words (word) VALUES ($1) ON CONFLICT DO NOTHING")
-      .bind(word)
+    match sqlx::query!("INSERT INTO prohibited_words (word) VALUES ($1) ON CONFLICT DO NOTHING", word)
       .execute(pool)
       .await
     {
-      Ok(_) => (),
+      Ok(_) => Ok(()),
       Err(e) => {
-        error!("{DAG_SQL}[Database:ProhibitedWords:add_word:Error] {QUERY_FAILED}\n{e}");
-        return Err(e)
+        error!("{QUERY_FAILED}\n{e}");
+        Err(e)
       }
-    };
-
-    Ok(())
+    }
   }
 
   pub async fn remove_word(
     pool: &PgPool,
     word: &str
   ) -> Result<()> {
-    match sqlx::query("DELETE FROM prohibited_words WHERE word = $1").bind(word).execute(pool).await {
-      Ok(_) => (),
+    match sqlx::query!("DELETE FROM prohibited_words WHERE word = $1", word).execute(pool).await {
+      Ok(_) => Ok(()),
       Err(e) => {
-        error!("{DAG_SQL}[Database:ProhibitedWords:remove_word:Error] {QUERY_FAILED}\n{e}");
-        return Err(e)
+        error!("{QUERY_FAILED}\n{e}");
+        Err(e)
       }
-    };
-
-    Ok(())
+    }
   }
 }

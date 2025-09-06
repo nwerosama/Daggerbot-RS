@@ -1,22 +1,17 @@
-use super::{
-  DAG_SQL,
-  QUERY_FAILED
-};
-
 use {
+  super::QUERY_FAILED,
   asahi::error,
   serde::{
     Deserialize,
     Serialize
   },
   sqlx::{
-    FromRow,
     PgPool,
     Result
   }
 };
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MpServers {
   pub name:          String,
   pub is_active:     bool,
@@ -28,9 +23,9 @@ pub struct MpServers {
 
 impl MpServers {
   pub async fn get_servers(pool: &PgPool) -> Result<Vec<Self>> {
-    match sqlx::query_as::<_, Self>(
-      "SELECT name, is_active, ip,
-        code, game_password, peak_players
+    match sqlx::query_as!(
+      MpServers,
+      "SELECT name, is_active, ip, code, game_password, peak_players
       FROM mpservers ORDER BY name"
     )
     .fetch_all(pool)
@@ -38,7 +33,7 @@ impl MpServers {
     {
       Ok(servers) => Ok(servers),
       Err(e) => {
-        error!("{DAG_SQL}[Database:MpServers:get_servers:Error] {QUERY_FAILED}\n{e}");
+        error!("{QUERY_FAILED}\n{e}");
         Err(e)
       }
     }
@@ -48,18 +43,18 @@ impl MpServers {
     pool: &PgPool,
     name: String
   ) -> Result<Option<Self>> {
-    match sqlx::query_as::<_, Self>(
-      "SELECT name, is_active, ip,
-        code, game_password, peak_players
-      FROM mpservers WHERE name = $1"
+    match sqlx::query_as!(
+      MpServers,
+      "SELECT name, is_active, ip, code, game_password, peak_players
+      FROM mpservers WHERE name = $1",
+      name
     )
-    .bind(name)
     .fetch_optional(pool)
     .await
     {
       Ok(server) => Ok(server),
       Err(e) => {
-        error!("{DAG_SQL}[Database:MpServers:get_server:Error] {QUERY_FAILED}\n{e}");
+        error!("{QUERY_FAILED}\n{e}");
         Err(e)
       }
     }
@@ -69,14 +64,13 @@ impl MpServers {
     pool: &PgPool,
     name: String
   ) -> Result<i32> {
-    match sqlx::query_scalar::<_, i32>("SELECT peak_players FROM mpservers WHERE name = $1")
-      .bind(name)
+    match sqlx::query_scalar!("SELECT peak_players FROM mpservers WHERE name = $1", name)
       .fetch_one(pool)
       .await
     {
       Ok(peak) => Ok(peak),
       Err(e) => {
-        error!("{DAG_SQL}[Database:MpServers:get_peak_players:Error] {QUERY_FAILED}\n{e}");
+        error!("{QUERY_FAILED}\n{e}");
         Err(e)
       }
     }
@@ -86,14 +80,13 @@ impl MpServers {
     pool: &PgPool,
     name: String
   ) -> Result<Vec<i32>> {
-    match sqlx::query_scalar::<_, Vec<i32>>("SELECT player_data FROM mpservers WHERE name = $1")
-      .bind(name)
+    match sqlx::query_scalar!("SELECT player_data FROM mpservers WHERE name = $1", name)
       .fetch_one(pool)
       .await
     {
       Ok(data) => Ok(data),
       Err(e) => {
-        error!("{DAG_SQL}[Database:MpServers:get_player_data:Error] {QUERY_FAILED}\n{e}");
+        error!("{QUERY_FAILED}\n{e}");
         Err(e)
       }
     }
@@ -103,22 +96,22 @@ impl MpServers {
     pool: &PgPool,
     name: String
   ) -> Result<bool> {
-    match sqlx::query_scalar::<_, i32>(
+    match sqlx::query_scalar!(
       "UPDATE mpservers
       SET peak_players = 0, last_peak_update = CURRENT_TIMESTAMP
       WHERE name = $1 AND (
         last_peak_update IS NULL OR last_peak_update < CURRENT_TIMESTAMP - INTERVAL '3 days'
       )
-      RETURNING 1"
+      RETURNING 1",
+      name
     )
-    .bind(name)
     .fetch_optional(pool)
     .await
     {
       Ok(Some(_)) => Ok(true),
       Ok(None) => Ok(false),
       Err(e) => {
-        error!("{DAG_SQL}[Database:MpServers:reset_peak_players:Error] {QUERY_FAILED}\n{e}");
+        error!("{QUERY_FAILED}\n{e}");
         Err(e)
       }
     }
@@ -129,21 +122,20 @@ impl MpServers {
     name: String,
     current_players: i32
   ) -> Result<bool> {
-    match sqlx::query_scalar::<_, i32>(
+    match sqlx::query_scalar!(
       "UPDATE mpservers
       SET peak_players = $1, last_peak_update = CURRENT_TIMESTAMP
-      WHERE name = $2 AND peak_players < $1
-      RETURNING 1"
+      WHERE name = $2 AND peak_players < $1 RETURNING 1",
+      current_players,
+      name
     )
-    .bind(current_players)
-    .bind(name)
     .fetch_optional(pool)
     .await
     {
       Ok(Some(_)) => Ok(true),
       Ok(None) => Ok(false),
       Err(e) => {
-        error!("{DAG_SQL}[Database:MpServers:update_peak_players:Error] {QUERY_FAILED}\n{e}");
+        error!("{QUERY_FAILED}\n{e}");
         Err(e)
       }
     }
@@ -156,22 +148,22 @@ impl MpServers {
   ) -> Result<()> {
     // Selfnote: 3150/45 = 220, where 3150 is the max PD size and 45 is Monica's update interval
     //           70 points * 45 seconds = 3150 seconds = 52.5 minutes
-    match sqlx::query(
+    match sqlx::query!(
       "UPDATE mpservers
       SET player_data = CASE
         WHEN array_length(player_data, 1) > 70 THEN ARRAY[$1]::int[]
         ELSE array_append(player_data, $1)
       END
-      WHERE name = $2"
+      WHERE name = $2",
+      current_players,
+      name
     )
-    .bind(current_players)
-    .bind(name)
     .execute(pool)
     .await
     {
       Ok(_) => Ok(()),
       Err(e) => {
-        error!("{DAG_SQL}[Database:MpServers:update_player_data:Error] {QUERY_FAILED}\n{e}");
+        error!("{QUERY_FAILED}\n{e}");
         Err(e)
       }
     }
@@ -185,22 +177,21 @@ impl MpServers {
     password: String,
     active: bool
   ) -> Result<bool> {
-    let q = sqlx::query(
-      "INSERT INTO mpservers (name, is_active, ip, code, game_password, peak_players, player_data)
-      VALUES ($1, $2, $3, $4, $5, 0, '{0,0,0}')"
+    match sqlx::query!(
+      "INSERT INTO mpservers (name, ip, code, is_active, game_password, peak_players, player_data)
+      VALUES ($1, $2, $3, $4, $5, 0, '{0,0}')",
+      name,
+      ip,
+      code,
+      active,
+      password
     )
-    .bind(name)
-    .bind(active)
-    .bind(ip)
-    .bind(code)
-    .bind(password)
     .execute(pool)
-    .await;
-
-    match q {
+    .await
+    {
       Ok(r) => Ok(r.rows_affected() > 0),
       Err(e) => {
-        error!("{DAG_SQL}[Database:MpServers:create_server:Error] {QUERY_FAILED}\n{e}");
+        error!("{QUERY_FAILED}\n{e}");
         Err(e)
       }
     }
@@ -210,12 +201,10 @@ impl MpServers {
     pool: &PgPool,
     name: String
   ) -> Result<bool> {
-    let q = sqlx::query("DELETE FROM mpservers WHERE name = $1").bind(name).execute(pool).await;
-
-    match q {
+    match sqlx::query!("DELETE FROM mpservers WHERE name = $1", name).execute(pool).await {
       Ok(r) => Ok(r.rows_affected() > 0),
       Err(e) => {
-        error!("{DAG_SQL}[Database:MpServers:delete_server:Error] {QUERY_FAILED}\n{e}");
+        error!("{QUERY_FAILED}\n{e}");
         Err(e)
       }
     }
@@ -229,22 +218,21 @@ impl MpServers {
     code: String,
     game_password: String
   ) -> Result<bool> {
-    let q = sqlx::query(
-      "UPDATE mpservers SET is_active = $1, ip = $2, code = $3, game_password = $4
-      WHERE name = $5"
+    match sqlx::query!(
+      "UPDATE mpservers SET ip = $1, code = $2, is_active = $3, game_password = $4
+      WHERE name = $5",
+      ip,
+      code,
+      is_active,
+      game_password,
+      name
     )
-    .bind(is_active)
-    .bind(ip)
-    .bind(code)
-    .bind(game_password)
-    .bind(name)
     .execute(pool)
-    .await;
-
-    match q {
+    .await
+    {
       Ok(r) => Ok(r.rows_affected() > 0),
       Err(e) => {
-        error!("{DAG_SQL}[Database:MpServers:update_server:Error] {QUERY_FAILED}\n{e}");
+        error!("{QUERY_FAILED}\n{e}");
         Err(e)
       }
     }

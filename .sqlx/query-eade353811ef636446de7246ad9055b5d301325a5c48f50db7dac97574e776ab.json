@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE mpservers SET ip = $1, code = $2, is_active = $3, game_password = $4\n      WHERE name = $5",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar",
+        "Bool",
+        "Varchar",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "eade353811ef636446de7246ad9055b5d301325a5c48f50db7dac97574e776ab"
+}

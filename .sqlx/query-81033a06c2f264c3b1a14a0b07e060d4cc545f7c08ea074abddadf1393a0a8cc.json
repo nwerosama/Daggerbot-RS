@@ -1,0 +1,76 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT * FROM sanctions WHERE case_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "case_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "case_type",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "member_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "member_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "moderator_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "moderator_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "timestamp",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 7,
+        "name": "end_time",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 8,
+        "name": "duration",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 9,
+        "name": "reason",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "81033a06c2f264c3b1a14a0b07e060d4cc545f7c08ea074abddadf1393a0a8cc"
+}

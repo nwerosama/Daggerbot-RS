@@ -1,13 +1,11 @@
 .vscode
 .github
-.env
+.env*
 .gitignore
 .gitattributes
 Dockerfile
 compose.bot.yml
-run.sh
-build.sh
-deploy.sh
-target/debug
+*.sh
+target/debug/
 target/release/
 !target/release/daggerbot

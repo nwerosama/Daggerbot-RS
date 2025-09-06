@@ -1,0 +1,31 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO sanctions (\n        case_id, case_type,\n        member_name, member_id,\n        moderator_name, moderator_id,\n        timestamp, end_time,\n        duration, reason\n      ) VALUES (\n        $1, $2, $3, $4,\n        $5, $6, $7,\n        $8, $9, $10\n      ) RETURNING case_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "case_id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Varchar",
+        "Varchar",
+        "Varchar",
+        "Varchar",
+        "Varchar",
+        "Int8",
+        "Int8",
+        "Int8",
+        "Varchar"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "6a45b7fc1aa1dc0e8c9050803966e0cb3d0962b733294fbc1cb139d57d0375d7"
+}

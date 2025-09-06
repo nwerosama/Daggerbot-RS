@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO settings (id, logs_ignored_channels) VALUES (1, '{}')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "36be1dabef92807cff669620546f5de098f9669f9c772ce68b2995d28b21edb5"
+}
