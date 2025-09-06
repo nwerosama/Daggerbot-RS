@@ -10,7 +10,6 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
-  RUSTUP_TOOLCHAIN: nightly-2025-07-29
 
 jobs:
   clippy:
@@ -18,9 +17,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-        with:
-          submodules: 'true'
-          token: '${{ secrets.NWERO_PAT }}'
 
       - name: APT Cache
         uses: awalsh128/cache-apt-pkgs-action@latest
@@ -50,9 +46,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-        with:
-          submodules: 'true'
-          token: '${{ secrets.NWERO_PAT }}'
 
       - name: APT Cache
         uses: awalsh128/cache-apt-pkgs-action@latest
