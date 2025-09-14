@@ -9,11 +9,11 @@ pub async fn farmpw(ctx: super::PoiseContext<'_>) -> Result<(), crate::BotError>
   let farms = [
     Farm {
       farm_id:  1266224299174396045,
-      password: "mossypine"
+      password: "rottenbeet"
     },
     Farm {
       farm_id:  1266224585007824986,
-      password: "ravenwood"
+      password: "goldenacres"
     }
   ];
 
