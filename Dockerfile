@@ -2,7 +2,7 @@ FROM scratch AS base
 WORKDIR /builder
 COPY . .
 
-FROM archlinux:base@sha256:97c56e9c792dc50df96c77187255a752f479698c9beb4aa9caeb9fe4639a7590
+FROM archlinux:base@sha256:fc6a7997e569e600cac7b69ccc322515b72fddbdb388e978faa3c0f12bd13dae
 LABEL org.opencontainers.image.source="https://github.com/nwerosama/Daggerbot-RS"
 ENV RUST_LOG=info
 RUN pacman -Syu --noconfirm && \
