@@ -1,5 +1,14 @@
 [registries.local]
 index = "sparse+https://cargo.playground.red/api/v1/crates/"
 
+[unstable]
+profile-rustflags = true
+
 [build]
 rustflags = ["--cfg", "tokio_unstable", "--cfg", "tokio_taskdump"]
+
+[profile.dev]
+rustflags = ["-C", "target-cpu=native"]
+
+[profile.release]
+rustflags = ["-C", "target-cpu=ivybridge"]
