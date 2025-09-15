@@ -27,8 +27,10 @@ impl DerefMut for MonicaClient {
   fn deref_mut(&mut self) -> &mut Self::Target { &mut self.inner }
 }
 
+// i dont see a need for Default impl and i dont want it !
+#[allow(clippy::new_without_default)]
 impl MonicaClient {
-  pub async fn new() -> Self {
+  pub fn new() -> Self {
     let uri = var("MONICA_GRPC_URI").unwrap_or_else(|_| "127.0.0.1:37090".to_owned());
     let channel = Channel::builder(format!("http://{uri}").parse().unwrap()).connect_lazy();
 

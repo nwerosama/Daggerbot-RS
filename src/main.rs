@@ -96,7 +96,7 @@ async fn main() {
     }
   };
 
-  let grpc = MonicaClient::new().await;
+  let grpc = MonicaClient::new();
   let lua = Arc::new(Lua::new());
   let http = Arc::new(Http::new(discord_token().await));
 

@@ -1,6 +1,6 @@
 [package]
 name = "dag_grpc"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2024"
 
 [package.metadata.cargo-machete]
