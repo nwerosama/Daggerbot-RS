@@ -124,7 +124,10 @@ async fn is_channel_allowed(ctx: super::PoiseContext<'_>) -> bool {
   let whitelisted_channels = [BINARY_PROPERTIES.mp_channels.activeplayers];
   let whitelisted_roles = [BINARY_PROPERTIES.mp_mod_role, BINARY_PROPERTIES.mp_manager_role];
 
-  if ctx.guild_id().unwrap().get() != BINARY_PROPERTIES.guild_id {
+  if ctx.guild_id().unwrap().get() != BINARY_PROPERTIES.guild_id
+    || BINARY_PROPERTIES.developers.contains(&ctx.author().id.get())
+    || ctx.framework().options.owners.contains(&ctx.author().id)
+  {
     return true
   }
 
