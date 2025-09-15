@@ -20,7 +20,7 @@ use {
     }
   },
   bridges::LuaSerenityBridge,
-  dag_grpc::MonicaGRPCClient,
+  dag_grpc::MonicaClient,
   errors::BotError,
   internals::{
     invite_data::InviteCache,
@@ -51,7 +51,7 @@ struct BotData {
   postgres:        sqlx::PgPool,
   serenity_bridge: Arc<LuaSerenityBridge>,
   invite_data:     Arc<InviteCache>,
-  grpc:            MonicaGRPCClient
+  grpc:            MonicaClient
 }
 
 struct Database(String);
@@ -96,7 +96,7 @@ async fn main() {
     }
   };
 
-  let grpc = MonicaGRPCClient::default();
+  let grpc = MonicaClient::new().await;
   let lua = Arc::new(Lua::new());
   let http = Arc::new(Http::new(discord_token().await));
 

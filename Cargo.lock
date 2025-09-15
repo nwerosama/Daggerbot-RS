@@ -134,7 +134,7 @@ dependencies = [
 [[package]]
 name = "asahi"
 version = "0.1.9"
-source = "git+https://git.playground.red/nwerosama/asahi?branch=master#805928101ddcfd44772079a43089bbc74fed7d16"
+source = "git+https://git.playground.red/nwerosama/asahi?branch=master#3bdb2f1f232de45ef2618ec90ebf9947db5a8537"
 dependencies = [
  "asahi_canvas",
  "asahi_coordinator",
@@ -145,7 +145,7 @@ dependencies = [
 [[package]]
 name = "asahi_canvas"
 version = "0.1.9"
-source = "git+https://git.playground.red/nwerosama/asahi?branch=master#805928101ddcfd44772079a43089bbc74fed7d16"
+source = "git+https://git.playground.red/nwerosama/asahi?branch=master#3bdb2f1f232de45ef2618ec90ebf9947db5a8537"
 dependencies = [
  "ab_glyph",
  "asahi_utils",
@@ -162,7 +162,7 @@ dependencies = [
 [[package]]
 name = "asahi_coordinator"
 version = "0.1.9"
-source = "git+https://git.playground.red/nwerosama/asahi?branch=master#805928101ddcfd44772079a43089bbc74fed7d16"
+source = "git+https://git.playground.red/nwerosama/asahi?branch=master#3bdb2f1f232de45ef2618ec90ebf9947db5a8537"
 dependencies = [
  "asahi_internal",
  "async-trait",
@@ -172,7 +172,7 @@ dependencies = [
 [[package]]
 name = "asahi_internal"
 version = "0.1.9"
-source = "git+https://git.playground.red/nwerosama/asahi?branch=master#805928101ddcfd44772079a43089bbc74fed7d16"
+source = "git+https://git.playground.red/nwerosama/asahi?branch=master#3bdb2f1f232de45ef2618ec90ebf9947db5a8537"
 dependencies = [
  "bb8-redis",
  "hyper",
@@ -191,7 +191,7 @@ dependencies = [
 [[package]]
 name = "asahi_utils"
 version = "0.1.9"
-source = "git+https://git.playground.red/nwerosama/asahi?branch=master#805928101ddcfd44772079a43089bbc74fed7d16"
+source = "git+https://git.playground.red/nwerosama/asahi?branch=master#3bdb2f1f232de45ef2618ec90ebf9947db5a8537"
 dependencies = [
  "asahi_internal",
  "lazy_static",
@@ -642,7 +642,7 @@ dependencies = [
 
 [[package]]
 name = "dag_grpc"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "prost",
  "tonic",
@@ -652,7 +652,7 @@ dependencies = [
 
 [[package]]
 name = "daggerbot-rs"
-version = "4.2.4"
+version = "4.3.0"
 dependencies = [
  "asahi",
  "bb8",
@@ -1752,9 +1752,9 @@ checksum = "f9fbbcab51052fe104eb5e5d351cf728d30a5be1fe14d9be8a3b097481fb97de"
 
 [[package]]
 name = "libredox"
-version = "0.1.9"
+version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "391290121bad3d37fbddad76d8f5d1c1c314cfc646d143d7e07a3086ddff0ce3"
+checksum = "416f7e718bdb06000964960ffa43b4335ad4012ae8b99060261aa4a8088d5ccb"
 dependencies = [
  "bitflags",
  "libc",
@@ -3106,9 +3106,9 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.221"
+version = "1.0.223"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "341877e04a22458705eb4e131a1508483c877dca2792b3781d4e5d8a6019ec43"
+checksum = "a505d71960adde88e293da5cb5eda57093379f64e61cf77bf0e6a63af07a7bac"
 dependencies = [
  "serde_core",
  "serde_derive",
@@ -3128,9 +3128,9 @@ dependencies = [
 
 [[package]]
 name = "serde_core"
-version = "1.0.221"
+version = "1.0.223"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c459bc0a14c840cb403fc14b148620de1e0778c96ecd6e0c8c3cacb6d8d00fe"
+checksum = "20f57cbd357666aa7b3ac84a90b4ea328f1d4ddb6772b430caa5d9e1309bb9e9"
 dependencies = [
  "serde_derive",
 ]
@@ -3146,9 +3146,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.221"
+version = "1.0.223"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6185cf75117e20e62b1ff867b9518577271e58abe0037c40bb4794969355ab0"
+checksum = "3d428d07faf17e306e699ec1e91996e5a165ba5d6bce5b5155173e91a8a01a56"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3157,13 +3157,14 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.144"
+version = "1.0.145"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56177480b00303e689183f110b4e727bb4211d692c62d4fcd16d02be93077d40"
+checksum = "402a6f66d8c709116cf22f558eab210f5a50187f702eb4d7e5ef38d9a7f1c79c"
 dependencies = [
  "itoa",
  "memchr",
  "ryu",
+ "serde",
  "serde_core",
 ]
 

@@ -2,7 +2,7 @@
 .github
 .env*
 .gitignore
-.gitattributes
+.sqlx
 Dockerfile
 compose.bot.yml
 *.sh

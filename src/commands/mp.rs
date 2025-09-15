@@ -183,11 +183,7 @@ async fn data_warehouse(
     .grpc
     .clone()
     .fetch_data(FetchRequest {
-      server_name: server.name.to_string(),
-      server_ip:   server.ip.to_string(),
-      server_code: server.code.to_string(),
-      is_active:   server.is_active,
-      fetch_type:  "dss".to_string()
+      server_name: server.name.to_string()
     })
     .await
   {
@@ -195,32 +191,17 @@ async fn data_warehouse(
       let response = d.into_inner().data;
 
       if response.is_empty() {
-        error!("(DataWarehouse) 'dss' field is nullified for {}", server.name);
+        error!("(Data Warehouse) 'dss' field is nullified for {}", server.name);
         return Err("Monica didn't reply to the payload request in time, try again later!".to_string().into())
       }
 
-      serde_json::from_str::<serde_json::Value>(&response)
-        .map_err(|e| {
-          error!("(DataWarehouse) Parsing error: {e}");
-          format!("**Parsing error:** {e}").into()
-        })
-        .and_then(|data| {
-          data
-            .get("dss")
-            .ok_or_else(|| {
-              error!("(DataWarehouse) Response missing 'dss' field");
-              "Monica returned unexpected data error!".into()
-            })
-            .and_then(|dss| {
-              serde_json::from_value::<DssData>(dss.clone()).map_err(|e| {
-                error!("(DataWarehouse) Pipeline error: {e}");
-                e.into()
-              })
-            })
-        })
+      serde_json::from_str::<DssData>(&response).map_err(|e| {
+        error!("(Data Warehouse) Parsing error: {e:?}");
+        format!("**Parsing error:** {e}").into()
+      })
     },
     Err(y) => {
-      error!("(DataWarehouse) {y}");
+      error!("(Data Warehouse) {y:?}");
       Err(format!("Ran into {a_} {collider} while trying to retrieve server data, please try again later!").into())
     }
   }

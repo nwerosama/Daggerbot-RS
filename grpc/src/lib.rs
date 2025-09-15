@@ -1,47 +1,39 @@
 use {
-  std::env::var,
-  tonic::{
-    Request,
-    Response,
-    Status,
-    transport::Channel
-  }
+  crate::monica_service_client::MonicaServiceClient,
+  std::{
+    env::var,
+    ops::{
+      Deref,
+      DerefMut
+    }
+  },
+  tonic::transport::Channel
 };
 
-pub mod monica {
-  tonic::include_proto!("monica");
-}
-
-pub use monica::{
-  FetchRequest,
-  FetchResponse,
-  monica_service_client::MonicaServiceClient
-};
+tonic::include_proto!("monica");
 
 #[derive(Debug, Clone)]
-pub struct MonicaGRPCClient {
+pub struct MonicaClient {
   inner: MonicaServiceClient<Channel>
 }
 
-impl Default for MonicaGRPCClient {
-  fn default() -> Self { Self::new() }
+impl Deref for MonicaClient {
+  type Target = MonicaServiceClient<Channel>;
+
+  fn deref(&self) -> &Self::Target { &self.inner }
 }
 
-impl MonicaGRPCClient {
-  pub fn new() -> Self {
+impl DerefMut for MonicaClient {
+  fn deref_mut(&mut self) -> &mut Self::Target { &mut self.inner }
+}
+
+impl MonicaClient {
+  pub async fn new() -> Self {
     let uri = var("MONICA_GRPC_URI").unwrap_or_else(|_| "127.0.0.1:37090".to_owned());
     let channel = Channel::builder(format!("http://{uri}").parse().unwrap()).connect_lazy();
 
     Self {
       inner: MonicaServiceClient::new(channel)
     }
-  }
-
-  pub async fn fetch_data(
-    &mut self,
-    request: impl Into<FetchRequest>
-  ) -> Result<Response<FetchResponse>, Status> {
-    let request = Request::new(request.into());
-    self.inner.fetch_data(request).await
   }
 }

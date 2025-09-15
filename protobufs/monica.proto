@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package monica;
+
+service MonicaService {
+  rpc FetchData (FetchRequest) returns (DssResponse);
+  rpc AutorefreshData (FetchRequest) returns (stream AutorefreshResponse);
+}
+
+message FetchRequest {
+  string server_name = 1;
+}
+
+message DssResponse {
+  string data = 1;
+}
+
+message AutorefreshResponse {
+  string data = 1;
+}
