@@ -904,8 +904,8 @@ dependencies = [
 
 [[package]]
 name = "farmsim"
-version = "0.1.4"
-source = "git+https://github.com/nwerosama/farmsim-rs?branch=master#502bcf313ed6ff16bf9666bc4fe8a0c81b2ce6dd"
+version = "0.1.5"
+source = "git+https://github.com/nwerosama/farmsim-rs?branch=master#11b7aceb039add5a0ec2a428c4710071fb9041a0"
 dependencies = [
  "serde",
  "serde_json",

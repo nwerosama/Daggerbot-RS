@@ -10,8 +10,6 @@ use crate::{
       TASK_NAME,
       ac_serverlist,
       extract_ip_and_code,
-      format_daytime,
-      format_player_uptime,
       icon_factory,
       mod_page_url
     }
@@ -34,7 +32,13 @@ use {
   },
   dag_grpc::FetchRequest,
   dashmap::DashMap,
-  farmsim::DssData,
+  farmsim::{
+    DssData,
+    utils::{
+      format_daytime,
+      format_player_uptime
+    }
+  },
   poise::{
     CreateReply,
     serenity_prelude::{

@@ -32,7 +32,12 @@ use {
   farmsim::{
     CareerSavegame,
     DssData,
-    DssPlayer
+    DssPlayer,
+    Validation,
+    utils::{
+      format_daytime,
+      format_player_uptime
+    }
   },
   lazy_static::lazy_static,
   num_format::{
@@ -150,31 +155,6 @@ impl EmbedPalette {
 struct IconCondition<'a> {
   condition: Box<dyn Fn(&DssPlayer) -> bool + 'a>,
   icon:      &'a str
-}
-
-trait Validation {
-  fn is_valid(&self) -> bool;
-}
-
-impl Validation for DssData {
-  fn is_valid(&self) -> bool {
-    match &self.server {
-      Some(server) => server.day_time > 0,
-      None => true
-    }
-  }
-}
-
-impl Validation for CareerSavegame {
-  fn is_valid(&self) -> bool {
-    if let Some(slot_system) = &self.slot_system
-      && !slot_system.slot_usage.is_empty()
-      && let Some(settings) = &self.settings
-    {
-      return !settings.map_title.is_empty() && !settings.time_scale.is_normal();
-    }
-    false
-  }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -535,31 +515,6 @@ impl AsahiCoordinator for Monica {
 
     Ok(())
   }
-}
-
-pub fn format_daytime(day_time: i32) -> String {
-  let hours = day_time / 3600000;
-  let mins = (day_time % 3600000) / 60000;
-
-  format!("{hours:02}:{mins:02}")
-}
-
-pub fn format_player_uptime(uptime: i32) -> String {
-  let mins: i32;
-  let mut hrs: i32 = 0;
-
-  if uptime >= 60 {
-    hrs = uptime / 60;
-    mins = uptime % 60;
-  } else {
-    mins = uptime;
-  }
-
-  format!(
-    "{}{}",
-    if hrs > 0 { format!("{hrs} h ") } else { "".to_string() },
-    if mins > 0 { format!("{mins} m") } else { "".to_string() }
-  )
 }
 
 pub fn playerlist_constructor(players: Vec<DssPlayer>) -> String {
