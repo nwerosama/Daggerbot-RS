@@ -7,8 +7,6 @@ profile-rustflags = true
 [build]
 rustflags = ["--cfg", "tokio_unstable", "--cfg", "tokio_taskdump"]
 
-[profile.dev]
-rustflags = ["-C", "target-cpu=native"]
-
-[profile.release]
-rustflags = ["-C", "target-cpu=ivybridge"]
+[profile]
+dev.rustflags = ["-C", "target-cpu=native"]
+release.rustflags = ["-C", "target-cpu=ivybridge"]
