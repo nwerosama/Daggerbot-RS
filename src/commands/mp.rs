@@ -499,7 +499,7 @@ async fn poll_perm_check(ctx: super::PoiseContext<'_>) -> BotResult<bool> {
     .unwrap()
     .roles
     .contains(&RoleId::new(BINARY_PROPERTIES.mp_mod_role))
-    || BINARY_PROPERTIES.developers.contains(&ctx.author().id.get())
+    || ctx.framework().options.owners.contains(&ctx.author().id)
   {
     true => Ok(true),
     false => Ok(false)
