@@ -1,5 +1,8 @@
 use {
-  crate::errors::BotError,
+  crate::{
+    BotError,
+    BotResult
+  },
   asahi::{
     error,
     warn
@@ -26,7 +29,7 @@ struct DmModal {
 pub async fn on_interaction_create(
   ctx: &Context,
   interaction: &Interaction
-) -> Result<(), BotError> {
+) -> BotResult {
   if let Interaction::Component(component) = interaction
     && component.data.custom_id.starts_with("dm-")
     && let Err(e) = async {

@@ -1,5 +1,5 @@
 use {
-  crate::BotError,
+  crate::BotResult,
   asahi::utils::{
     format_bytes,
     format_duration,
@@ -20,7 +20,7 @@ use {
 
 /// Retrieve host and bot uptimes
 #[poise::command(slash_command)]
-pub async fn uptime(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
+pub async fn uptime(ctx: super::PoiseContext<'_>) -> BotResult {
   let bot_name = ctx.cache().current_user().name.clone();
 
   // Fetch system and process memory usage

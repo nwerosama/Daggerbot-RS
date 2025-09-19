@@ -1,6 +1,6 @@
 use crate::{
   BotData,
-  BotError,
+  BotResult,
   internals::{
     config::BINARY_PROPERTIES,
     invite_data::InviteData
@@ -30,7 +30,7 @@ use {
 pub async fn on_guild_member_addition(
   ctx: &Context,
   new_member: &Member
-) -> Result<(), BotError> {
+) -> BotResult {
   if new_member.guild_id == GuildId::new(929807948748832798) {
     let dagstaff_role = RoleId::new(1009754300915916860);
     let test_accs_role = RoleId::new(1040018152827928616);
@@ -164,7 +164,7 @@ pub async fn on_guild_member_removal(
   ctx: &Context,
   member_data_if_available: &Option<Member>,
   user: &User
-) -> Result<(), BotError> {
+) -> BotResult {
   if member_data_if_available
     .as_ref()
     .is_none_or(|data| data.guild_id != GuildId::new(BINARY_PROPERTIES.guild_id))

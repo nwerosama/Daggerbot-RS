@@ -5,7 +5,7 @@ use {
   },
   crate::{
     BotData,
-    BotError,
+    BotResult,
     commands::PoiseContext,
     controllers::{
       cache::RedisController,
@@ -250,7 +250,7 @@ pub fn mod_page_url(
 async fn cache_servers(
   redis: &RedisController,
   servers: Vec<MpServers>
-) -> Result<(), BotError> {
+) -> BotResult {
   let serialized_servers = serde_json::to_string(&servers)?;
   redis.set(TASK_NAME, serialized_servers.as_str()).await?;
   redis.expire(TASK_NAME, 900).await?;

@@ -1,27 +1,26 @@
-use crate::{
-  BotData,
-  BotError,
-  commands::{
-    ActionType,
-    LogChannel,
-    Target,
-    generate_id
-  },
-  controllers::{
-    cache::RedisController,
-    sql::{
-      ProhibitedUrls,
-      ProhibitedWords,
-      Sanctions
+use {
+  crate::{
+    BotData,
+    BotResult,
+    commands::{
+      ActionType,
+      LogChannel,
+      Target,
+      generate_id
+    },
+    controllers::{
+      cache::RedisController,
+      sql::{
+        ProhibitedUrls,
+        ProhibitedWords,
+        Sanctions
+      }
+    },
+    internals::{
+      config::BINARY_PROPERTIES,
+      utils::token_path
     }
   },
-  internals::{
-    config::BINARY_PROPERTIES,
-    utils::token_path
-  }
-};
-
-use {
   asahi::{
     AsahiCoordinator,
     AsahiResult,
@@ -249,7 +248,7 @@ impl Automoderator {
     db: &PgPool,
     redis: Arc<RedisController>,
     http: Arc<Http>
-  ) -> Result<Self, BotError> {
+  ) -> BotResult<Self> {
     Ok(Self {
       policies: Arc::new(RwLock::new(vec![
         AutomodPolicy::anti_spam(),
@@ -278,7 +277,7 @@ impl Automoderator {
     &self,
     ctx: &Context,
     msg: &Message
-  ) -> Result<(), BotError> {
+  ) -> BotResult {
     if let Some(violation) = self.check_violations(msg).await {
       match msg.member(ctx).await {
         Ok(m) => {
@@ -481,7 +480,7 @@ impl Automoderator {
     msg: &Message,
     policy: &AutomodPolicy,
     case_id: i32
-  ) -> Result<(), BotError> {
+  ) -> BotResult {
     let log_channel = match policy.action {
       ActionType::Ban | ActionType::Kick => LogChannel::BansAndKicks,
       _ => LogChannel::BotLog
@@ -543,7 +542,7 @@ impl Automoderator {
     ctx: &Context,
     msg: &Message,
     policy: AutomodPolicy
-  ) -> Result<(), BotError> {
+  ) -> BotResult {
     let user_id = msg.author.id.get();
     if !Sanctions::acquire_lock(user_id.to_string().as_str()) {
       return Ok(())
@@ -672,7 +671,7 @@ impl Automoderator {
     reason: &str,
     duration: Option<i64>,
     case_id: i32
-  ) -> Result<(), BotError> {
+  ) -> BotResult {
     let timestamp = SystemTime::now()
       .duration_since(UNIX_EPOCH)
       .expect("System time is lagging behind or is in the future")
@@ -701,7 +700,7 @@ impl Automoderator {
     Ok(())
   }
 
-  async fn load_prohibited_words(db: &PgPool) -> Result<Vec<Regex>, BotError> {
+  async fn load_prohibited_words(db: &PgPool) -> BotResult<Vec<Regex>> {
     let words = ProhibitedWords::get_words(db).await.expect("failed to get words from db");
 
     let regexes = words
@@ -716,7 +715,7 @@ impl Automoderator {
     Ok(regexes)
   }
 
-  async fn load_prohibited_urls(db: &PgPool) -> Result<Vec<String>, BotError> {
+  async fn load_prohibited_urls(db: &PgPool) -> BotResult<Vec<String>> {
     let urls = ProhibitedUrls::get_urls(db).await.expect("failed to get urls from db");
     let domains = urls.into_iter().map(|u| u.url.to_lowercase()).collect();
     Ok(domains)
@@ -740,7 +739,7 @@ async fn send_notification(
   reason: &str,
   case_id: i32,
   duration: Option<u64>
-) -> Result<bool, BotError> {
+) -> BotResult<bool> {
   let user = match target {
     Target::User(user) => user,
     Target::Member(mem) => &mem.user

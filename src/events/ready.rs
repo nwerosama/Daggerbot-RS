@@ -1,6 +1,6 @@
 use {
   crate::{
-    BotError,
+    BotResult,
     internals::{
       config::BINARY_PROPERTIES,
       monica::Monica,
@@ -40,7 +40,7 @@ static READY_ONCE: AtomicBool = AtomicBool::new(false);
 async fn ready_once(
   ctx: &Context,
   ready: &Ready
-) -> Result<(), BotError> {
+) -> BotResult {
   #[cfg(not(feature = "production"))]
   {
     asahi::warn!("Detected a development environment!");
@@ -67,7 +67,7 @@ async fn ready_once(
 pub async fn on_ready(
   ctx: &Context,
   ready: &Ready
-) -> Result<(), BotError> {
+) -> BotResult {
   if !READY_ONCE.swap(true, Ordering::Relaxed) {
     ready_once(ctx, ready).await.expect("Failed to call on_ready method");
   }

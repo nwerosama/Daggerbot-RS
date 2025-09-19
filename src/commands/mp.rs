@@ -1,5 +1,5 @@
 use crate::{
-  BotError,
+  BotResult,
   controllers::sql::MpServers,
   internals::{
     config::BINARY_PROPERTIES,
@@ -49,6 +49,7 @@ use {
       CreateMessage,
       CreatePoll,
       CreatePollAnswer,
+      Embed,
       GenericChannelId,
       GetMessages,
       MessageId,
@@ -158,12 +159,12 @@ async fn is_channel_allowed(ctx: super::PoiseContext<'_>) -> bool {
 
 /// Retrieve specific information from FSMP server(s)
 #[poise::command(slash_command, subcommands("players", "details", "pallets", "poll", "tools"))]
-pub async fn mp(_: super::PoiseContext<'_>) -> Result<(), BotError> { Ok(()) }
+pub async fn mp(_: super::PoiseContext<'_>) -> BotResult { Ok(()) }
 
 async fn data_warehouse(
   ctx: super::PoiseContext<'_>,
   server: String
-) -> Result<DssData, BotError> {
+) -> BotResult<DssData> {
   let servers = MpServers::get_servers(&ctx.data().postgres).await?;
   let collider = Collider::encounter_random_object();
   let a_ = if collider.chars().next().unwrap().is_vowel() { "an" } else { "a" };
@@ -221,7 +222,7 @@ async fn players(
   #[description = "What server to get players from"]
   #[autocomplete = "ac_serverlist"]
   server: String
-) -> Result<(), BotError> {
+) -> BotResult {
   if !is_channel_allowed(ctx).await {
     return Ok(());
   }
@@ -319,7 +320,7 @@ async fn details(
   #[description = "What server to get details from"]
   #[autocomplete = "ac_serverlist"]
   server: String
-) -> Result<(), BotError> {
+) -> BotResult {
   ctx.defer().await?;
 
   let api = {
@@ -383,7 +384,7 @@ async fn pallets(
   #[description = "What server to get details from"]
   #[autocomplete = "ac_serverlist"]
   server: String
-) -> Result<(), BotError> {
+) -> BotResult {
   if !is_channel_allowed(ctx).await {
     return Ok(());
   }
@@ -487,7 +488,7 @@ async fn pallets(
   Ok(())
 }
 
-async fn poll_perm_check(ctx: super::PoiseContext<'_>) -> Result<bool, BotError> {
+async fn poll_perm_check(ctx: super::PoiseContext<'_>) -> BotResult<bool> {
   match ctx
     .author_member()
     .await
@@ -500,7 +501,7 @@ async fn poll_perm_check(ctx: super::PoiseContext<'_>) -> Result<bool, BotError>
   }
 }
 
-async fn poll_webhook_embed(ctx: super::PoiseContext<'_>) -> Result<poise::serenity_prelude::Embed, BotError> {
+async fn poll_webhook_embed(ctx: super::PoiseContext<'_>) -> BotResult<Embed> {
   let suggestion_pool = {
     let mp_moderators = GenericChannelId::new(BINARY_PROPERTIES.mp_channels.mod_chat);
     let hook_msg = MessageId::new(BINARY_PROPERTIES.mp_channels.suggestion_pool_msg);
@@ -519,11 +520,11 @@ async fn poll_webhook_embed(ctx: super::PoiseContext<'_>) -> Result<poise::seren
 
 /// Poll system
 #[poise::command(slash_command, subcommands("start", "end", "maps"), check = "poll_perm_check")]
-pub async fn poll(_: super::PoiseContext<'_>) -> Result<(), BotError> { Ok(()) }
+pub async fn poll(_: super::PoiseContext<'_>) -> BotResult { Ok(()) }
 
 /// Start a map poll
 #[poise::command(slash_command)]
-async fn start(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
+async fn start(ctx: super::PoiseContext<'_>) -> BotResult {
   ctx.defer().await?;
   let mp_announcements = GenericChannelId::new(BINARY_PROPERTIES.mp_channels.announcements);
 
@@ -595,7 +596,7 @@ async fn start(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
 
 /// End the map poll early
 #[poise::command(slash_command)]
-async fn end(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
+async fn end(ctx: super::PoiseContext<'_>) -> BotResult {
   let mp_announcements = GenericChannelId::new(BINARY_PROPERTIES.mp_channels.announcements);
 
   let messages = match mp_announcements.messages(ctx.http(), GetMessages::new().limit(5)).await {
@@ -618,7 +619,7 @@ async fn end(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
 
 /// Retrieve the list from the suggestion pool
 #[poise::command(slash_command)]
-async fn maps(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
+async fn maps(ctx: super::PoiseContext<'_>) -> BotResult {
   ctx
     .send(CreateReply::default().embed(CreateEmbed::from(poll_webhook_embed(ctx).await?)))
     .await?;
@@ -626,7 +627,7 @@ async fn maps(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
   Ok(())
 }
 
-async fn tools_perm_check(ctx: super::PoiseContext<'_>) -> Result<bool, BotError> {
+async fn tools_perm_check(ctx: super::PoiseContext<'_>) -> BotResult<bool> {
   let member = ctx.author_member().await.unwrap();
   let roles = member.roles.clone();
   let perms = member.permissions.unwrap();
@@ -636,11 +637,11 @@ async fn tools_perm_check(ctx: super::PoiseContext<'_>) -> Result<bool, BotError
 
 /// MP Manager tools for Monica
 #[poise::command(slash_command, check = "tools_perm_check", subcommands("list", "add", "delete", "update"))]
-async fn tools(_: super::PoiseContext<'_>) -> Result<(), BotError> { Ok(()) }
+async fn tools(_: super::PoiseContext<'_>) -> BotResult { Ok(()) }
 
 /// List all available servers in the database
 #[poise::command(slash_command)]
-async fn list(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
+async fn list(ctx: super::PoiseContext<'_>) -> BotResult {
   let servers = MpServers::get_servers(&ctx.data().postgres).await?;
   let mut server_list = Vec::new();
 
@@ -672,7 +673,7 @@ async fn add(
   #[description = "Server URL (DSS/CSG link)"] url: String,
   #[description = "Game password (optional, default is -)"] password: Option<String>,
   #[description = "Active status (optional, default is true)"] active: Option<bool>
-) -> Result<(), BotError> {
+) -> BotResult {
   let extracted = match extract_ip_and_code(&url) {
     Some(e) => e,
     None => {
@@ -704,7 +705,7 @@ async fn delete(
   #[description = "Server name"]
   #[autocomplete = "ac_serverlist"]
   name: String
-) -> Result<(), BotError> {
+) -> BotResult {
   if MpServers::get_server(&ctx.data().postgres, name.clone()).await?.is_none() {
     ctx.reply(format!("**{name}** doesn't exist in database!")).await?;
     return Ok(());
@@ -733,7 +734,7 @@ async fn update(
   #[description = "Server URL (DSS/CSG link)"] url: Option<String>,
   #[description = "Game password (If password is none, put a hyphen instead)"] password: Option<String>,
   #[description = "Active status"] active: Option<bool>
-) -> Result<(), BotError> {
+) -> BotResult {
   if url.is_none() && password.is_none() && active.is_none() {
     ctx.reply("Please provide atleast one field to update.").await?;
     return Ok(());

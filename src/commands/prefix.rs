@@ -5,7 +5,7 @@ struct Farm {
 
 /// Returns the multifarm password in specific channel
 #[poise::command(prefix_command, guild_only)]
-pub async fn farmpw(ctx: super::PoiseContext<'_>) -> Result<(), crate::BotError> {
+pub async fn farmpw(ctx: super::PoiseContext<'_>) -> crate::BotResult {
   let farms = [
     Farm {
       farm_id:  1266224299174396045,

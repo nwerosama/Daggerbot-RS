@@ -1,5 +1,5 @@
 use crate::{
-  BotError,
+  BotResult,
   controllers::sql::{
     ProhibitedUrls,
     ProhibitedWords,
@@ -103,7 +103,7 @@ impl LogChannel {
   pub fn to_discord(&self) -> GenericChannelId { GenericChannelId::new(self.id()) }
 }
 
-pub async fn generate_id(pool: &sqlx::PgPool) -> Result<i32, BotError> {
+pub async fn generate_id(pool: &sqlx::PgPool) -> BotResult<i32> {
   match sqlx::query_scalar!("SELECT MAX(case_id) FROM sanctions").fetch_one(pool).await? {
     Some(id) => Ok(id + 1),
     None => Ok(1)
@@ -120,7 +120,7 @@ pub async fn send_notification(
   reason: &str,
   case_id: i32,
   duration: Option<u64>
-) -> Result<Option<bool>, BotError> {
+) -> BotResult<Option<bool>> {
   let user = match target {
     Target::User(_) => return Ok(None),
     Target::Member(mem) => &mem.user
@@ -179,7 +179,7 @@ async fn log_entry(
   reason: &str,
   duration: Option<i64>,
   channel: LogChannel
-) -> Result<bool, BotError> {
+) -> BotResult<bool> {
   let db = ctx.data().postgres.clone();
   let existing_sanctions = Sanctions::load_data(&db, case_id).await?;
 
@@ -258,7 +258,7 @@ pub async fn ban(
   #[description = "The member to ban"] member: User,
   #[description = "The reason for the ban"] reason: String,
   #[description = "Should the ban be soft? (ban and unban immediately)"] soft: Option<bool>
-) -> Result<(), BotError> {
+) -> BotResult {
   let is_soft = soft.unwrap_or(false);
   let guild_id = ctx.guild_id().expect("expected guild id to be present");
   let user_id = member.id;
@@ -337,7 +337,7 @@ pub async fn kick(
   ctx: super::PoiseContext<'_>,
   #[description = "The member to kick"] member: Member,
   #[description = "The reason for the kick"] reason: String
-) -> Result<(), BotError> {
+) -> BotResult {
   let case_id = generate_id(&ctx.data().postgres).await?;
 
   if is_bkl(ctx) {
@@ -395,7 +395,7 @@ pub async fn unban(
   ctx: super::PoiseContext<'_>,
   #[description = "The member to revoke a ban on"] user: User,
   #[description = "The reason for the unban"] reason: String
-) -> Result<(), BotError> {
+) -> BotResult {
   let case_id = generate_id(&ctx.data().postgres).await?;
   match ctx
     .guild_id()
@@ -443,7 +443,7 @@ pub async fn warn(
   ctx: super::PoiseContext<'_>,
   #[description = "The member to warn"] member: Member,
   #[description = "The reason for the warning"] reason: String
-) -> Result<(), BotError> {
+) -> BotResult {
   let case_id = generate_id(&ctx.data().postgres).await?;
   ctx.defer().await?;
 
@@ -493,7 +493,7 @@ pub async fn mute(
   #[description = "The member to timeout"] mut member: Member,
   #[description = "Timeout duration"] duration: String,
   #[description = "The reason for the timeout"] reason: String
-) -> Result<(), BotError> {
+) -> BotResult {
   let mut d = match parse_duration(&duration) {
     Ok(d) => d,
     Err(e) => {
@@ -581,7 +581,7 @@ pub async fn unmute(
   ctx: super::PoiseContext<'_>,
   #[description = "The member to remove timeout from"] mut member: Member,
   #[description = "The reason for the timeout removal"] reason: String
-) -> Result<(), BotError> {
+) -> BotResult {
   let case_id = generate_id(&ctx.data().postgres).await?;
 
   match member.enable_communication(ctx.http()).await {
@@ -624,7 +624,7 @@ pub async fn unmute(
 
 /// Manage the cases in the database
 #[poise::command(slash_command, subcommands("view", "update"), default_member_permissions = "MANAGE_MESSAGES")]
-pub async fn case(_: super::PoiseContext<'_>) -> Result<(), BotError> { Ok(()) }
+pub async fn case(_: super::PoiseContext<'_>) -> BotResult { Ok(()) }
 
 async fn ac_cases<'a>(
   ctx: super::PoiseContext<'a>,
@@ -661,7 +661,7 @@ async fn view(
   #[description = "Filter the search by Member ID or Case ID"]
   #[autocomplete = "ac_cases"]
   case_id: i32
-) -> Result<(), BotError> {
+) -> BotResult {
   let db = ctx.data().postgres.clone();
   let sanctions_data = Sanctions::load_data(&db, case_id).await?;
 
@@ -726,7 +726,7 @@ async fn update(
   #[autocomplete = "ac_cases"]
   case_id: i32,
   #[description = "New reason for the case"] reason: String
-) -> Result<(), BotError> {
+) -> BotResult {
   ctx.defer().await?;
 
   let db = ctx.data().postgres.clone();
@@ -828,7 +828,7 @@ async fn mpl(
   ctx: super::PoiseContext<'_>,
   item_type: ProhibitedType,
   operation: CmdOperation
-) -> Result<(), BotError> {
+) -> BotResult {
   let db = ctx.data().postgres.clone();
 
   match operation {
@@ -935,18 +935,18 @@ async fn mpl(
 
 /// Prohibited words management
 #[poise::command(slash_command, subcommands("pwm", "pwl"), default_member_permissions = "ADMINISTRATOR")]
-pub async fn pw(_: super::PoiseContext<'_>) -> Result<(), BotError> { Ok(()) }
+pub async fn pw(_: super::PoiseContext<'_>) -> BotResult { Ok(()) }
 
 /// Prohibited urls management
 #[poise::command(slash_command, subcommands("pum", "pul"), default_member_permissions = "ADMINISTRATOR")]
-pub async fn pu(_: super::PoiseContext<'_>) -> Result<(), BotError> { Ok(()) }
+pub async fn pu(_: super::PoiseContext<'_>) -> BotResult { Ok(()) }
 
 /// Add/remove a word to Automoderator's PW list
 #[poise::command(slash_command, rename = "manage")]
 async fn pwm(
   ctx: super::PoiseContext<'_>,
   #[description = "The word to be added or removed"] word: String
-) -> Result<(), BotError> {
+) -> BotResult {
   mpl(ctx, ProhibitedType::Word, CmdOperation::Manage(word)).await
 }
 
@@ -955,14 +955,14 @@ async fn pwm(
 async fn pum(
   ctx: super::PoiseContext<'_>,
   #[description = "The domain to be added or removed"] url: String
-) -> Result<(), BotError> {
+) -> BotResult {
   mpl(ctx, ProhibitedType::Url, CmdOperation::Manage(url)).await
 }
 
 /// Retrieve the Automoderator's PW list
 #[poise::command(slash_command, rename = "list")]
-async fn pwl(ctx: super::PoiseContext<'_>) -> Result<(), BotError> { mpl(ctx, ProhibitedType::Word, CmdOperation::List).await }
+async fn pwl(ctx: super::PoiseContext<'_>) -> BotResult { mpl(ctx, ProhibitedType::Word, CmdOperation::List).await }
 
 /// Retrieve the Automoderator's PU list
 #[poise::command(slash_command, rename = "list")]
-async fn pul(ctx: super::PoiseContext<'_>) -> Result<(), BotError> { mpl(ctx, ProhibitedType::Url, CmdOperation::List).await }
+async fn pul(ctx: super::PoiseContext<'_>) -> BotResult { mpl(ctx, ProhibitedType::Url, CmdOperation::List).await }

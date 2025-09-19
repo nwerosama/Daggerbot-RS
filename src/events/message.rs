@@ -1,10 +1,10 @@
-use crate::{
-  BotData,
-  BotError,
-  internals::config::BINARY_PROPERTIES
-};
-
 use {
+  crate::{
+    BotData,
+    BotError,
+    BotResult,
+    internals::config::BINARY_PROPERTIES
+  },
   asahi::{
     error,
     utils::{
@@ -68,7 +68,7 @@ async fn store_msg_cache(
   ctx: &Context,
   cached: CachedMessage,
   msg_id: MessageId
-) -> Result<CachedMessage, BotError> {
+) -> BotResult<CachedMessage> {
   let redis = &ctx.data::<BotData>().redis;
   let rkey = REDIS_MSG_KEY.replace("{{ message_id }}", msg_id.to_string().as_str());
 
@@ -98,7 +98,7 @@ fn truncate_content(s: FixedString<u16>) -> FixedString<u16> {
 async fn use_automod(
   ctx: &Context,
   msg: &Message
-) -> Result<(), BotError> {
+) -> BotResult {
   use crate::controllers::automod::Automoderator;
   let automod = Automoderator::new(&ctx.data::<BotData>().postgres, ctx.data::<BotData>().redis.clone(), ctx.http.clone())
     .await
@@ -114,7 +114,7 @@ async fn reusable_log(
   title: &str,
   fields: Vec<(&str, String, bool)>,
   evt_msg: Option<&Message>
-) -> Result<(), BotError> {
+) -> BotResult {
   for (_, v, _) in &fields {
     if v.len() > 1024 {
       error!("Embed field's value exceeds 1024 characters, not sending it");
@@ -170,7 +170,7 @@ pub async fn on_message_delete(
   ctx: &Context,
   channel_id: &GenericChannelId,
   deleted_message_id: &MessageId
-) -> Result<(), BotError> {
+) -> BotResult {
   if ignored_channels(ctx, &channel_id.get()).await? {
     return Ok(());
   }
@@ -232,7 +232,7 @@ pub async fn on_message_delete(
 pub async fn on_message_update(
   ctx: &Context,
   event: &MessageUpdateEvent
-) -> Result<(), BotError> {
+) -> BotResult {
   if event.message.author.bot() || ignored_channels(ctx, &event.message.channel_id.get()).await? {
     return Ok(());
   }
@@ -339,7 +339,7 @@ pub async fn on_message_update(
 pub async fn on_message(
   ctx: &Context,
   new_message: &Message
-) -> Result<(), BotError> {
+) -> BotResult {
   // We maintain our own cache for message events
   // since Serenity's cache gets sweeped once the
   // message is deleted/updated before we get a
@@ -377,7 +377,7 @@ pub async fn on_message(
 pub async fn on_message_lua(
   ctx: &Context,
   new_message: &Message
-) -> Result<(), BotError> {
+) -> BotResult {
   let bridge = ctx.data_ref::<BotData>().serenity_bridge.clone();
 
   bridge.register_plugin("MsgResponse")?;
@@ -411,7 +411,7 @@ pub async fn on_message_lua(
 async fn on_message_dm(
   ctx: &Context,
   new_message: &Message
-) -> Result<(), BotError> {
+) -> BotResult {
   let (name, dname, uid) = {
     (
       new_message.author.name.clone(),

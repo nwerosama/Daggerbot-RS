@@ -12,6 +12,8 @@ use {
 
 pub type BotError = Box<dyn std::error::Error + Send + Sync>;
 
+pub type BotResult<T = ()> = Result<T, BotError>;
+
 pub async fn fw_errors(error: FrameworkError<'_, BotData, BotError>) {
   match error {
     FrameworkError::Command { error, ctx, .. } => {

@@ -1,6 +1,6 @@
 use {
   crate::{
-    BotError,
+    BotResult,
     internals::config::BINARY_PROPERTIES
   },
   asahi::{
@@ -46,7 +46,7 @@ pub enum Questions {
 pub async fn faq(
   ctx: super::PoiseContext<'_>,
   #[description = "The question you want answers for"] question: Questions
-) -> Result<(), BotError> {
+) -> BotResult {
   match question {
     Questions::FsDeleteShaderCacheFolder => {
       let filename = "shader_cache.jpg";

@@ -1,31 +1,32 @@
-use crate::{
-  BotError,
-  internals::config::BINARY_PROPERTIES
-};
-
-use poise::serenity_prelude::{
-  AuditLogEntry,
-  Change,
-  Context,
-  CreateComponent,
-  CreateContainer,
-  CreateMessage,
-  CreateTextDisplay,
-  GenericChannelId,
-  GuildId,
-  MemberAction,
-  Mentionable,
-  MessageFlags,
-  RoleId,
-  UserId,
-  model::guild::audit_log::Action
+use {
+  crate::{
+    BotResult,
+    internals::config::BINARY_PROPERTIES
+  },
+  poise::serenity_prelude::{
+    AuditLogEntry,
+    Change,
+    Context,
+    CreateComponent,
+    CreateContainer,
+    CreateMessage,
+    CreateTextDisplay,
+    GenericChannelId,
+    GuildId,
+    MemberAction,
+    Mentionable,
+    MessageFlags,
+    RoleId,
+    UserId,
+    model::guild::audit_log::Action
+  }
 };
 
 pub async fn on_audit_log_entry_create(
   ctx: &Context,
   entry: &AuditLogEntry,
   guild_id: &GuildId
-) -> Result<(), BotError> {
+) -> BotResult {
   if *guild_id != GuildId::new(BINARY_PROPERTIES.guild_id) {
     return Ok(());
   }

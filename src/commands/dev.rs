@@ -1,6 +1,6 @@
 use {
   crate::{
-    BotError,
+    BotResult,
     bridges::PLUGIN_DIR
   },
   asahi::utils::database::prepare_tables,
@@ -22,7 +22,7 @@ use {
   subcommands("echo", "deploy", "schemas", "upload_plugin"),
   default_member_permissions = "MANAGE_GUILD"
 )]
-pub async fn dev(_: super::PoiseContext<'_>) -> Result<(), BotError> { Ok(()) }
+pub async fn dev(_: super::PoiseContext<'_>) -> BotResult { Ok(()) }
 
 /// Turn your message into a bot message
 #[poise::command(slash_command)]
@@ -32,7 +32,7 @@ async fn echo(
   #[description = "Channel to send this to"]
   #[channel_types("Text", "PublicThread", "PrivateThread")]
   channel: Option<GenericChannelId>
-) -> Result<(), BotError> {
+) -> BotResult {
   let channel = match channel {
     Some(c) => c,
     None => ctx.channel_id()
@@ -61,14 +61,14 @@ async fn echo(
 
 /// Deploy commands to current guild
 #[poise::command(prefix_command)]
-async fn deploy(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
+async fn deploy(ctx: super::PoiseContext<'_>) -> BotResult {
   poise::builtins::register_application_commands(ctx, false).await?;
   Ok(())
 }
 
 /// Load schemas into the database
 #[poise::command(prefix_command, slash_command)]
-async fn schemas(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
+async fn schemas(ctx: super::PoiseContext<'_>) -> BotResult {
   match prepare_tables(&ctx.data().postgres, "schemas").await {
     Ok(s) => {
       ctx.reply(s).await?;
@@ -87,7 +87,7 @@ async fn schemas(ctx: super::PoiseContext<'_>) -> Result<(), BotError> {
 async fn upload_plugin(
   ctx: super::PoiseContext<'_>,
   #[description = "Lua plugin file"] file: Attachment
-) -> Result<(), BotError> {
+) -> BotResult {
   ctx.defer().await?;
 
   match file.download().await {

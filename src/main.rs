@@ -21,7 +21,10 @@ use {
   },
   bridges::LuaSerenityBridge,
   dag_grpc::MonicaClient,
-  errors::BotError,
+  errors::{
+    BotError,
+    BotResult
+  },
   internals::{
     invite_data::InviteCache,
     presence::read_config,
@@ -69,7 +72,7 @@ impl AsahiDatabaseConfig for Database {
 async fn init_serenity_bridge(
   lua: Arc<Lua>,
   serenity_http: Arc<Http>
-) -> Result<LuaSerenityBridge, BotError> {
+) -> BotResult<LuaSerenityBridge> {
   let bridge = LuaSerenityBridge::new(lua, serenity_http);
   bridge.register_all()?;
   Ok(bridge)
