@@ -1,22 +1,21 @@
-use crate::{
-  BotResult,
-  controllers::sql::MpServers,
-  internals::{
-    config::BINARY_PROPERTIES,
-    monica::{
-      Collider,
-      EmbedPalette,
-      SERVER_SEARCH_FILTERS,
-      TASK_NAME,
-      ac_serverlist,
-      extract_ip_and_code,
-      icon_factory,
-      mod_page_url
-    }
-  }
-};
-
 use {
+  crate::{
+    BotResult,
+    controllers::sql::MpServers,
+    internals::{
+      config::BINARY_PROPERTIES,
+      monica::{
+        Collider,
+        EmbedPalette,
+        SERVER_SEARCH_FILTERS,
+        TASK_NAME,
+        ac_serverlist,
+        extract_ip_and_code,
+        icon_factory,
+        mod_page_url
+      }
+    }
+  },
   asahi::{
     canvas::{
       ImageFormat,
@@ -40,6 +39,7 @@ use {
     }
   },
   poise::{
+    ChoiceParameter,
     CreateReply,
     serenity_prelude::{
       CreateAttachment,
@@ -56,7 +56,11 @@ use {
       RoleId
     }
   },
-  std::borrow::Cow
+  std::{
+    borrow::Cow,
+    fmt,
+    time::Duration
+  }
 };
 
 const CATEGORY_FILTER: [&str; 5] = ["PALLETS", "PALLETSILAGE", "BIGBAGS", "BIGBAGPALLETS", "IBC"];
@@ -495,6 +499,7 @@ async fn poll_perm_check(ctx: super::PoiseContext<'_>) -> BotResult<bool> {
     .unwrap()
     .roles
     .contains(&RoleId::new(BINARY_PROPERTIES.mp_mod_role))
+    || BINARY_PROPERTIES.developers.contains(&ctx.author().id.get())
   {
     true => Ok(true),
     false => Ok(false)
@@ -518,17 +523,47 @@ async fn poll_webhook_embed(ctx: super::PoiseContext<'_>) -> BotResult<Embed> {
   Ok(suggestion_pool.embeds[0].clone())
 }
 
+#[derive(Debug, ChoiceParameter)]
+enum Server {
+  Members,
+  Multifarm
+}
+
+impl fmt::Display for Server {
+  fn fmt(
+    &self,
+    f: &mut fmt::Formatter<'_>
+  ) -> fmt::Result {
+    match self {
+      Self::Members => write!(f, "Members"),
+      Self::Multifarm => write!(f, "Multifarm")
+    }
+  }
+}
+
 /// Poll system
 #[poise::command(slash_command, subcommands("start", "end", "maps"), check = "poll_perm_check")]
 pub async fn poll(_: super::PoiseContext<'_>) -> BotResult { Ok(()) }
 
 /// Start a map poll
 #[poise::command(slash_command)]
-async fn start(ctx: super::PoiseContext<'_>) -> BotResult {
+async fn start(
+  ctx: super::PoiseContext<'_>,
+  server: Server
+) -> BotResult {
   ctx.defer().await?;
-  let mp_announcements = GenericChannelId::new(BINARY_PROPERTIES.mp_channels.announcements);
 
-  let mpa_msgs = match mp_announcements.messages(ctx.http(), GetMessages::new().limit(5)).await {
+  let ping_role = match server {
+    Server::Multifarm => BINARY_PROPERTIES.mp_players_role,
+    Server::Members => BINARY_PROPERTIES.members_role
+  };
+
+  let channel = match server {
+    Server::Multifarm => GenericChannelId::new(BINARY_PROPERTIES.mp_channels.announcements),
+    Server::Members => GenericChannelId::new(BINARY_PROPERTIES.members_chat)
+  };
+
+  let messages = match channel.messages(ctx.http(), GetMessages::new().limit(5)).await {
     Ok(m) => m,
     Err(y) => {
       ctx.reply(y.to_string()).await?;
@@ -536,7 +571,7 @@ async fn start(ctx: super::PoiseContext<'_>) -> BotResult {
     }
   };
 
-  if let Some(live_poll) = mpa_msgs.iter().find(|m| {
+  if let Some(live_poll) = messages.iter().find(|m| {
     m.poll.as_ref().is_some_and(|p| {
       !p.results.as_ref().is_some_and(|r| r.is_finalized) && p.question.text.clone().is_some_and(|t| t.contains("Vote for the next map!"))
     })
@@ -575,14 +610,14 @@ async fn start(ctx: super::PoiseContext<'_>) -> BotResult {
     poll_choices.push(CreatePollAnswer::new().text(caps.get(1).unwrap().as_str()));
   }
 
-  match mp_announcements
+  match channel
     .send_message(
       ctx.http(),
-      CreateMessage::new().content(format!("<@&{}>", BINARY_PROPERTIES.mp_players_role)).poll(
+      CreateMessage::new().content(format!("<@&{ping_role}>")).poll(
         CreatePoll::new()
-          .question("Vote for the next map!")
+          .question(format!("Vote for the next map on {server}!"))
           .answers(poll_choices)
-          .duration(std::time::Duration::from_secs(259200)) // 3 days
+          .duration(Duration::from_secs(259200)) // 3 days
       )
     )
     .await
@@ -596,10 +631,16 @@ async fn start(ctx: super::PoiseContext<'_>) -> BotResult {
 
 /// End the map poll early
 #[poise::command(slash_command)]
-async fn end(ctx: super::PoiseContext<'_>) -> BotResult {
-  let mp_announcements = GenericChannelId::new(BINARY_PROPERTIES.mp_channels.announcements);
+async fn end(
+  ctx: super::PoiseContext<'_>,
+  server: Server
+) -> BotResult {
+  let channel = match server {
+    Server::Multifarm => GenericChannelId::new(BINARY_PROPERTIES.mp_channels.announcements),
+    Server::Members => GenericChannelId::new(BINARY_PROPERTIES.members_chat)
+  };
 
-  let messages = match mp_announcements.messages(ctx.http(), GetMessages::new().limit(5)).await {
+  let messages = match channel.messages(ctx.http(), GetMessages::new().limit(5)).await {
     Ok(m) => m,
     Err(y) => {
       ctx.reply(y.to_string()).await?;
@@ -609,7 +650,7 @@ async fn end(ctx: super::PoiseContext<'_>) -> BotResult {
 
   let poll_msg = messages.iter().find(|m| m.poll.is_some()).unwrap();
 
-  match ctx.http().expire_poll(mp_announcements, poll_msg.id).await {
+  match ctx.http().expire_poll(channel, poll_msg.id).await {
     Ok(_) => ctx.reply(format!("[Poll](<{}>) ended early!", poll_msg.link())).await?,
     Err(y) => ctx.reply(y.to_string()).await?
   };
