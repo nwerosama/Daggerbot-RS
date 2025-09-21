@@ -34,7 +34,7 @@ jobs:
       - name: Install Rust components
         run: rustup component add rustfmt clippy
 
-      - name: Check formatting
+      - name: Formatting
         run: cargo fmt --check
 
       - name: Clippy
@@ -64,7 +64,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
@@ -81,7 +81,7 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/nwerosama/daggerbot-rs:${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}
+          tags: ghcr.io/${{ github.repository }}:${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -103,6 +103,6 @@ jobs:
             "payload": {
               "deployment_name": "daggerbot",
               "container_name": "daggerbot-app",
-              "image": "ghcr.io/nwerosama/daggerbot-rs:koi"
+              "image": "ghcr.io/${{ github.repository }}:koi"
             }
-          }' | gh api repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/deployments --method POST --input -
+          }' | gh api repos/${{ github.repository }}/deployments --method POST --input -
