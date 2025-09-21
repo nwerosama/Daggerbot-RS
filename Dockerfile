@@ -11,7 +11,6 @@ RUN pacman -Syu --noconfirm && \
 WORKDIR /daggerbot
 COPY --from=base /builder/target/release/daggerbot .
 COPY --from=base /builder/assets/presence.toml .
-COPY --from=base /builder/src/plugins/ plugins/
 COPY --from=base /builder/schemas/ schemas/
 EXPOSE 9000/tcp
 CMD [ "./daggerbot" ]

@@ -1,12 +1,8 @@
 use {
-  crate::{
-    BotResult,
-    bridges::PLUGIN_DIR
-  },
+  crate::BotResult,
   poise::{
     CreateReply,
     serenity_prelude::{
-      Attachment,
       CreateAllowedMentions,
       GenericChannelId,
       builder::CreateMessage
@@ -15,12 +11,7 @@ use {
 };
 
 /// Developer commands
-#[poise::command(
-  slash_command,
-  owners_only,
-  subcommands("echo", "deploy", "upload_plugin"),
-  default_member_permissions = "MANAGE_GUILD"
-)]
+#[poise::command(slash_command, owners_only, subcommands("echo", "deploy"), default_member_permissions = "MANAGE_GUILD")]
 pub async fn dev(_: super::PoiseContext<'_>) -> BotResult { Ok(()) }
 
 /// Turn your message into a bot message
@@ -62,30 +53,5 @@ async fn echo(
 #[poise::command(prefix_command)]
 async fn deploy(ctx: super::PoiseContext<'_>) -> BotResult {
   poise::builtins::register_application_commands(ctx, false).await?;
-  Ok(())
-}
-
-/// Upload a Lua plugin to the container
-#[poise::command(slash_command)]
-async fn upload_plugin(
-  ctx: super::PoiseContext<'_>,
-  #[description = "Lua plugin file"] file: Attachment
-) -> BotResult {
-  ctx.defer().await?;
-
-  match file.download().await {
-    Ok(f) => {
-      if let Err(y) = std::fs::write(format!("{PLUGIN_DIR}/{}", file.filename), f) {
-        ctx.reply(format!("Failed to write the plugin: `{y}`")).await?;
-        return Ok(());
-      };
-      ctx.reply(format!("Successfully uploaded `{}` plugin!", file.filename)).await?;
-    },
-    Err(y) => {
-      ctx.reply(format!("Failed to upload the plugin: `{y}`")).await?;
-      return Ok(());
-    }
-  };
-
   Ok(())
 }

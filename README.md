@@ -10,6 +10,5 @@ Notable features;-
 - FSMP infrastructure with the HTTP backend being hosted separately
 - gRPC service support (for above)
 - (Auto)moderation
-- Lua 5.4 environment for small parts of the bot
 - Autoresponders
 - Legacy prefix commands for basic operations

@@ -3,7 +3,6 @@
     "fill-labs.dependi",
     "usernamehw.errorlens",
     "tamasfe.even-better-toml",
-    "rust-lang.rust-analyzer",
-    "sumneko.lua"
+    "rust-lang.rust-analyzer"
   ]
 }

@@ -1,4 +1,3 @@
-mod bridges;
 mod commands;
 mod controllers;
 mod errors;
@@ -20,7 +19,6 @@ use {
       prepare_tables
     }
   },
-  bridges::LuaSerenityBridge,
   dag_grpc::MonicaClient,
   errors::{
     BotError,
@@ -35,7 +33,6 @@ use {
       token_path
     }
   },
-  mlua::Lua,
   poise::serenity_prelude::{
     ActivityData,
     ClientBuilder,
@@ -51,11 +48,10 @@ use {
 };
 
 struct BotData {
-  redis:           Arc<controllers::cache::RedisController>,
-  postgres:        sqlx::PgPool,
-  serenity_bridge: Arc<LuaSerenityBridge>,
-  invite_data:     Arc<InviteCache>,
-  grpc:            MonicaClient
+  redis:       Arc<controllers::cache::RedisController>,
+  postgres:    sqlx::PgPool,
+  invite_data: Arc<InviteCache>,
+  grpc:        MonicaClient
 }
 
 struct Database(String);
@@ -68,15 +64,6 @@ impl AsahiDatabaseConfig for Database {
   fn kind(&self) -> AsahiDatabaseKind { AsahiDatabaseKind::Postgres }
 
   fn max_connections(&self) -> u32 { 26 }
-}
-
-async fn init_serenity_bridge(
-  lua: Arc<Lua>,
-  serenity_http: Arc<Http>
-) -> BotResult<LuaSerenityBridge> {
-  let bridge = LuaSerenityBridge::new(lua, serenity_http);
-  bridge.register_all()?;
-  Ok(bridge)
 }
 
 #[tokio::main]
@@ -103,19 +90,10 @@ async fn main() {
   let _ = prepare_tables(&postgres, "schemas").await;
 
   let grpc = MonicaClient::new();
-  let lua = Arc::new(Lua::new());
-  let http = Arc::new(Http::new(discord_token().await));
-
-  let serenity_bridge = Arc::new(
-    init_serenity_bridge(Arc::clone(&lua), Arc::clone(&http))
-      .await
-      .expect("Error initializing LuaSerenityBridge")
-  );
 
   let bot_data = Arc::new(BotData {
     redis: Arc::new(controllers::cache::RedisController::new().await.unwrap()),
     postgres,
-    serenity_bridge,
     invite_data: Arc::new(InviteCache::new()),
     grpc
   });

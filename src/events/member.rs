@@ -11,7 +11,10 @@ use {
   asahi::{
     debug,
     error,
-    utils::format_timestamp
+    utils::{
+      format_timestamp,
+      ordinal_suffix
+    }
   },
   poise::serenity_prelude::{
     Context,
@@ -61,15 +64,7 @@ pub async fn on_guild_member_addition(
       None => return Ok(())
     };
 
-    let ordinal_suffix = match cached_guild.member_count % 100 {
-      11..=13 => "th",
-      _ => match cached_guild.member_count % 10 {
-        1 => "st",
-        2 => "nd",
-        3 => "rd",
-        _ => "th"
-      }
-    };
+    let fmt_suffix = ordinal_suffix(cached_guild.member_count);
 
     let mut is_bot = "Bot";
     if !new_member.user.bot() {
@@ -122,7 +117,7 @@ pub async fn on_guild_member_addition(
             .color(BINARY_PROPERTIES.embed_colors.primary())
             .thumbnail(new_member.user.face())
             .title(format!("Welcome to {}, {}!", cached_guild.name, new_member.user.tag()))
-            .footer(CreateEmbedFooter::new(format!("{}{ordinal_suffix} member", cached_guild.member_count)))
+            .footer(CreateEmbedFooter::new(format!("{}{fmt_suffix} member", cached_guild.member_count)))
         )
       )
       .await
@@ -145,7 +140,7 @@ pub async fn on_guild_member_addition(
                   ("Invite Data:", invite_data_string, false),
                 ])
                 .footer(CreateEmbedFooter::new(format!(
-                  "Total members: {}{ordinal_suffix} | ID: {}",
+                  "Total members: {}{fmt_suffix} | ID: {}",
                   cached_guild.member_count, new_member.user.id
                 )))
                 .timestamp(Timestamp::now())

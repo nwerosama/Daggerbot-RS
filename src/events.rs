@@ -40,7 +40,7 @@ impl EventHandler for DiscordEvents {
       FullEvent::InviteDelete { data, .. } => invite::on_invite_delete(ctx, data).await.unwrap(),
       FullEvent::Message { new_message, .. } => {
         message::on_message(ctx, new_message).await.unwrap();
-        message::on_message_lua(ctx, new_message).await.unwrap();
+        message::on_message_autores(ctx, new_message).await.unwrap();
       },
       FullEvent::MessageUpdate { event, .. } => message::on_message_update(ctx, event).await.unwrap(),
       FullEvent::MessageDelete {

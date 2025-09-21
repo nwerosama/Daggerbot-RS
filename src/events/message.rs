@@ -1,3 +1,5 @@
+mod autoresponder;
+
 use {
   crate::{
     BotData,
@@ -11,6 +13,12 @@ use {
       ansi,
       format_timestamp
     }
+  },
+  autoresponder::{
+    Keywords,
+    PREFIXES,
+    SUFFIXES,
+    match_keywords
   },
   lazy_static::lazy_static,
   poise::serenity_prelude::{
@@ -35,6 +43,8 @@ use {
     User,
     small_fixed_array::FixedString
   },
+  rand::seq::IndexedRandom,
+  regex::Regex,
   serde::{
     Deserialize,
     Serialize
@@ -374,35 +384,47 @@ pub async fn on_message(
   Ok(())
 }
 
-pub async fn on_message_lua(
+pub async fn on_message_autores(
   ctx: &Context,
   new_message: &Message
 ) -> BotResult {
-  let bridge = ctx.data_ref::<BotData>().serenity_bridge.clone();
-
-  bridge.register_plugin("MsgResponse")?;
-
-  if new_message.author.bot() || new_message.guild_id != Some(GuildId::new(BINARY_PROPERTIES.guild_id)) {
+  if new_message.author.bot()
+    || new_message.channel_id != GenericChannelId::new(BINARY_PROPERTIES.general_chat)
+    || (!new_message.attachments.is_empty() || !new_message.sticker_items.is_empty()) && new_message.content.is_empty()
+  {
     return Ok(());
   }
 
-  if (!new_message.attachments.is_empty() || !new_message.sticker_items.is_empty()) && new_message.content.is_empty() {
-    return Ok(());
-  }
+  let mut reply: Option<String> = None;
 
-  let message_table = bridge.build_message_table(new_message)?;
+  let nick_or_global = new_message
+    .member
+    .as_ref()
+    .and_then(|m| m.nick.clone())
+    .or_else(|| new_message.author.global_name.clone())
+    .unwrap_or_else(|| new_message.author.name.clone());
 
-  // Lua version of a famous ResponseModule from v3 (TypeScript)
-  if new_message.channel_id == GenericChannelId::new(BINARY_PROPERTIES.general_chat) {
-    let response: mlua::Table = bridge.lua.globals().get("Response")?;
-    let outgoing_arrays: mlua::Function = response.get("outgoingArrays")?;
-    outgoing_arrays.call::<()>(message_table.clone())?;
+  'a: for k in [Keywords::Morning, Keywords::Afternoon, Keywords::Evening, Keywords::Night] {
+    let prefix = PREFIXES.join("|");
+    let suffix = SUFFIXES.iter().map(|s| regex::escape(s)).collect::<Vec<_>>().join("|");
 
-    let tod = ["morning", "afternoon", "evening", "night"];
-    for keyword in tod.iter() {
-      let respond: mlua::Function = response.get("respond")?;
-      respond.call::<()>((message_table.clone(), *keyword))?;
+    {
+      let pattern = format!(r"^({prefix})?\s?{k}\s+({suffix})\b");
+      let re = Regex::new(&pattern).unwrap();
+
+      if re.is_match(&new_message.content.to_lowercase()) {
+        let responses = match_keywords(k, nick_or_global.to_string());
+        if let Some(response) = responses.choose(&mut rand::rng()) {
+          reply = Some(response.to_owned());
+        }
+
+        break 'a;
+      }
     }
+  }
+
+  if let Some(r) = reply {
+    new_message.reply(&ctx.http, r).await.unwrap();
   }
 
   Ok(())

@@ -1,10 +1,4 @@
 {
   "files.trimTrailingWhitespace": true,
-  "rust-analyzer.cargo.features": ["automod"],
-  "Lua.diagnostics.globals": [
-    "rs_msg",
-    "rs_regex",
-    "send_message",
-    "state"
-  ]
+  "rust-analyzer.cargo.features": ["automod"]
 }
