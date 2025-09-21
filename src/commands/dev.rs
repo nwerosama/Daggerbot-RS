@@ -3,7 +3,6 @@ use {
     BotResult,
     bridges::PLUGIN_DIR
   },
-  asahi::utils::database::prepare_tables,
   poise::{
     CreateReply,
     serenity_prelude::{
@@ -19,7 +18,7 @@ use {
 #[poise::command(
   slash_command,
   owners_only,
-  subcommands("echo", "deploy", "schemas", "upload_plugin"),
+  subcommands("echo", "deploy", "upload_plugin"),
   default_member_permissions = "MANAGE_GUILD"
 )]
 pub async fn dev(_: super::PoiseContext<'_>) -> BotResult { Ok(()) }
@@ -63,22 +62,6 @@ async fn echo(
 #[poise::command(prefix_command)]
 async fn deploy(ctx: super::PoiseContext<'_>) -> BotResult {
   poise::builtins::register_application_commands(ctx, false).await?;
-  Ok(())
-}
-
-/// Load schemas into the database
-#[poise::command(prefix_command, slash_command)]
-async fn schemas(ctx: super::PoiseContext<'_>) -> BotResult {
-  match prepare_tables(&ctx.data().postgres, "schemas").await {
-    Ok(s) => {
-      ctx.reply(s).await?;
-    },
-    Err(e) => {
-      ctx.reply(e.to_string()).await?;
-      return Ok(())
-    }
-  }
-
   Ok(())
 }
 

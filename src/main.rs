@@ -16,7 +16,8 @@ use {
     utils::database::{
       AsahiDatabaseConfig,
       AsahiDatabaseKind,
-      connect
+      connect,
+      prepare_tables
     }
   },
   bridges::LuaSerenityBridge,
@@ -98,6 +99,8 @@ async fn main() {
       std::process::exit(1);
     }
   };
+
+  let _ = prepare_tables(&postgres, "schemas").await;
 
   let grpc = MonicaClient::new();
   let lua = Arc::new(Lua::new());

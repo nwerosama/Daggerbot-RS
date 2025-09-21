@@ -13,7 +13,10 @@ pub use {
   moderation::*,
   mp::mp,
   ping::ping,
-  prefix::farmpw,
+  prefix::{
+    farmpw,
+    set_farmpw
+  },
   settings::settings,
   uptime::uptime
 };
@@ -38,6 +41,7 @@ macro_rules! collect {
       // fsmp stuff
       commands::mp(),
       commands::farmpw(),
+      commands::set_farmpw(),
       // unsorted mess
       commands::faq(),
       commands::ping(),

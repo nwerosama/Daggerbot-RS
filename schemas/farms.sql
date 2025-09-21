@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS farms (
+  farm_id BIGINT PRIMARY KEY,
+  farm_name VARCHAR(24) NOT NULL,
+  password VARCHAR(16) UNIQUE NOT NULL
+);

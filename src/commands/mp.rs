@@ -668,12 +668,10 @@ async fn maps(ctx: super::PoiseContext<'_>) -> BotResult {
   Ok(())
 }
 
-async fn tools_perm_check(ctx: super::PoiseContext<'_>) -> BotResult<bool> {
+pub(super) async fn tools_perm_check(ctx: super::PoiseContext<'_>) -> BotResult<bool> {
   let member = ctx.author_member().await.unwrap();
   let roles = member.roles.clone();
-  let perms = member.permissions.unwrap();
-
-  Ok(roles.contains(&RoleId::new(BINARY_PROPERTIES.mp_manager_role)) || perms.administrator())
+  Ok(roles.contains(&RoleId::new(BINARY_PROPERTIES.mp_manager_role)) || ctx.framework().options.owners.contains(&member.user.id))
 }
 
 /// MP Manager tools for Monica
