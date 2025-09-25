@@ -38,7 +38,6 @@ use {
     ClientBuilder,
     CreateAllowedMentions,
     GatewayIntents,
-    Http,
     RoleId
   },
   std::{
