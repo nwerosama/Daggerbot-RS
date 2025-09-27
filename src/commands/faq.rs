@@ -27,6 +27,7 @@ use {
 };
 
 static FARMSIM_DOCS: &str = "Documents\\My Games\\FarmingSimulator2025";
+static FARMSIM_DOCS_MSFT: &str = "%LocalAppData%\\Packages\\GIANTSSoftware.FarmingSimulator25PC_fa8jxm5fj0esw\\LocalCache\\Local";
 
 #[allow(clippy::enum_variant_names)] // This warning is so stupid...
 #[derive(Debug, ChoiceParameter)]
@@ -38,7 +39,9 @@ pub enum Questions {
   #[name = "[FS] Verifying game files"]
   FsVerifyGameFiles,
   #[name = "[FS] Enabling the console"]
-  FsEnableDevConsole
+  FsEnableDevConsole,
+  #[name = "[FS] Profile path for Microsoft Store copy"]
+  FsMsftStoreProfile
 }
 
 /// List of popular answered questions
@@ -134,6 +137,18 @@ pub async fn faq(
             .attachment(CreateAttachment::bytes(&image[..], filename))
         )
         .await?;
+    },
+    Questions::FsMsftStoreProfile => {
+      let embed = build_faq(
+        "Locating your profile on Microsoft Store copy",
+        format!(
+          "You can find your game's profile directory at `{FARMSIM_DOCS_MSFT}`, this location choice is not Giants' fault as other games on \
+           Microsoft Store also shares the same `Packages` directory.\nYou can install mods here or modify `game.xml` file or anything else as this \
+           is the identical structure as any other copies on different platforms like Steam and Epic Games."
+        ),
+        None
+      );
+      ctx.send(CreateReply::default().embed(embed)).await?;
     }
   }
 
