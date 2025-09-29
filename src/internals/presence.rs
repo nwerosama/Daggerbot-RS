@@ -1,7 +1,4 @@
-use serde::{
-  Deserialize,
-  Serialize
-};
+use serde::Deserialize;
 
 /// The static path to the TOML config file for bot's presence data
 pub const TOML_FILE: &str = if cfg!(feature = "production") {
@@ -10,20 +7,15 @@ pub const TOML_FILE: &str = if cfg!(feature = "production") {
   "assets/presence.toml"
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct Activity {
   pub name: String,
   pub url:  String
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct Presence {
-  pub activities: Vec<Activity>
-}
-
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct TomlConfig {
-  pub presence: Presence
+  pub activity: Activity
 }
 
 pub fn read_config() -> TomlConfig {

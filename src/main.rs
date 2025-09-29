@@ -73,7 +73,7 @@ async fn main() {
   health_probe.spawn_server(9000);
 
   let tconf = read_config();
-  let activity = tconf.presence.activities.first().unwrap();
+  let activity = tconf.activity;
 
   let postgres = match connect(&Database(token_path().await.postgres_uri)).await {
     Ok(p) => {
