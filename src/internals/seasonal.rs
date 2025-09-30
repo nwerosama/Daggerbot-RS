@@ -26,8 +26,8 @@ static CURRENT_EMBED_COLOR: LazyLock<AtomicU32> = LazyLock::new(|| AtomicU32::ne
 const DEFAULT: u32 = if cfg!(feature = "production") { 0x0052CF } else { 0x559999 };
 
 struct Date {
-  day:   u32,
-  month: u32
+  day:   usize,
+  month: usize
 }
 
 struct Theme {
@@ -47,8 +47,14 @@ static SEASONAL_THEMES: &[Theme] = &[
   Theme {
     name:  "Breast Cancer Awareness",
     start: Date { day: 1, month: 10 },
-    end:   Date { day: 31, month: 10 },
+    end:   Date { day: 29, month: 10 },
     color: 0xFF69B4
+  },
+  Theme {
+    name:  "Halloween",
+    start: Date { day: 30, month: 10 },
+    end:   Date { day: 31, month: 10 },
+    color: 0xFF5C00
   },
   Theme {
     name:  "Remembrance Day",
@@ -69,11 +75,9 @@ fn is_leap_year(year: u32) -> bool { (year.is_multiple_of(4) && !year.is_multipl
 
 fn get_current_date() -> Date {
   let now = SystemTime::now().duration_since(UNIX_EPOCH).expect("Incorrect system time");
-  let seconds = now.as_secs();
+  let seconds = now.as_secs() + 36000;
 
-  let local_secs = seconds + 36000;
-
-  let days_since_epoch = local_secs / 86400;
+  let days_since_epoch = seconds / 86400;
   let mut year = 1970;
   let mut remaining_days = days_since_epoch;
 
@@ -107,10 +111,7 @@ fn get_current_date() -> Date {
 
   debug!("Current date: {day}/{month}");
 
-  Date {
-    day,
-    month: month.try_into().unwrap()
-  }
+  Date { day: day as usize, month }
 }
 
 fn is_date_in_range(
@@ -138,24 +139,6 @@ fn calculate_embed_color(current_date: &Date) -> u32 {
 
 pub fn get_embed_color() -> u32 { CURRENT_EMBED_COLOR.load(Ordering::Relaxed) }
 
-fn update_embed_color() {
-  let current_date = get_current_date();
-  let new_color = calculate_embed_color(&current_date);
-  let current = CURRENT_EMBED_COLOR.load(Ordering::Relaxed);
-
-  if new_color != current {
-    CURRENT_EMBED_COLOR.store(new_color, Ordering::Relaxed);
-
-    let theme = SEASONAL_THEMES
-      .iter()
-      .find(|t| is_date_in_range(&current_date, &t.start, &t.end))
-      .map(|t| t.name)
-      .unwrap_or("Default");
-
-    info!("Updated embed color to use {new_color:06X} ({theme})");
-  }
-}
-
 pub struct SeasonalTheme;
 
 #[async_trait]
@@ -165,7 +148,22 @@ impl AsahiCoordinator for SeasonalTheme {
   fn interval(&self) -> u64 { 3600 }
 
   async fn main_loop(&self) -> AsahiResult {
-    update_embed_color();
+    let current_date = get_current_date();
+    let new_color = calculate_embed_color(&current_date);
+    let current = CURRENT_EMBED_COLOR.load(Ordering::Relaxed);
+
+    if new_color != current {
+      CURRENT_EMBED_COLOR.store(new_color, Ordering::Relaxed);
+
+      let theme = SEASONAL_THEMES
+        .iter()
+        .find(|t| is_date_in_range(&current_date, &t.start, &t.end))
+        .map(|t| t.name)
+        .unwrap_or("Default");
+
+      info!("Updated embed color to use {new_color:06X} ({theme})");
+    }
+
     Ok(())
   }
 }
