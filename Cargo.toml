@@ -1,6 +1,6 @@
 [package]
 name = "daggerbot-rs"
-version = "4.4.1"
+version = "4.4.2"
 edition = "2024"
 
 [workspace]

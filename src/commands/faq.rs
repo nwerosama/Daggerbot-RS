@@ -9,6 +9,7 @@ use {
       ImageFormat,
       templates::explorer::{
         Metadata,
+        MetadataType,
         Style,
         Theme,
         file_explorer
@@ -53,7 +54,7 @@ pub async fn faq(
   match question {
     Questions::FsDeleteShaderCacheFolder => {
       let filename = "shader_cache.jpg";
-      let img = farmsim_docs(9).to_bytes(Some(ImageFormat::Jpeg { quality: 100 }))?;
+      let img = farmsim_docs(10).to_bytes(Some(ImageFormat::Jpeg { quality: 100 }))?;
 
       let description = [
         "If your game keeps crashing shortly after opening your game, then the shaders might be an issue.",
@@ -68,7 +69,7 @@ pub async fn faq(
     },
     Questions::FsLogFileLocation => {
       let filename = "log_file.jpg";
-      let img = farmsim_docs(21).to_bytes(Some(ImageFormat::Jpeg { quality: 100 }))?;
+      let img = farmsim_docs(22).to_bytes(Some(ImageFormat::Jpeg { quality: 100 }))?;
 
       let embed = build_faq(
         "Finding your log file",
@@ -165,8 +166,8 @@ fn build_faq(
     .title(title)
     .description(description);
 
-  if image.is_some() {
-    embed = embed.image(format!("attachment://{}", image.unwrap()));
+  if let Some(img) = image {
+    embed = embed.image(format!("attachment://{img}"));
   }
 
   embed
@@ -174,35 +175,132 @@ fn build_faq(
 
 fn farmsim_docs(index: usize) -> Canvas {
   let path = format!("C:\\Users\\Daggerbot\\{FARMSIM_DOCS}");
-  let files = [
-    Metadata::new_folder("inputDevices".to_string(), "18/05/2025 10:35".to_string()),
-    Metadata::new_folder("mods".to_string(), "06/06/2025 12:20".to_string()),
-    Metadata::new_folder("modSettings".to_string(), "04/06/2025 13:14".to_string()),
-    Metadata::new_folder("music".to_string(), "17/12/2024 22:47".to_string()),
-    Metadata::new_folder("pdlc".to_string(), "03/06/2025 19:52".to_string()),
-    Metadata::new_folder("savegame1".to_string(), "25/12/2024 11:06".to_string()),
-    Metadata::new_folder("savegame2".to_string(), "16/04/2025 15:34".to_string()),
-    Metadata::new_folder("savegameBackup".to_string(), "16/04/2025 14:34".to_string()),
-    Metadata::new_folder("screenshots".to_string(), "28/11/2024 08:09".to_string()),
-    Metadata::new_folder("shader_cache".to_string(), "02/06/2025 07:00".to_string()),
-    Metadata::new_folder("updater".to_string(), "22/03/2025 22:03".to_string()),
-    Metadata::new_file("AHC_63805".to_string(), "27/11/2024 23:56".to_string(), "dat".to_string(), 2048),
-    Metadata::new_file("AHT_63805".to_string(), "27/11/2024 23:56".to_string(), "dat".to_string(), 2048),
-    Metadata::new_file("AVC_63805".to_string(), "27/11/2024 23:56".to_string(), "dat".to_string(), 2048),
-    Metadata::new_file("AVD_63805".to_string(), "27/11/2024 23:56".to_string(), "dat".to_string(), 2048),
-    Metadata::new_file("consoleHistory".to_string(), "16/04/2025 14:40".to_string(), "dat".to_string(), 7987),
-    Metadata::new_file("extraContent".to_string(), "10/05/2025 09:16".to_string(), "xml".to_string(), 146),
-    Metadata::new_file("game".to_string(), "01/06/2025 12:34".to_string(), "xml".to_string(), 1638),
-    Metadata::new_file("gameSettings".to_string(), "01/06/2025 12:36".to_string(), "xml".to_string(), 6451),
-    Metadata::new_file("IDT_63805".to_string(), "27/11/2025 23:57".to_string(), "dat".to_string(), 2048),
-    Metadata::new_file("inputBinding".to_string(), "18/05/2025 10:35".to_string(), "xml".to_string(), 3072),
-    Metadata::new_file("log".to_string(), "16/04/2025 15:36".to_string(), "txt".to_string(), 57344),
-    Metadata::new_file("VERSION".to_string(), "27/05/2025 23:10".to_string(), "".to_string(), 7168)
+  let items = [
+    MetadataType::Folder {
+      name: "inputDevices",
+      date: "18/05/2025 10:35"
+    },
+    MetadataType::Folder {
+      name: "mods",
+      date: "06/06/2025 12:20"
+    },
+    MetadataType::Folder {
+      name: "modSettings",
+      date: "04/06/2025 13:14"
+    },
+    MetadataType::Folder {
+      name: "music",
+      date: "17/12/2024 22:47"
+    },
+    MetadataType::Folder {
+      name: "pdlc",
+      date: "03/06/2025 19:52"
+    },
+    MetadataType::Folder {
+      name: "savegame1",
+      date: "25/12/2024 11:06"
+    },
+    MetadataType::Folder {
+      name: "savegame2",
+      date: "16/04/2025 15:34"
+    },
+    MetadataType::Folder {
+      name: "savegame3",
+      date: "01/10/2025 04:30"
+    },
+    MetadataType::Folder {
+      name: "savegameBackup",
+      date: "16/04/2025 14:34"
+    },
+    MetadataType::Folder {
+      name: "screenshots",
+      date: "28/11/2024 08:09"
+    },
+    MetadataType::Folder {
+      name: "shader_cache",
+      date: "01/10/2025 03:32"
+    },
+    MetadataType::Folder {
+      name: "updater",
+      date: "27/09/2025 20:00"
+    },
+    MetadataType::File {
+      name:      "AHC_63805",
+      date:      "27/11/2024 23:56",
+      extension: "dat",
+      size:      2048
+    },
+    MetadataType::File {
+      name:      "AHT_63805",
+      date:      "27/11/2024 23:56",
+      extension: "dat",
+      size:      2048
+    },
+    MetadataType::File {
+      name:      "AVC_63805",
+      date:      "27/11/2024 23:56",
+      extension: "dat",
+      size:      2048
+    },
+    MetadataType::File {
+      name:      "AVD_63805",
+      date:      "27/11/2024 23:56",
+      extension: "dat",
+      size:      2048
+    },
+    MetadataType::File {
+      name:      "consoleHistory",
+      date:      "29/09/2025 15:59",
+      extension: "dat",
+      size:      7992
+    },
+    MetadataType::File {
+      name:      "extraContent",
+      date:      "10/05/2025 09:16",
+      extension: "xml",
+      size:      146
+    },
+    MetadataType::File {
+      name:      "game",
+      date:      "01/10/2025 03:26",
+      extension: "xml",
+      size:      1638
+    },
+    MetadataType::File {
+      name:      "gameSettings",
+      date:      "01/10/2025 03:26",
+      extension: "xml",
+      size:      6451
+    },
+    MetadataType::File {
+      name:      "IDT_63805",
+      date:      "27/11/2025 23:57",
+      extension: "dat",
+      size:      2048
+    },
+    MetadataType::File {
+      name:      "inputBinding",
+      date:      "18/05/2025 10:35",
+      extension: "xml",
+      size:      3072
+    },
+    MetadataType::File {
+      name:      "log",
+      date:      "01/10/2025 04:30",
+      extension: "txt",
+      size:      5242880
+    },
+    MetadataType::File {
+      name:      "VERSION",
+      date:      "27/09/2025 19:59",
+      extension: "",
+      size:      8
+    }
   ];
 
   file_explorer(
     &path,
-    &files,
+    &Metadata::bulk_new(&items),
     800,
     true,
     Some(index),
