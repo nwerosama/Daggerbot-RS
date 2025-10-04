@@ -81,7 +81,7 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/${{ github.repository }}:${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}
+          tags: ghcr.io/${{ github.repository_owner }}/daggerbot-rs:${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -103,6 +103,6 @@ jobs:
             "payload": {
               "deployment_name": "daggerbot",
               "container_name": "daggerbot-app",
-              "image": "ghcr.io/${{ github.repository }}:koi"
+              "image": "ghcr.io/${{ github.repository_owner }}/daggerbot-rs:koi"
             }
           }' | gh api repos/${{ github.repository }}/deployments --method POST --input -
