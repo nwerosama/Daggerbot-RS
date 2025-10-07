@@ -1,11 +1,12 @@
-use crate::{
-  BotResult,
-  controllers::sql::Settings
-};
-
-use poise::serenity_prelude::{
-  ChannelId,
-  Mentionable
+use {
+  crate::{
+    BotResult,
+    controllers::sql::Settings
+  },
+  poise::serenity_prelude::{
+    Channel,
+    Mentionable
+  }
 };
 
 /// Manage settings for specific namespaces in the bot
@@ -39,14 +40,14 @@ async fn ignored_channels(
   ctx: super::PoiseContext<'_>,
   #[description = "Channel to (un)ignore"]
   #[channel_types("Text")]
-  channel: ChannelId
+  channel: Channel
 ) -> BotResult {
   let postgres = ctx.data().postgres.clone();
   let settings = Settings::get_logs_ignored_channels(&postgres).await?;
 
-  if settings.contains(&(channel.get() as i64)) {
+  if settings.contains(&(channel.id().get() as i64)) {
     let mut new_settings = settings.clone();
-    new_settings.retain(|&x| x != channel.get() as i64);
+    new_settings.retain(|&x| x != channel.id().get() as i64);
 
     let settings = Settings {
       logs_ignored_channels: new_settings
@@ -56,7 +57,7 @@ async fn ignored_channels(
     ctx.say(format!("{} is no longer ignored", channel.mention())).await?;
   } else {
     let mut new_settings = settings.clone();
-    new_settings.push(channel.get() as i64);
+    new_settings.push(channel.id().get() as i64);
 
     let settings = Settings {
       logs_ignored_channels: new_settings

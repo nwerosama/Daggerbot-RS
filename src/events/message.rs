@@ -145,7 +145,7 @@ async fn reusable_log(
     && let Some(msg) = evt_msg
   {
     message = message.components(vec![CreateComponent::ActionRow(CreateActionRow::Buttons(Cow::Owned(vec![
-      CreateButton::new_link(msg.link()).label("Jump!"),
+      CreateButton::new_link(msg.link().to_string()).label("Jump!"),
     ])))]);
   }
 
